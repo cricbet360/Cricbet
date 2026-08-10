@@ -6,11 +6,64 @@ from database.database import get_db
 from models.user import User
 from models.bet import Bet
 
+from services.bex_api import get_market_book
+
 
 router = APIRouter(
     prefix="/bets",
     tags=["bets"]
 )
+
+
+def get_live_price(
+    market_id,
+    selection_id,
+    side="BACK"
+):
+    """
+    Get the current live price for a selection
+    from the BEX market book.
+    """
+
+    market_book = get_market_book(market_id)
+
+    if not isinstance(market_book, dict):
+        return None
+
+    data = market_book.get("data", [])
+
+    if not data:
+        return None
+
+    market = data[0]
+
+    if market.get("status") != "OPEN":
+        return None
+
+    for runner in market.get("runners", []):
+
+        if str(runner.get("selectionId")) != str(selection_id):
+            continue
+
+        if runner.get("status") != "ACTIVE":
+            return None
+
+        ex = runner.get("ex", {})
+
+        if side == "BACK":
+            prices = ex.get("availableToBack", [])
+        else:
+            prices = ex.get("availableToLay", [])
+
+        if not prices:
+            return None
+
+        try:
+            return float(prices[0]["price"])
+        except (KeyError, TypeError, ValueError):
+            return None
+
+    return None
 
 
 @router.post("/place")
@@ -30,9 +83,11 @@ async def place_bet(
             }
         )
 
-    user = db.query(User).filter(
-        User.id == user_id
-    ).first()
+    user = (
+        db.query(User)
+        .filter(User.id == user_id)
+        .first()
+    )
 
     if not user:
         return JSONResponse(
@@ -45,6 +100,7 @@ async def place_bet(
 
     try:
         data = await request.json()
+
     except Exception:
         return JSONResponse(
             status_code=400,
@@ -68,6 +124,7 @@ async def place_bet(
 
     try:
         stake = float(stake)
+
     except (TypeError, ValueError):
         return JSONResponse(
             status_code=400,
@@ -86,37 +143,7 @@ async def place_bet(
             }
         )
 
-    total_odds = 1.0
-
-    for selection in selections:
-
-        try:
-            price = float(selection["price"])
-        except (KeyError, TypeError, ValueError):
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "success": False,
-                    "message": "Invalid odds."
-                }
-            )
-
-        if price <= 1:
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "success": False,
-                    "message": "Invalid odds value."
-                }
-            )
-
-        total_odds *= price
-
-    potential_win = stake * total_odds
-
-    # Check existing user balance
     if user.balance < stake:
-
         return JSONResponse(
             status_code=400,
             content={
@@ -125,10 +152,85 @@ async def place_bet(
             }
         )
 
-    # Deduct stake
+    total_odds = 1.0
+
+    for selection in selections:
+
+        market_id = selection.get("marketId")
+        selection_id = selection.get("selectionId")
+
+        side = selection.get(
+            "side",
+            "BACK"
+        ).upper()
+
+        if not market_id:
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "success": False,
+                    "message": "Market ID missing."
+                }
+            )
+
+        if not selection_id:
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "success": False,
+                    "message": "Selection ID missing."
+                }
+            )
+
+        if side not in ("BACK", "LAY"):
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "success": False,
+                    "message": "Invalid bet side."
+                }
+            )
+
+        try:
+
+            live_price = get_live_price(
+                market_id,
+                selection_id,
+                side
+            )
+
+        except Exception as e:
+
+            print(
+                f"BEX odds error: {e}"
+            )
+
+            return JSONResponse(
+                status_code=503,
+                content={
+                    "success": False,
+                    "message": "Live odds are temporarily unavailable."
+                }
+            )
+
+        if live_price is None:
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "success": False,
+                    "message": (
+                        "Selected market or odds are "
+                        "no longer available."
+                    )
+                }
+            )
+
+        total_odds *= live_price
+
+    potential_win = stake * total_odds
+
     user.balance -= stake
 
-    # Create bet
     bet = Bet(
         user_id=user.id,
         stake=stake,
@@ -144,9 +246,13 @@ async def place_bet(
         db.commit()
         db.refresh(bet)
 
-    except Exception:
+    except Exception as e:
 
         db.rollback()
+
+        print(
+            f"Bet database error: {e}"
+        )
 
         return JSONResponse(
             status_code=500,

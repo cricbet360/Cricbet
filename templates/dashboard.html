@@ -1,89 +1,395 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
 
-{% block content %}
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+    >
 
-<div class="dashboard">
+    <title>CrickBet Dashboard</title>
 
-    {% include "partials/sidebar.html" %}
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', path='css/dashboard.css') }}"
+    >
+</head>
 
-    <main>
+<body>
 
-        <h2>🏏 Cricket Matches</h2>
+<header class="topbar">
 
-        {% if matches %}
+    <div class="brand">
+        <span class="brand-icon">🏏</span>
+        <span>CrickBet</span>
+    </div>
+
+    <div class="topbar-right">
+
+        <span class="welcome">
+            Welcome,
+            <strong>{{ user.username }}</strong>
+        </span>
+
+        <span class="balance">
+            ₹{{ "%.2f"|format(user.balance or 0) }}
+        </span>
+
+        <a href="/logout" class="logout">
+            Logout
+        </a>
+
+    </div>
+
+</header>
+
+
+<main class="dashboard">
+
+    <section class="matches-section">
+
+        <div class="section-header">
+
+            <div>
+                <h1>Cricket Matches</h1>
+
+                <div class="match-count">
+                    {{ matches|length }} markets
+                </div>
+            </div>
+
+            <button
+                type="button"
+                class="refresh-button"
+                onclick="window.location.reload()"
+            >
+                ↻ Refresh
+            </button>
+
+        </div>
+
+
+        {% if matches and matches|length > 0 %}
+
+        <div class="matches-grid">
 
             {% for match in matches %}
 
-                <div class="match-card">
+            <article
+                class="match-card"
+                data-market-id="{{ match.market_id }}"
+                data-event-id="{{ match.event_id }}"
+            >
 
-                    <h3>
-                        {{ match.home_team }}
-                        vs
-                        {{ match.away_team }}
-                    </h3>
+                <div class="match-header">
 
-                    <p>
-                        {{ match.commence_time }}
-                    </p>
+                    <div class="match-info">
 
-                    {% if match.bookmakers %}
-
-                        <div class="odds">
-
-                            {% for bookmaker in match.bookmakers[:1] %}
-
-                                <strong>
-                                    {{ bookmaker.title }}
-                                </strong>
-
-                                {% for market in bookmaker.markets %}
-
-                                    {% for outcome in market.outcomes %}
-
-                                        <button
-                                            type="button"
-                                            class="odd-button"
-                                            data-match="{{ match.id }}"
-                                            data-home="{{ match.home_team }}"
-                                            data-away="{{ match.away_team }}"
-                                            data-market="{{ market.key }}"
-                                            data-outcome="{{ outcome.name }}"
-                                            data-price="{{ outcome.price }}"
-                                        >
-
-                                            {{ outcome.name }}
-                                            <strong>
-                                                {{ outcome.price }}
-                                            </strong>
-
-                                        </button>
-
-                                    {% endfor %}
-
-                                {% endfor %}
-
-                            {% endfor %}
-
+                        <div class="competition-name">
+                            {{ match.competition }}
                         </div>
 
-                    {% endif %}
+                        <div class="match-name">
+                            {{ match.event_name }}
+                        </div>
+
+                    </div>
+
+                    <div
+                        class="market-status
+                        {% if match.market_status == 'OPEN' %}
+                            open
+                        {% else %}
+                            suspended
+                        {% endif %}"
+                    >
+                        {{ match.market_status }}
+                    </div>
 
                 </div>
 
+
+                <div class="market-title">
+                    {{ match.market_name }}
+                </div>
+
+
+                <div class="odds-header">
+
+                    <div class="runner-title">
+                        Selection
+                    </div>
+
+                    <div class="odds-label back-label">
+                        BACK
+                    </div>
+
+                    <div class="odds-label lay-label">
+                        LAY
+                    </div>
+
+                </div>
+
+
+                <div class="runners">
+
+                    {% for runner in match.runners %}
+
+                    <div
+                        class="runner-row"
+                        data-selection-id="{{ runner.selection_id }}"
+                        data-runner-name="{{ runner.name }}"
+                    >
+
+                        <div class="runner-name">
+
+                            <span class="runner-dot"></span>
+
+                            <span>
+                                {{ runner.name }}
+                            </span>
+
+                        </div>
+
+
+                        <button
+                            type="button"
+                            class="odd-button back-button"
+                            data-market-id="{{ match.market_id }}"
+                            data-selection-id="{{ runner.selection_id }}"
+                            data-runner-name="{{ runner.name }}"
+                            data-side="BACK"
+                            data-price="{{ runner.back if runner.back is not none else '' }}"
+                            {% if not runner.back %}
+                            disabled
+                            {% endif %}
+                        >
+
+                            {% if runner.back %}
+                                {{ "%.2f"|format(runner.back) }}
+                            {% else %}
+                                —
+                            {% endif %}
+
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="odd-button lay-button"
+                            data-market-id="{{ match.market_id }}"
+                            data-selection-id="{{ runner.selection_id }}"
+                            data-runner-name="{{ runner.name }}"
+                            data-side="LAY"
+                            data-price="{{ runner.lay if runner.lay is not none else '' }}"
+                            {% if not runner.lay %}
+                            disabled
+                            {% endif %}
+                        >
+
+                            {% if runner.lay %}
+                                {{ "%.2f"|format(runner.lay) }}
+                            {% else %}
+                                —
+                            {% endif %}
+
+                        </button>
+
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </article>
+
             {% endfor %}
+
+        </div>
 
         {% else %}
 
-            <p>No cricket matches available right now.</p>
+        <div class="empty-state">
+
+            <div class="empty-icon">
+                🏏
+            </div>
+
+            <h2>No cricket matches available</h2>
+
+            <p>
+                There are currently no markets available from BEX.
+            </p>
+
+            <button
+                type="button"
+                class="refresh-button large"
+                onclick="window.location.reload()"
+            >
+                Refresh Matches
+            </button>
+
+        </div>
 
         {% endif %}
 
-    </main>
+    </section>
 
-    {% include "partials/betslip.html" %}
+</main>
+
+
+<!-- =====================================================
+     BET SLIP OVERLAY
+===================================================== -->
+
+<div
+    id="betslipOverlay"
+    class="betslip-overlay"
+    aria-hidden="true"
+>
+
+    <div
+        id="betslip"
+        class="betslip"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="betslipTitle"
+    >
+
+        <div class="betslip-header">
+
+            <div>
+                <div class="betslip-title" id="betslipTitle">
+                    Bet Slip
+                </div>
+
+                <div
+                    id="betslipCount"
+                    class="betslip-count"
+                >
+                    No selections
+                </div>
+            </div>
+
+            <button
+                type="button"
+                class="close-betslip"
+                id="closeBetslip"
+                aria-label="Close bet slip"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div
+            id="betslipSelections"
+            class="betslip-selections"
+        >
+
+            <div class="no-selections">
+                <div class="no-selection-icon">
+                    🎟️
+                </div>
+
+                <p>
+                    Select a BACK or LAY price
+                    to add a bet.
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="betslip-footer">
+
+            <div class="stake-label">
+                Stake
+            </div>
+
+            <div class="stake-wrapper">
+
+                <span class="currency">
+                    ₹
+                </span>
+
+                <input
+                    id="stakeInput"
+                    type="number"
+                    min="1"
+                    step="1"
+                    inputmode="decimal"
+                    placeholder="Enter stake"
+                >
+
+            </div>
+
+
+            <div class="potential-win">
+
+                <span>
+                    Potential win
+                </span>
+
+                <strong id="potentialWin">
+                    ₹0.00
+                </strong>
+
+            </div>
+
+
+            <div
+                id="betslipError"
+                class="betslip-error"
+                hidden
+            ></div>
+
+
+            <button
+                type="button"
+                id="placeBetButton"
+                class="place-bet-button"
+                disabled
+            >
+                Place Bet
+            </button>
+
+        </div>
+
+    </div>
 
 </div>
 
-<script src="/static/js/betslip.js"></script>
 
-{% endblock %}
+<!-- Mobile floating button -->
+
+<button
+    id="mobileBetslipButton"
+    class="mobile-betslip-button"
+    type="button"
+>
+
+    <span>🎟️</span>
+
+    <span>
+        Bet Slip
+    </span>
+
+    <span
+        id="mobileBetslipCount"
+        class="mobile-betslip-count"
+    >
+        0
+    </span>
+
+</button>
+
+
+<script
+    src="{{ url_for('static', path='js/betslip.js') }}"
+></script>
+
+</body>
+</html>
