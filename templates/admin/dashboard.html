@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+
+    <h1>🏏 CrickBet Admin Panel</h1>
+
+    <p>Welcome, {{ admin.username }}</p>
+
+    <hr>
+
+    <div class="feature-grid">
+
+        <div class="feature-card">
+            <h3>👥 Users</h3>
+            <p>Manage Users</p>
+        </div>
+
+        <div class="feature-card">
+            <h3>🏏 Sports</h3>
+            <p>Manage Sports</p>
+        </div>
+
+        <div class="feature-card">
+            <h3>🏆 Matches</h3>
+            <p>Manage Matches</p>
+        </div>
+
+        <div class="feature-card">
+            <h3>🎯 Markets</h3>
+            <p>Manage Markets</p>
+        </div>
+
+        <div class="feature-card">
+            <h3>💰 Wallets</h3>
+            <p>Manage Wallets</p>
+        </div>
+
+        <div class="feature-card">
+            <h3>📊 Reports</h3>
+            <p>Reports & Statistics</p>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

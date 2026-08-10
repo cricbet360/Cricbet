@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="dashboard">
+
+    {% include "partials/sidebar.html" %}
+
+    <main>
+
+        <h2>🏏 Cricket Matches</h2>
+
+        {% if matches %}
+
+            {% for match in matches %}
+
+                <div class="match-card">
+
+                    <h3>
+                        {{ match.home_team }}
+                        vs
+                        {{ match.away_team }}
+                    </h3>
+
+                    <p>
+                        {{ match.commence_time }}
+                    </p>
+
+                    {% if match.bookmakers %}
+
+                        <div class="odds">
+
+                            {% for bookmaker in match.bookmakers[:1] %}
+
+                                <strong>
+                                    {{ bookmaker.title }}
+                                </strong>
+
+                                {% for market in bookmaker.markets %}
+
+                                    {% for outcome in market.outcomes %}
+
+                                        <button
+                                            type="button"
+                                            class="odd-button"
+                                            data-match="{{ match.id }}"
+                                            data-home="{{ match.home_team }}"
+                                            data-away="{{ match.away_team }}"
+                                            data-market="{{ market.key }}"
+                                            data-outcome="{{ outcome.name }}"
+                                            data-price="{{ outcome.price }}"
+                                        >
+
+                                            {{ outcome.name }}
+                                            <strong>
+                                                {{ outcome.price }}
+                                            </strong>
+
+                                        </button>
+
+                                    {% endfor %}
+
+                                {% endfor %}
+
+                            {% endfor %}
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <p>No cricket matches available right now.</p>
+
+        {% endif %}
+
+    </main>
+
+    {% include "partials/betslip.html" %}
+
+</div>
+
+<script src="/static/js/betslip.js"></script>
+
+{% endblock %}

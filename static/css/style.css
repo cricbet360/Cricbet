@@ -1,0 +1,563 @@
+/* =====================================
+   RESET
+===================================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:#111827;
+    color:#ffffff;
+    font-family:Arial,Helvetica,sans-serif;
+    padding-top:70px;
+}
+
+a{
+    text-decoration:none;
+    color:inherit;
+}
+
+.container{
+    max-width:1400px;
+    margin:auto;
+}
+
+/* =====================================
+   NAVBAR
+===================================== */
+
+.topbar{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:70px;
+
+    background:#0f172a;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    padding:0 35px;
+
+    border-bottom:1px solid #1f2937;
+
+    z-index:999;
+}
+
+.logo{
+    font-size:28px;
+    font-weight:bold;
+    color:#00d26a;
+}
+
+.topbar nav{
+    display:flex;
+    gap:35px;
+}
+
+.topbar nav a{
+    color:white;
+    font-weight:600;
+    transition:.3s;
+}
+
+.topbar nav a:hover{
+    color:#00d26a;
+}
+
+.user-menu{
+    display:flex;
+    align-items:center;
+    gap:18px;
+}
+
+.wallet{
+    color:#00d26a;
+    font-weight:bold;
+}
+
+.logout{
+    color:#ff5b5b;
+}
+
+/* =====================================
+   HERO
+===================================== */
+
+.hero{
+    text-align:center;
+    padding:140px 20px 120px;
+}
+
+.hero h1{
+    font-size:64px;
+    margin-bottom:20px;
+}
+
+.hero p{
+    color:#b6b6b6;
+    font-size:24px;
+}
+
+.hero-buttons{
+    margin-top:45px;
+}
+
+.btn{
+    display:inline-block;
+    background:#00d26a;
+    color:#111827;
+    font-weight:bold;
+    padding:16px 38px;
+    border-radius:10px;
+    margin:10px;
+    transition:.3s;
+}
+
+.btn:hover{
+    background:#00b85c;
+    transform:translateY(-3px);
+}
+
+/* =====================================
+   SECTION
+===================================== */
+
+.section{
+    padding:70px 20px;
+}
+
+.section h2{
+    font-size:34px;
+    margin-bottom:35px;
+}
+
+/* =====================================
+   MATCH GRID
+===================================== */
+
+.match-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+    gap:25px;
+}
+
+.match-card{
+    background:#1e293b;
+    border-radius:15px;
+    padding:25px;
+    transition:.3s;
+}
+
+.match-card:hover{
+    transform:translateY(-4px);
+}
+
+.match-card small{
+    color:#9ca3af;
+    display:block;
+    margin-bottom:10px;
+}
+
+.match-card h3{
+    margin-bottom:20px;
+}
+
+.odds{
+    display:flex;
+    gap:12px;
+}
+
+.back,
+.lay{
+
+    flex:1;
+
+    border:none;
+
+    padding:14px;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+    color:white;
+
+    font-size:16px;
+
+    font-weight:bold;
+
+    transition:.3s;
+}
+
+.back{
+    background:#00d26a;
+}
+
+.back:hover{
+    background:#00b85c;
+}
+
+.lay{
+    background:#ff5b5b;
+}
+
+.lay:hover{
+    background:#e53935;
+}
+
+/* =====================================
+   FEATURES
+===================================== */
+
+.feature-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+
+    gap:25px;
+}
+
+.feature-card{
+
+    background:#1e293b;
+
+    padding:30px;
+
+    border-radius:12px;
+
+    text-align:center;
+
+    transition:.3s;
+}
+
+.feature-card:hover{
+
+    transform:translateY(-4px);
+
+}
+
+.feature-card h3{
+
+    margin-bottom:15px;
+
+    color:#00d26a;
+
+}
+
+.feature-card p{
+
+    color:#bdbdbd;
+
+}
+
+/* =====================================
+   SPORTS
+===================================== */
+
+.sports-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+
+    gap:20px;
+}
+
+.sport-card{
+
+    background:#1e293b;
+
+    border-radius:10px;
+
+    padding:25px;
+
+    text-align:center;
+
+    font-size:20px;
+
+    transition:.3s;
+}
+
+.sport-card:hover{
+
+    background:#263448;
+
+    transform:translateY(-3px);
+
+}
+
+/* =====================================
+   LOGIN / REGISTER CARD
+===================================== */
+
+.card{
+
+    width:420px;
+
+    margin:100px auto;
+
+    background:#1e293b;
+
+    border-radius:15px;
+
+    padding:35px;
+}
+
+.card h2{
+
+    text-align:center;
+
+    margin-bottom:25px;
+}
+
+.card input{
+
+    width:100%;
+
+    margin-bottom:18px;
+
+    padding:15px;
+
+    background:#111827;
+
+    color:white;
+
+    border:none;
+
+    border-radius:8px;
+}
+
+.card button{
+
+    width:100%;
+
+    background:#00d26a;
+
+    color:white;
+
+    border:none;
+
+    padding:15px;
+
+    border-radius:8px;
+
+    font-size:16px;
+
+    cursor:pointer;
+}
+
+.card button:hover{
+
+    background:#00b85c;
+
+}
+
+/* =====================================
+   FOOTER
+===================================== */
+
+footer{
+
+    margin-top:70px;
+
+    padding:25px;
+
+    text-align:center;
+
+    border-top:1px solid #1f2937;
+
+    color:#999;
+
+}
+
+/* =====================================
+   RESPONSIVE
+===================================== */
+
+@media(max-width:768px){
+
+    .topbar{
+
+        flex-direction:column;
+
+        height:auto;
+
+        padding:15px;
+    }
+
+    .topbar nav{
+
+        margin:15px 0;
+
+        flex-wrap:wrap;
+
+        justify-content:center;
+    }
+
+    .hero{
+
+        padding:100px 20px 80px;
+    }
+
+    .hero h1{
+
+        font-size:40px;
+    }
+
+    .hero p{
+
+        font-size:18px;
+    }
+
+    .card{
+
+        width:95%;
+    }
+}
+
+/* ==========================
+   FORM STYLES
+========================== */
+
+.card{
+
+    width:430px;
+
+    margin:60px auto;
+
+    background:#1b2234;
+
+    padding:35px;
+
+    border-radius:15px;
+
+    box-shadow:0 15px 40px rgba(0,0,0,.35);
+
+}
+
+.card h2{
+
+    text-align:center;
+
+    margin-bottom:10px;
+
+    color:#ffffff;
+
+}
+
+.card-subtitle{
+
+    text-align:center;
+
+    color:#9ca3af;
+
+    margin-bottom:30px;
+
+    font-size:15px;
+
+}
+
+.card input{
+
+    width:100%;
+
+    padding:15px;
+
+    margin-bottom:18px;
+
+    border:none;
+
+    border-radius:10px;
+
+    background:#111827;
+
+    color:white;
+
+    font-size:15px;
+
+    outline:none;
+
+}
+
+.card input:focus{
+
+    border:1px solid #00d26a;
+
+}
+
+.card button{
+
+    width:100%;
+
+    padding:15px;
+
+    background:#00d26a;
+
+    color:#111827;
+
+    border:none;
+
+    border-radius:10px;
+
+    font-size:16px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.card button:hover{
+
+    background:#00b85c;
+
+}
+
+.form-footer{
+
+    margin-top:25px;
+
+    text-align:center;
+
+    color:#9ca3af;
+
+}
+
+.form-footer a{
+
+    color:#00d26a;
+
+    font-weight:bold;
+
+}
+
+.form-footer a:hover{
+
+    text-decoration:underline;
+
+}
+
+.alert{
+
+    background:#ff5252;
+
+    color:white;
+
+    padding:12px;
+
+    border-radius:8px;
+
+    text-align:center;
+
+    margin-bottom:20px;
+
+}

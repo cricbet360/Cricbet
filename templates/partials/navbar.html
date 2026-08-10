@@ -1,0 +1,41 @@
+<header class="topbar">
+
+    <div class="logo">
+        🏏 CrickBet
+    </div>
+
+    <nav class="nav-links">
+
+        <a href="/">Home</a>
+
+        <a href="/dashboard">Live</a>
+
+        <a href="#">Cricket</a>
+
+        <a href="#">Football</a>
+
+        <a href="#">Tennis</a>
+
+        <a href="#">Casino</a>
+
+    </nav>
+
+    <div class="user-menu">
+
+        <div class="wallet">
+            ₹ {{ user.balance }}
+        </div>
+
+        
+        <div class="profile">
+            👤 {{ user.username }}
+
+        </div>
+
+        <a href="/logout" class="logout">
+            Logout
+        </a>
+
+    </div>
+
+</header>
