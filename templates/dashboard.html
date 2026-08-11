@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
 
     <meta
         name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover"
     >
 
     <title>CrickBet Dashboard</title>
@@ -14,29 +16,86 @@
         rel="stylesheet"
         href="{{ url_for('static', path='css/dashboard.css') }}"
     >
+
 </head>
 
 <body>
 
+
+<!-- ======================================================
+     TOP BAR
+====================================================== -->
+
 <header class="topbar">
 
     <div class="brand">
-        <span class="brand-icon">🏏</span>
-        <span>CrickBet</span>
+
+        <span class="brand-icon">
+            🏏
+        </span>
+
+        <span>
+            CrickBet
+        </span>
+
     </div>
+
 
     <div class="topbar-right">
 
         <span class="welcome">
+
             Welcome,
-            <strong>{{ user.username }}</strong>
+
+            <strong>
+                {{ user.username }}
+            </strong>
+
         </span>
 
-        <span class="balance">
+
+        <span
+            class="balance"
+            id="walletBalance"
+            data-balance="{{ user.balance or 0 }}"
+        >
+
             ₹{{ "%.2f"|format(user.balance or 0) }}
+
         </span>
 
-        <a href="/logout" class="logout">
+
+        <!-- MY BETS BUTTON -->
+
+        <button
+            type="button"
+            class="my-bets-button"
+            id="myBetsButton"
+            aria-label="Open my bets"
+        >
+
+            <span class="my-bets-icon">
+                🎟️
+            </span>
+
+            <span>
+                My Bets
+            </span>
+
+            <span
+                id="myBetsCount"
+                class="my-bets-count"
+            >
+                0
+            </span>
+
+        </button>
+
+
+        <a
+            href="/logout"
+            class="logout"
+        >
             Logout
         </a>
 
@@ -45,56 +104,96 @@
 </header>
 
 
+
+<!-- ======================================================
+     MAIN DASHBOARD
+====================================================== -->
+
 <main class="dashboard">
 
+
+    <!-- ==================================================
+         CRICKET MARKETS
+    ================================================== -->
+
     <section class="matches-section">
+
 
         <div class="section-header">
 
             <div>
-                <h1>Cricket Matches</h1>
 
-                <div class="match-count">
+                <h1>
+                    Cricket Matches
+                </h1>
+
+                <div
+                    class="match-count"
+                    id="matchCount"
+                >
+
                     {{ matches|length }} markets
+
                 </div>
+
             </div>
+
 
             <button
                 type="button"
                 class="refresh-button"
-                onclick="window.location.reload()"
+                id="refreshButton"
             >
+
                 ↻ Refresh
+
             </button>
 
         </div>
 
 
+
         {% if matches and matches|length > 0 %}
 
-        <div class="matches-grid">
+
+        <div
+            class="matches-grid"
+            id="matchesGrid"
+        >
+
 
             {% for match in matches %}
+
 
             <article
                 class="match-card"
                 data-market-id="{{ match.market_id }}"
                 data-event-id="{{ match.event_id }}"
+                data-competition-id="{{ match.competition_id }}"
             >
+
+
+                <!-- MATCH HEADER -->
 
                 <div class="match-header">
 
                     <div class="match-info">
 
                         <div class="competition-name">
+
                             {{ match.competition }}
+
                         </div>
 
+
                         <div class="match-name">
+
                             {{ match.event_name }}
+
                         </div>
 
                     </div>
+
 
                     <div
                         class="market-status
@@ -104,37 +203,60 @@
                             suspended
                         {% endif %}"
                     >
+
                         {{ match.market_status }}
+
                     </div>
 
                 </div>
 
 
+
+                <!-- MARKET NAME -->
+
                 <div class="market-title">
+
                     {{ match.market_name }}
+
                 </div>
 
+
+
+                <!-- ODDS HEADER -->
 
                 <div class="odds-header">
 
                     <div class="runner-title">
+
                         Selection
+
                     </div>
+
 
                     <div class="odds-label back-label">
+
                         BACK
+
                     </div>
 
+
                     <div class="odds-label lay-label">
+
                         LAY
+
                     </div>
 
                 </div>
 
 
+
+                <!-- RUNNERS -->
+
                 <div class="runners">
 
+
                     {% for runner in match.runners %}
+
 
                     <div
                         class="runner-row"
@@ -142,81 +264,129 @@
                         data-runner-name="{{ runner.name }}"
                     >
 
+
                         <div class="runner-name">
 
                             <span class="runner-dot"></span>
 
                             <span>
+
                                 {{ runner.name }}
+
                             </span>
 
                         </div>
 
 
+
+                        <!-- BACK -->
+
                         <button
                             type="button"
                             class="odd-button back-button"
+
                             data-market-id="{{ match.market_id }}"
+
+                            data-event-id="{{ match.event_id }}"
+
                             data-selection-id="{{ runner.selection_id }}"
+
                             data-runner-name="{{ runner.name }}"
+
                             data-side="BACK"
+
                             data-price="{{ runner.back if runner.back is not none else '' }}"
+
                             {% if not runner.back %}
                             disabled
                             {% endif %}
                         >
 
                             {% if runner.back %}
+
                                 {{ "%.2f"|format(runner.back) }}
+
                             {% else %}
+
                                 —
+
                             {% endif %}
 
                         </button>
 
 
+
+                        <!-- LAY -->
+
                         <button
                             type="button"
                             class="odd-button lay-button"
+
                             data-market-id="{{ match.market_id }}"
+
+                            data-event-id="{{ match.event_id }}"
+
                             data-selection-id="{{ runner.selection_id }}"
+
                             data-runner-name="{{ runner.name }}"
+
                             data-side="LAY"
+
                             data-price="{{ runner.lay if runner.lay is not none else '' }}"
+
                             {% if not runner.lay %}
                             disabled
                             {% endif %}
                         >
 
                             {% if runner.lay %}
+
                                 {{ "%.2f"|format(runner.lay) }}
+
                             {% else %}
+
                                 —
+
                             {% endif %}
 
                         </button>
 
+
                     </div>
+
 
                     {% endfor %}
 
+
                 </div>
+
 
             </article>
 
+
             {% endfor %}
+
 
         </div>
 
+
         {% else %}
 
-        <div class="empty-state">
+
+        <!-- EMPTY MATCH STATE -->
+
+        <div
+            class="empty-state"
+            id="emptyState"
+        >
 
             <div class="empty-icon">
                 🏏
             </div>
 
-            <h2>No cricket matches available</h2>
+            <h2>
+                No cricket matches available
+            </h2>
 
             <p>
                 There are currently no markets available from BEX.
@@ -225,29 +395,228 @@
             <button
                 type="button"
                 class="refresh-button large"
-                onclick="window.location.reload()"
+                id="emptyRefreshButton"
             >
                 Refresh Matches
             </button>
 
         </div>
 
+
         {% endif %}
 
+
     </section>
+
 
 </main>
 
 
-<!-- =====================================================
+
+<!-- ======================================================
+     MY BETS MODAL
+====================================================== -->
+
+<div
+    id="myBetsOverlay"
+    class="my-bets-overlay"
+    aria-hidden="true"
+>
+
+
+    <div
+        id="myBetsModal"
+        class="my-bets-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="myBetsTitle"
+    >
+
+
+        <!-- MODAL HEADER -->
+
+        <div class="my-bets-header">
+
+
+            <div>
+
+                <h2
+                    id="myBetsTitle"
+                    class="my-bets-title"
+                >
+                    My Bets
+                </h2>
+
+
+                <div
+                    id="myBetsSubtitle"
+                    class="my-bets-subtitle"
+                >
+                    Your betting history
+                </div>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="close-my-bets"
+                id="closeMyBets"
+                aria-label="Close my bets"
+            >
+
+                ×
+
+            </button>
+
+
+        </div>
+
+
+
+        <!-- MODAL CONTENT -->
+
+        <div class="my-bets-content">
+
+
+            <!-- LOADING -->
+
+            <div
+                id="betsHistoryLoading"
+                class="bets-history-loading"
+            >
+
+                <div class="bets-loading-icon">
+                    ⏳
+                </div>
+
+                <p>
+                    Loading your bets...
+                </p>
+
+            </div>
+
+
+
+            <!-- ERROR -->
+
+            <div
+                id="betsHistoryError"
+                class="bets-history-error"
+                hidden
+            >
+
+                <div class="empty-icon">
+                    ⚠️
+                </div>
+
+                <h3>
+                    Could not load bet history
+                </h3>
+
+                <p id="betsHistoryErrorMessage">
+                    Please try again.
+                </p>
+
+                <button
+                    type="button"
+                    class="refresh-button"
+                    id="retryBetsButton"
+                >
+                    Try Again
+                </button>
+
+            </div>
+
+
+
+            <!-- EMPTY -->
+
+            <div
+                id="betsHistoryEmpty"
+                class="bets-history-empty"
+                hidden
+            >
+
+                <div class="empty-icon">
+                    🎟️
+                </div>
+
+                <h3>
+                    No bets yet
+                </h3>
+
+                <p>
+                    Your placed bets will appear here.
+                </p>
+
+            </div>
+
+
+
+            <!-- BET LIST -->
+
+            <div
+                id="betsHistoryList"
+                class="bets-history-list"
+                hidden
+            >
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- MODAL FOOTER -->
+
+        <div class="my-bets-footer">
+
+
+            <div class="my-bets-balance">
+
+                <span>
+                    Available Balance
+                </span>
+
+                <strong id="myBetsBalance">
+                    ₹{{ "%.2f"|format(user.balance or 0) }}
+                </strong>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="refresh-bets-button"
+                id="refreshBetsButton"
+            >
+
+                ↻ Refresh
+
+            </button>
+
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+
+<!-- ======================================================
      BET SLIP OVERLAY
-===================================================== -->
+====================================================== -->
 
 <div
     id="betslipOverlay"
     class="betslip-overlay"
     aria-hidden="true"
 >
+
 
     <div
         id="betslip"
@@ -257,20 +626,35 @@
         aria-labelledby="betslipTitle"
     >
 
+
+        <!-- BET SLIP HEADER -->
+
         <div class="betslip-header">
 
+
             <div>
-                <div class="betslip-title" id="betslipTitle">
+
+                <div
+                    class="betslip-title"
+                    id="betslipTitle"
+                >
+
                     Bet Slip
+
                 </div>
+
 
                 <div
                     id="betslipCount"
                     class="betslip-count"
                 >
+
                     No selections
+
                 </div>
+
             </div>
+
 
             <button
                 type="button"
@@ -278,36 +662,55 @@
                 id="closeBetslip"
                 aria-label="Close bet slip"
             >
+
                 ×
+
             </button>
+
 
         </div>
 
+
+
+        <!-- BET SLIP SELECTIONS -->
 
         <div
             id="betslipSelections"
             class="betslip-selections"
         >
 
+
             <div class="no-selections">
+
                 <div class="no-selection-icon">
                     🎟️
                 </div>
 
                 <p>
+
                     Select a BACK or LAY price
                     to add a bet.
+
                 </p>
+
             </div>
+
 
         </div>
 
 
+
+        <!-- BET SLIP FOOTER -->
+
         <div class="betslip-footer">
 
+
             <div class="stake-label">
+
                 Stake
+
             </div>
+
 
             <div class="stake-wrapper">
 
@@ -321,6 +724,7 @@
                     min="1"
                     step="1"
                     inputmode="decimal"
+                    autocomplete="off"
                     placeholder="Enter stake"
                 >
 
@@ -353,17 +757,25 @@
                 class="place-bet-button"
                 disabled
             >
+
                 Place Bet
+
             </button>
+
 
         </div>
 
+
     </div>
+
 
 </div>
 
 
-<!-- Mobile floating button -->
+
+<!-- ======================================================
+     MOBILE BET SLIP BUTTON
+====================================================== -->
 
 <button
     id="mobileBetslipButton"
@@ -371,7 +783,9 @@
     type="button"
 >
 
-    <span>🎟️</span>
+    <span>
+        🎟️
+    </span>
 
     <span>
         Bet Slip
@@ -387,9 +801,907 @@
 </button>
 
 
+
+<!-- ======================================================
+     PAGE CONFIG
+====================================================== -->
+
+<script>
+
+window.CRICKBET_CONFIG = {
+
+    placeBetUrl: "/bets/place",
+
+    myBetsUrl: "/bets/my-bets",
+
+    dashboardUrl: "/dashboard"
+
+};
+
+</script>
+
+
+
+<!-- ======================================================
+     BET SLIP JAVASCRIPT
+====================================================== -->
+
 <script
     src="{{ url_for('static', path='js/betslip.js') }}"
+    defer
 ></script>
 
+
+
+<!-- ======================================================
+     MY BETS JAVASCRIPT
+====================================================== -->
+
+<script>
+
+"use strict";
+
+
+/* ======================================================
+   ELEMENTS
+====================================================== */
+
+const myBetsButton =
+    document.getElementById(
+        "myBetsButton"
+    );
+
+
+const myBetsOverlay =
+    document.getElementById(
+        "myBetsOverlay"
+    );
+
+
+const myBetsModal =
+    document.getElementById(
+        "myBetsModal"
+    );
+
+
+const closeMyBets =
+    document.getElementById(
+        "closeMyBets"
+    );
+
+
+const historyList =
+    document.getElementById(
+        "betsHistoryList"
+    );
+
+
+const historyLoading =
+    document.getElementById(
+        "betsHistoryLoading"
+    );
+
+
+const historyEmpty =
+    document.getElementById(
+        "betsHistoryEmpty"
+    );
+
+
+const historyError =
+    document.getElementById(
+        "betsHistoryError"
+    );
+
+
+const historyErrorMessage =
+    document.getElementById(
+        "betsHistoryErrorMessage"
+    );
+
+
+const historyCount =
+    document.getElementById(
+        "myBetsSubtitle"
+    );
+
+
+const myBetsCount =
+    document.getElementById(
+        "myBetsCount"
+    );
+
+
+const myBetsBalance =
+    document.getElementById(
+        "myBetsBalance"
+    );
+
+
+const walletBalance =
+    document.getElementById(
+        "walletBalance"
+    );
+
+
+const refreshBetsButton =
+    document.getElementById(
+        "refreshBetsButton"
+    );
+
+
+const retryBetsButton =
+    document.getElementById(
+        "retryBetsButton"
+    );
+
+
+/* ======================================================
+   ESCAPE HTML
+====================================================== */
+
+function escapeHistoryHtml(value) {
+
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+}
+
+
+/* ======================================================
+   FORMAT MONEY
+====================================================== */
+
+function formatMoney(value) {
+
+    const number =
+        Number(value);
+
+    if (
+        !Number.isFinite(number)
+    ) {
+
+        return "₹0.00";
+
+    }
+
+    return (
+        "₹" +
+        number.toFixed(2)
+    );
+
+}
+
+
+/* ======================================================
+   FORMAT DATE
+====================================================== */
+
+function formatBetDate(value) {
+
+    if (!value) {
+
+        return "Unknown date";
+
+    }
+
+    const date =
+        new Date(value);
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+
+        return escapeHistoryHtml(
+            value
+        );
+
+    }
+
+    return date.toLocaleString(
+        "en-IN",
+        {
+            dateStyle: "medium",
+            timeStyle: "short"
+        }
+    );
+
+}
+
+
+/* ======================================================
+   STATUS CLASS
+====================================================== */
+
+function getStatusClass(status) {
+
+    const normalized =
+        String(
+            status || "pending"
+        )
+        .toLowerCase();
+
+    if (
+        normalized === "won" ||
+        normalized === "win" ||
+        normalized === "settled_won"
+    ) {
+
+        return "won";
+
+    }
+
+    if (
+        normalized === "lost" ||
+        normalized === "loss" ||
+        normalized === "settled_lost"
+    ) {
+
+        return "lost";
+
+    }
+
+    if (
+        normalized === "cancelled" ||
+        normalized === "canceled" ||
+        normalized === "void"
+    ) {
+
+        return "cancelled";
+
+    }
+
+    return "pending";
+
+}
+
+
+/* ======================================================
+   OPEN MY BETS
+====================================================== */
+
+function openMyBets() {
+
+    if (!myBetsOverlay) {
+
+        return;
+
+    }
+
+    myBetsOverlay.classList.add(
+        "open"
+    );
+
+    myBetsOverlay.setAttribute(
+        "aria-hidden",
+        "false"
+    );
+
+    document.body.style.overflow =
+        "hidden";
+
+    loadBetHistory();
+
+}
+
+
+/* ======================================================
+   CLOSE MY BETS
+====================================================== */
+
+function closeMyBetsModal() {
+
+    if (!myBetsOverlay) {
+
+        return;
+
+    }
+
+    myBetsOverlay.classList.remove(
+        "open"
+    );
+
+    myBetsOverlay.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+    document.body.style.overflow =
+        "";
+
+}
+
+
+/* ======================================================
+   RENDER BET HISTORY
+====================================================== */
+
+function renderBetHistory(bets) {
+
+    if (!historyList) {
+
+        return;
+
+    }
+
+
+    if (
+        !Array.isArray(bets) ||
+        bets.length === 0
+    ) {
+
+        historyList.innerHTML = "";
+
+        historyList.hidden = true;
+
+        if (historyEmpty) {
+
+            historyEmpty.hidden = false;
+
+        }
+
+        if (myBetsCount) {
+
+            myBetsCount.textContent =
+                "0";
+
+        }
+
+        if (historyCount) {
+
+            historyCount.textContent =
+                "No bets yet";
+
+        }
+
+        return;
+
+    }
+
+
+    if (historyEmpty) {
+
+        historyEmpty.hidden = true;
+
+    }
+
+    historyList.hidden = false;
+
+
+    if (myBetsCount) {
+
+        myBetsCount.textContent =
+            String(bets.length);
+
+    }
+
+
+    if (historyCount) {
+
+        historyCount.textContent =
+            bets.length +
+            (
+                bets.length === 1
+                    ? " bet"
+                    : " bets"
+            );
+
+    }
+
+
+    let html = "";
+
+
+    bets.forEach(
+        function(bet) {
+
+            const status =
+                String(
+                    bet.status || "pending"
+                );
+
+
+            const statusClass =
+                getStatusClass(
+                    status
+                );
+
+
+            const odds =
+                Number(
+                    bet.total_odds || 0
+                );
+
+
+            html += `
+
+                <article
+                    class="bet-history-card"
+                    data-bet-id="${escapeHistoryHtml(bet.id)}"
+                >
+
+                    <div class="bet-history-top">
+
+                        <div>
+
+                            <div class="bet-history-id">
+
+                                Bet #${escapeHistoryHtml(bet.id)}
+
+                            </div>
+
+                            <div class="bet-history-date">
+
+                                ${formatBetDate(bet.created_at)}
+
+                            </div>
+
+                        </div>
+
+
+                        <span
+                            class="bet-status ${statusClass}"
+                        >
+
+                            ${escapeHistoryHtml(status)}
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="bet-history-details">
+
+
+                        <div class="bet-history-detail">
+
+                            <span>
+                                Stake
+                            </span>
+
+                            <strong>
+                                ${formatMoney(bet.stake)}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="bet-history-detail">
+
+                            <span>
+                                Odds
+                            </span>
+
+                            <strong>
+                                ${Number.isFinite(odds)
+                                    ? odds.toFixed(2)
+                                    : "0.00"}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="bet-history-detail">
+
+                            <span>
+                                Potential Win
+                            </span>
+
+                            <strong>
+                                ${formatMoney(bet.potential_win)}
+                            </strong>
+
+                        </div>
+
+
+                    </div>
+
+                </article>
+
+            `;
+
+        }
+    );
+
+
+    historyList.innerHTML =
+        html;
+
+}
+
+
+/* ======================================================
+   LOAD BET HISTORY
+====================================================== */
+
+async function loadBetHistory() {
+
+    if (!historyList) {
+
+        return;
+
+    }
+
+
+    if (historyLoading) {
+
+        historyLoading.hidden =
+            false;
+
+    }
+
+
+    historyList.hidden =
+        true;
+
+
+    if (historyEmpty) {
+
+        historyEmpty.hidden =
+            true;
+
+    }
+
+
+    if (historyError) {
+
+        historyError.hidden =
+            true;
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                window.CRICKBET_CONFIG.myBetsUrl,
+                {
+
+                    method: "GET",
+
+                    headers: {
+
+                        "Accept":
+                            "application/json"
+
+                    },
+
+                    credentials:
+                        "same-origin",
+
+                    cache:
+                        "no-store"
+
+                }
+            );
+
+
+        const result =
+            await response
+                .json()
+                .catch(
+                    function() {
+
+                        return {};
+
+                    }
+                );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                result.message ||
+                "Could not load bet history."
+            );
+
+        }
+
+
+        if (!result.success) {
+
+            throw new Error(
+                result.message ||
+                "Could not load bet history."
+            );
+
+        }
+
+
+        /* ==============================================
+           UPDATE BALANCE
+        ============================================== */
+
+        if (
+            typeof result.balance !==
+            "undefined"
+        ) {
+
+            const balance =
+                Number(
+                    result.balance
+                );
+
+
+            if (
+                Number.isFinite(balance)
+            ) {
+
+                if (walletBalance) {
+
+                    walletBalance.textContent =
+                        formatMoney(balance);
+
+                    walletBalance.dataset.balance =
+                        String(balance);
+
+                }
+
+
+                if (myBetsBalance) {
+
+                    myBetsBalance.textContent =
+                        formatMoney(balance);
+
+                }
+
+            }
+
+        }
+
+
+        /* ==============================================
+           RENDER
+        ============================================== */
+
+        renderBetHistory(
+            result.bets || []
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Bet history error:",
+            error
+        );
+
+
+        historyList.hidden =
+            true;
+
+
+        if (historyEmpty) {
+
+            historyEmpty.hidden =
+                true;
+
+        }
+
+
+        if (historyErrorMessage) {
+
+            historyErrorMessage.textContent =
+                error.message ||
+                "Please try again.";
+
+        }
+
+
+        if (historyError) {
+
+            historyError.hidden =
+                false;
+
+        }
+
+
+        if (myBetsCount) {
+
+            myBetsCount.textContent =
+                "!";
+
+        }
+
+
+        if (historyCount) {
+
+            historyCount.textContent =
+                "Unable to load bets";
+
+        }
+
+    } finally {
+
+        if (historyLoading) {
+
+            historyLoading.hidden =
+                true;
+
+        }
+
+    }
+
+}
+
+
+/* ======================================================
+   MY BETS BUTTON
+====================================================== */
+
+if (myBetsButton) {
+
+    myBetsButton.addEventListener(
+        "click",
+        openMyBets
+    );
+
+}
+
+
+/* ======================================================
+   CLOSE BUTTON
+====================================================== */
+
+if (closeMyBets) {
+
+    closeMyBets.addEventListener(
+        "click",
+        closeMyBetsModal
+    );
+
+}
+
+
+/* ======================================================
+   CLICK OUTSIDE MODAL
+====================================================== */
+
+if (myBetsOverlay) {
+
+    myBetsOverlay.addEventListener(
+        "click",
+        function(event) {
+
+            if (
+                event.target ===
+                myBetsOverlay
+            ) {
+
+                closeMyBetsModal();
+
+            }
+
+        }
+    );
+
+}
+
+
+/* ======================================================
+   REFRESH BETS
+====================================================== */
+
+if (refreshBetsButton) {
+
+    refreshBetsButton.addEventListener(
+        "click",
+        async function() {
+
+            refreshBetsButton.disabled =
+                true;
+
+            refreshBetsButton.textContent =
+                "↻ Loading...";
+
+            try {
+
+                await loadBetHistory();
+
+            } finally {
+
+                refreshBetsButton.disabled =
+                    false;
+
+                refreshBetsButton.textContent =
+                    "↻ Refresh";
+
+            }
+
+        }
+    );
+
+}
+
+
+/* ======================================================
+   RETRY
+====================================================== */
+
+if (retryBetsButton) {
+
+    retryBetsButton.addEventListener(
+        "click",
+        loadBetHistory
+    );
+
+}
+
+
+/* ======================================================
+   ESCAPE KEY
+====================================================== */
+
+document.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (
+            event.key === "Escape" &&
+            myBetsOverlay &&
+            myBetsOverlay.classList.contains("open")
+        ) {
+
+            closeMyBetsModal();
+
+        }
+
+    }
+);
+
+
+/* ======================================================
+   REFRESH MATCHES
+====================================================== */
+
+const refreshButton =
+    document.getElementById(
+        "refreshButton"
+    );
+
+
+const emptyRefreshButton =
+    document.getElementById(
+        "emptyRefreshButton"
+    );
+
+
+function refreshDashboard() {
+
+    window.location.reload();
+
+}
+
+
+if (refreshButton) {
+
+    refreshButton.addEventListener(
+        "click",
+        refreshDashboard
+    );
+
+}
+
+
+if (emptyRefreshButton) {
+
+    emptyRefreshButton.addEventListener(
+        "click",
+        refreshDashboard
+    );
+
+}
+
+</script>
+
+
 </body>
+
 </html>

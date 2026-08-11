@@ -1,3 +1,8 @@
+import asyncio
+import time
+from concurrent.futures import ThreadPoolExecutor
+from typing import Any
+
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -5,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from database.database import get_db
 from models.user import User
+from models.bet import Bet
 
 from services.bex_api import (
     get_competitions,
@@ -12,7 +18,6 @@ from services.bex_api import (
     get_market_ids,
     get_market_book,
 )
-
 
 router = APIRouter()
 
@@ -22,19 +27,34 @@ templates = Jinja2Templates(
 
 
 # ==========================================================
-# RESPONSE HELPERS
+# SETTINGS
 # ==========================================================
 
-def unwrap_event(item):
-    """
-    Handles both:
+# IMPORTANT:
+# Do NOT use 12 concurrent requests against SportBex.
+# Keep this deliberately low.
+MAX_WORKERS = 3
 
-        {"event": {...}}
+# SportBex market-book endpoint supports arrays.
+MARKET_BOOK_BATCH_SIZE = 10
 
-    and:
+# Delay between retry attempts.
+RETRY_DELAYS = (
+    1,
+    3,
+    7,
+)
 
-        {...}
-    """
+executor = ThreadPoolExecutor(
+    max_workers=MAX_WORKERS
+)
+
+
+# ==========================================================
+# HELPERS
+# ==========================================================
+
+def unwrap_event(item: Any) -> dict:
 
     if not isinstance(item, dict):
         return {}
@@ -47,16 +67,7 @@ def unwrap_event(item):
     return item
 
 
-def unwrap_competition(item):
-    """
-    Handles both:
-
-        {"competition": {...}}
-
-    and:
-
-        {...}
-    """
+def unwrap_competition(item: Any) -> dict:
 
     if not isinstance(item, dict):
         return {}
@@ -69,23 +80,10 @@ def unwrap_competition(item):
     return item
 
 
-def get_market_data(book_response, market_id):
-    """
-    Extract market data from listMarketBook response.
-
-    Expected:
-
-    {
-        "status": True,
-        "data": [
-            {
-                "marketId": "...",
-                "status": "OPEN",
-                "runners": [...]
-            }
-        ]
-    }
-    """
+def get_market_data(
+    book_response: Any,
+    market_id: str,
+) -> dict | None:
 
     if not isinstance(book_response, dict):
         return None
@@ -110,19 +108,16 @@ def get_market_data(book_response, market_id):
         if str(returned_market_id) == str(market_id):
             return market
 
-    # Some API responses may contain only one market.
-    if len(data) == 1 and isinstance(data[0], dict):
-        return data[0]
-
     return None
 
 
 def get_runner_odds(
-    market_data,
-    selection_id
-):
+    market_data: dict | None,
+    selection_id: str | int,
+) -> dict:
 
     if not market_data:
+
         return {
             "back": None,
             "lay": None,
@@ -135,6 +130,7 @@ def get_runner_odds(
     )
 
     if not isinstance(runners, list):
+
         return {
             "back": None,
             "lay": None,
@@ -146,12 +142,8 @@ def get_runner_odds(
         if not isinstance(runner, dict):
             continue
 
-        runner_selection_id = runner.get(
-            "selectionId"
-        )
-
         if str(
-            runner_selection_id
+            runner.get("selectionId")
         ) != str(selection_id):
 
             continue
@@ -187,7 +179,6 @@ def get_runner_odds(
             lay_prices = []
 
         back = None
-
         lay = None
 
         if back_prices:
@@ -233,62 +224,33 @@ def get_runner_odds(
 
 
 # ==========================================================
-# BEX MATCH BUILDER
+# GET EVENTS FOR ONE COMPETITION
 # ==========================================================
 
-def build_bex_matches():
+def fetch_competition_events(
+    competition_item: dict,
+) -> list[dict]:
 
-    print()
-    print("==============================================")
-    print("BEX DASHBOARD: START")
-    print("==============================================")
-
-    matches = []
-
-    # ------------------------------------------------------
-    # COMPETITIONS
-    # ------------------------------------------------------
-
-    competitions = get_competitions()
-
-    print(
-        f"BEX competitions: {len(competitions)}"
+    competition = unwrap_competition(
+        competition_item
     )
 
-    # ------------------------------------------------------
-    # LOOP COMPETITIONS
-    # ------------------------------------------------------
+    competition_id = competition.get(
+        "id"
+    )
 
-    for competition_item in competitions:
+    competition_name = competition.get(
+        "name",
+        "Cricket"
+    )
 
-        competition = unwrap_competition(
-            competition_item
-        )
+    if not competition_id:
+        return []
 
-        competition_id = competition.get(
-            "id"
-        )
-
-        competition_name = competition.get(
-            "name",
-            "Cricket"
-        )
-
-        if not competition_id:
-            print(
-                "Skipping competition without ID"
-            )
-            continue
-
-        print(
-            f"Competition: "
-            f"{competition_name} "
-            f"({competition_id})"
-        )
-
-        # --------------------------------------------------
-        # EVENTS
-        # --------------------------------------------------
+    # Retry event requests as well.
+    for attempt, delay in enumerate(
+        (0, 2, 5)
+    ):
 
         try:
 
@@ -296,302 +258,776 @@ def build_bex_matches():
                 competition_id
             )
 
+            break
+
         except Exception as e:
 
+            if attempt >= 2:
+
+                print(
+                    f"BEX EVENT ERROR "
+                    f"{competition_name}: {e}"
+                )
+
+                return []
+
             print(
-                f"EVENT ERROR "
-                f"{competition_name}: {e}"
+                f"BEX EVENT RETRY "
+                f"{competition_name}: "
+                f"{e}"
+            )
+
+            time.sleep(delay)
+
+    result = []
+
+    for event_item in events:
+
+        event = unwrap_event(
+            event_item
+        )
+
+        event_id = event.get(
+            "id"
+        )
+
+        if not event_id:
+            continue
+
+        result.append({
+
+            "event_id":
+                str(event_id),
+
+            "event_name":
+                str(
+                    event.get(
+                        "name",
+                        "Cricket Match"
+                    )
+                ).strip(),
+
+            "competition_id":
+                str(competition_id),
+
+            "competition":
+                str(
+                    competition_name
+                ).strip(),
+
+        })
+
+    return result
+
+
+# ==========================================================
+# GET MARKETS FOR ONE EVENT
+# ==========================================================
+
+def fetch_event_markets(
+    event: dict,
+) -> list[dict]:
+
+    event_id = event[
+        "event_id"
+    ]
+
+    for attempt, delay in enumerate(
+        (0, 2, 5)
+    ):
+
+        try:
+
+            markets = get_market_ids(
+                event_id
+            )
+
+            break
+
+        except Exception as e:
+
+            if attempt >= 2:
+
+                print(
+                    f"BEX MARKET ERROR "
+                    f"{event_id}: {e}"
+                )
+
+                return []
+
+            print(
+                f"BEX MARKET RETRY "
+                f"{event_id}: "
+                f"{e}"
+            )
+
+            time.sleep(delay)
+
+    result = []
+
+    for market in markets:
+
+        if not isinstance(
+            market,
+            dict
+        ):
+            continue
+
+        market_id = market.get(
+            "marketId"
+        )
+
+        if not market_id:
+            continue
+
+        runners = market.get(
+            "runners",
+            []
+        )
+
+        if not isinstance(
+            runners,
+            list
+        ):
+            runners = []
+
+        result.append({
+
+            "event_id":
+                event_id,
+
+            "event_name":
+                event[
+                    "event_name"
+                ],
+
+            "competition_id":
+                event[
+                    "competition_id"
+                ],
+
+            "competition":
+                event[
+                    "competition"
+                ],
+
+            "market_id":
+                str(market_id),
+
+            "market_name":
+                str(
+                    market.get(
+                        "marketName",
+                        "Market"
+                    )
+                ).strip(),
+
+            "runners":
+                runners,
+
+        })
+
+    return result
+
+
+# ==========================================================
+# BATCH LIVE MARKET BOOK
+# ==========================================================
+
+def fetch_market_book_batch(
+    markets: list[dict],
+) -> list[dict]:
+
+    if not markets:
+        return []
+
+    market_ids = [
+        str(
+            market["market_id"]
+        )
+        for market in markets
+        if market.get("market_id")
+    ]
+
+    if not market_ids:
+        return []
+
+    book_response = None
+
+    # ------------------------------------------------------
+    # RETRY WHOLE BATCH ON 429 / TEMPORARY FAILURE
+    # ------------------------------------------------------
+
+    for attempt, delay in enumerate(
+        (0, 2, 5)
+    ):
+
+        try:
+
+            book_response = get_market_book(
+                market_ids
+            )
+
+            break
+
+        except Exception as e:
+
+            if attempt >= 2:
+
+                print(
+                    "BEX ODDS BATCH ERROR "
+                    f"{market_ids}: {e}"
+                )
+
+                return []
+
+            print(
+                "BEX ODDS BATCH RETRY "
+                f"attempt={attempt + 1}: "
+                f"{e}"
+            )
+
+            if delay:
+                time.sleep(delay)
+
+    if not isinstance(
+        book_response,
+        dict
+    ):
+        return []
+
+    data = book_response.get(
+        "data",
+        []
+    )
+
+    if not isinstance(
+        data,
+        list
+    ):
+        return []
+
+    # ------------------------------------------------------
+    # INDEX LIVE MARKETS BY ID
+    # ------------------------------------------------------
+
+    live_by_id = {}
+
+    for live_market in data:
+
+        if not isinstance(
+            live_market,
+            dict
+        ):
+            continue
+
+        live_market_id = live_market.get(
+            "marketId"
+        )
+
+        if live_market_id is None:
+            continue
+
+        live_by_id[
+            str(live_market_id)
+        ] = live_market
+
+    # ------------------------------------------------------
+    # FORMAT MARKETS
+    # ------------------------------------------------------
+
+    formatted = []
+
+    for market in markets:
+
+        market_id = str(
+            market["market_id"]
+        )
+
+        live_market = live_by_id.get(
+            market_id
+        )
+
+        if not live_market:
+            continue
+
+        market_status = live_market.get(
+            "status"
+        )
+
+        if market_status not in (
+            "OPEN",
+            "SUSPENDED",
+        ):
+            continue
+
+        formatted_runners = []
+
+        market_runners = market.get(
+            "runners",
+            []
+        )
+
+        if not isinstance(
+            market_runners,
+            list
+        ):
+            market_runners = []
+
+        for runner in market_runners:
+
+            if not isinstance(
+                runner,
+                dict
+            ):
+                continue
+
+            selection_id = runner.get(
+                "selectionId"
+            )
+
+            if not selection_id:
+                continue
+
+            runner_name = runner.get(
+                "runnerName",
+                "Unknown"
+            )
+
+            odds = get_runner_odds(
+                live_market,
+                selection_id
+            )
+
+            formatted_runners.append({
+
+                "selection_id":
+                    str(selection_id),
+
+                "name":
+                    str(
+                        runner_name
+                    ).strip(),
+
+                "back":
+                    odds.get(
+                        "back"
+                    ),
+
+                "lay":
+                    odds.get(
+                        "lay"
+                    ),
+
+                "status":
+                    odds.get(
+                        "status",
+                        "UNKNOWN"
+                    ),
+
+            })
+
+        if not formatted_runners:
+            continue
+
+        formatted.append({
+
+            "event_id":
+                market[
+                    "event_id"
+                ],
+
+            "event_name":
+                market[
+                    "event_name"
+                ],
+
+            "competition_id":
+                market[
+                    "competition_id"
+                ],
+
+            "competition":
+                market[
+                    "competition"
+                ],
+
+            "market_id":
+                market[
+                    "market_id"
+                ],
+
+            "market_name":
+                market[
+                    "market_name"
+                ],
+
+            "market_status":
+                market_status,
+
+            "runners":
+                formatted_runners,
+
+        })
+
+    return formatted
+
+
+# ==========================================================
+# ASYNC PARALLEL RUNNER
+# ==========================================================
+
+async def run_parallel(
+    function,
+    items,
+    *,
+    max_workers: int = MAX_WORKERS,
+) -> list:
+
+    if not items:
+        return []
+
+    loop = asyncio.get_running_loop()
+
+    semaphore = asyncio.Semaphore(
+        max_workers
+    )
+
+    async def run_one(item):
+
+        async with semaphore:
+
+            return await loop.run_in_executor(
+                executor,
+                function,
+                item
+            )
+
+    tasks = [
+        run_one(item)
+        for item in items
+    ]
+
+    results = await asyncio.gather(
+        *tasks,
+        return_exceptions=True
+    )
+
+    cleaned = []
+
+    for result in results:
+
+        if isinstance(
+            result,
+            Exception
+        ):
+
+            print(
+                f"BEX parallel error: "
+                f"{result}"
             )
 
             continue
 
-        print(
-            f"  Events found: {len(events)}"
+        if isinstance(
+            result,
+            list
+        ):
+
+            cleaned.extend(
+                result
+            )
+
+        elif result is not None:
+
+            cleaned.append(
+                result
+            )
+
+    return cleaned
+
+
+# ==========================================================
+# BUILD BATCHES
+# ==========================================================
+
+def make_batches(
+    items: list,
+    batch_size: int,
+) -> list[list]:
+
+    return [
+        items[
+            i:i + batch_size
+        ]
+
+        for i in range(
+            0,
+            len(items),
+            batch_size
         )
+    ]
 
-        # --------------------------------------------------
-        # LOOP EVENTS
-        # --------------------------------------------------
 
-        for event_item in events:
+# ==========================================================
+# BUILD BEX MATCHES
+# ==========================================================
 
-            event = unwrap_event(
-                event_item
-            )
-
-            event_id = event.get(
-                "id"
-            )
-
-            event_name = event.get(
-                "name",
-                "Cricket Match"
-            )
-
-            if not event_id:
-                print(
-                    "  Skipping event without ID"
-                )
-                continue
-
-            event_name = str(
-                event_name
-            ).strip()
-
-            print(
-                f"  Event: "
-                f"{event_name} "
-                f"({event_id})"
-            )
-
-            # ------------------------------------------------
-            # MARKET IDS
-            # ------------------------------------------------
-
-            try:
-
-                markets = get_market_ids(
-                    event_id
-                )
-
-            except Exception as e:
-
-                print(
-                    f"    MARKET ERROR: {e}"
-                )
-
-                continue
-
-            print(
-                f"    Markets found: "
-                f"{len(markets)}"
-            )
-
-            if not markets:
-                continue
-
-            # ------------------------------------------------
-            # LOOP MARKETS
-            # ------------------------------------------------
-
-            for market in markets:
-
-                if not isinstance(
-                    market,
-                    dict
-                ):
-                    continue
-
-                market_id = market.get(
-                    "marketId"
-                )
-
-                market_name = market.get(
-                    "marketName",
-                    "Market"
-                )
-
-                market_runners = market.get(
-                    "runners",
-                    []
-                )
-
-                if not market_id:
-                    continue
-
-                # ------------------------------------------------
-                # MARKET BOOK
-                # ------------------------------------------------
-
-                try:
-
-                    book_response = get_market_book(
-                        [market_id]
-                    )
-
-                except Exception as e:
-
-                    print(
-                        f"    ODDS ERROR "
-                        f"{market_id}: {e}"
-                    )
-
-                    continue
-
-                live_market = get_market_data(
-                    book_response,
-                    market_id
-                )
-
-                if not live_market:
-
-                    print(
-                        f"    No market data "
-                        f"for {market_id}"
-                    )
-
-                    continue
-
-                market_status = live_market.get(
-                    "status"
-                )
-
-                print(
-                    f"    Market: "
-                    f"{market_name} "
-                    f"{market_id} "
-                    f"status={market_status}"
-                )
-
-                # ------------------------------------------------
-                # ONLY SHOW ACTIVE MARKETS
-                # ------------------------------------------------
-
-                if market_status not in [
-                    "OPEN",
-                    "SUSPENDED",
-                ]:
-
-                    print(
-                        "    Skipping closed market"
-                    )
-
-                    continue
-
-                # ------------------------------------------------
-                # RUNNERS
-                # ------------------------------------------------
-
-                formatted_runners = []
-
-                if not isinstance(
-                    market_runners,
-                    list
-                ):
-
-                    market_runners = []
-
-                for runner in market_runners:
-
-                    if not isinstance(
-                        runner,
-                        dict
-                    ):
-                        continue
-
-                    selection_id = runner.get(
-                        "selectionId"
-                    )
-
-                    runner_name = runner.get(
-                        "runnerName",
-                        "Unknown"
-                    )
-
-                    if not selection_id:
-                        continue
-
-                    odds = get_runner_odds(
-                        live_market,
-                        selection_id
-                    )
-
-                    formatted_runners.append({
-
-                        "selection_id":
-                            str(selection_id),
-
-                        "name":
-                            str(
-                                runner_name
-                            ).strip(),
-
-                        "back":
-                            odds.get(
-                                "back"
-                            ),
-
-                        "lay":
-                            odds.get(
-                                "lay"
-                            ),
-
-                        "status":
-                            odds.get(
-                                "status",
-                                "UNKNOWN"
-                            ),
-                    })
-
-                # ------------------------------------------------
-                # DON'T ADD EMPTY MARKETS
-                # ------------------------------------------------
-
-                if not formatted_runners:
-
-                    print(
-                        "    No runners"
-                    )
-
-                    continue
-
-                # ------------------------------------------------
-                # ADD MATCH
-                # ------------------------------------------------
-
-                match = {
-
-                    "event_id":
-                        str(event_id),
-
-                    "event_name":
-                        event_name,
-
-                    "competition_id":
-                        str(competition_id),
-
-                    "competition":
-                        str(
-                            competition_name
-                        ).strip(),
-
-                    "market_id":
-                        str(market_id),
-
-                    "market_name":
-                        str(
-                            market_name
-                        ).strip(),
-
-                    "market_status":
-                        market_status,
-
-                    "runners":
-                        formatted_runners,
-                }
-
-                matches.append(
-                    match
-                )
-
-                print(
-                    f"    ADDED MATCH: "
-                    f"{event_name} / "
-                    f"{market_name}"
-                )
+async def build_bex_matches():
 
     print()
     print(
-        f"BEX MATCHES TOTAL: "
+        "=============================================="
+    )
+    print(
+        "BEX DASHBOARD: START"
+    )
+    print(
+        "=============================================="
+    )
+
+    # ------------------------------------------------------
+    # COMPETITIONS
+    # ------------------------------------------------------
+
+    try:
+
+        competitions = (
+            await asyncio
+            .get_running_loop()
+            .run_in_executor(
+                executor,
+                get_competitions
+            )
+        )
+
+    except Exception as e:
+
+        print(
+            f"BEX COMPETITION ERROR: {e}"
+        )
+
+        return []
+
+    print(
+        f"BEX competitions: "
+        f"{len(competitions)}"
+    )
+
+    # ------------------------------------------------------
+    # EVENTS
+    # ------------------------------------------------------
+
+    events = await run_parallel(
+        fetch_competition_events,
+        competitions,
+        max_workers=3
+    )
+
+    print(
+        f"BEX events discovered: "
+        f"{len(events)}"
+    )
+
+    if not events:
+        return []
+
+    # ------------------------------------------------------
+    # MARKETS
+    # ------------------------------------------------------
+
+    markets = await run_parallel(
+        fetch_event_markets,
+        events,
+        max_workers=3
+    )
+
+    print(
+        f"BEX markets discovered: "
+        f"{len(markets)}"
+    )
+
+    if not markets:
+        return []
+
+    # ------------------------------------------------------
+    # REMOVE DUPLICATE MARKETS
+    # ------------------------------------------------------
+
+    unique_markets = {}
+
+    for market in markets:
+
+        if not isinstance(
+            market,
+            dict
+        ):
+            continue
+
+        key = (
+            str(
+                market.get(
+                    "event_id"
+                )
+            ),
+            str(
+                market.get(
+                    "market_id"
+                )
+            ),
+        )
+
+        unique_markets[key] = market
+
+    markets = list(
+        unique_markets.values()
+    )
+
+    print(
+        f"BEX unique markets: "
+        f"{len(markets)}"
+    )
+
+    # ------------------------------------------------------
+    # BATCH MARKET BOOK REQUESTS
+    #
+    # Example:
+    #
+    # 38 markets
+    #
+    # becomes:
+    #
+    # batch 1 = 10
+    # batch 2 = 10
+    # batch 3 = 10
+    # batch 4 = 8
+    #
+    # Instead of 38 POST requests.
+    # ------------------------------------------------------
+
+    market_batches = make_batches(
+        markets,
+        MARKET_BOOK_BATCH_SIZE
+    )
+
+    print(
+        f"BEX odds batches: "
+        f"{len(market_batches)}"
+    )
+
+    matches = await run_parallel(
+        fetch_market_book_batch,
+        market_batches,
+        max_workers=2
+    )
+
+    # ------------------------------------------------------
+    # REMOVE DUPLICATES
+    # ------------------------------------------------------
+
+    unique = {}
+
+    for match in matches:
+
+        if not isinstance(
+            match,
+            dict
+        ):
+            continue
+
+        key = (
+            str(
+                match.get(
+                    "event_id"
+                )
+            ),
+            str(
+                match.get(
+                    "market_id"
+                )
+            ),
+        )
+
+        unique[key] = match
+
+    matches = list(
+        unique.values()
+    )
+
+    print()
+    print(
+        f"BEX LIVE MARKETS: "
         f"{len(matches)}"
     )
 
-    print("==============================================")
-    print("BEX DASHBOARD: FINISHED")
-    print("==============================================")
+    print(
+        "=============================================="
+    )
+
+    print(
+        "BEX DASHBOARD: FINISHED"
+    )
+
+    print(
+        "=============================================="
+    )
+
     print()
 
     return matches
+
+
+# ==========================================================
+# FORMAT USER BETS
+# ==========================================================
+
+def format_user_bet(
+    bet: Bet,
+) -> dict:
+
+    created_at = bet.created_at
+
+    if created_at:
+
+        created_at_text = (
+            created_at.strftime(
+                "%d %b %Y, %I:%M %p"
+            )
+        )
+
+    else:
+
+        created_at_text = "-"
+
+    return {
+
+        "id":
+            bet.id,
+
+        "stake":
+            float(
+                bet.stake or 0
+            ),
+
+        "total_odds":
+            float(
+                bet.total_odds or 0
+            ),
+
+        "potential_win":
+            float(
+                bet.potential_win or 0
+            ),
+
+        "status":
+            str(
+                bet.status or "pending"
+            ).lower(),
+
+        "created_at":
+            created_at_text,
+
+    }
 
 
 # ==========================================================
@@ -603,8 +1039,12 @@ def build_bex_matches():
 )
 async def dashboard(
     request: Request,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
+
+    # ------------------------------------------------------
+    # LOGIN CHECK
+    # ------------------------------------------------------
 
     user_id = request.session.get(
         "user_id"
@@ -617,11 +1057,17 @@ async def dashboard(
             status_code=303
         )
 
-    user = db.query(
-        User
-    ).filter(
-        User.id == user_id
-    ).first()
+    # ------------------------------------------------------
+    # USER
+    # ------------------------------------------------------
+
+    user = (
+        db.query(User)
+        .filter(
+            User.id == user_id
+        )
+        .first()
+    )
 
     if not user:
 
@@ -633,33 +1079,66 @@ async def dashboard(
         )
 
     # ------------------------------------------------------
-    # GET BEX MATCHES
+    # BEX MATCHES
     # ------------------------------------------------------
 
     try:
 
-        matches = build_bex_matches()
+        matches = (
+            await build_bex_matches()
+        )
 
     except Exception as e:
 
-        print()
         print(
-            "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-        )
-
-        print(
-            f"BEX DASHBOARD FATAL ERROR: {e}"
-        )
-
-        print(
-            "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+            f"BEX DASHBOARD ERROR: {e}"
         )
 
         matches = []
 
+    # ------------------------------------------------------
+    # USER BETS
+    # ------------------------------------------------------
+
+    try:
+
+        user_bets = (
+            db.query(Bet)
+            .filter(
+                Bet.user_id == user.id
+            )
+            .order_by(
+                Bet.created_at.desc()
+            )
+            .all()
+        )
+
+    except Exception as e:
+
+        print(
+            f"USER BETS ERROR: {e}"
+        )
+
+        user_bets = []
+
+    formatted_bets = [
+
+        format_user_bet(bet)
+
+        for bet in user_bets
+
+    ]
+
+    # ------------------------------------------------------
+    # DASHBOARD LOG
+    # ------------------------------------------------------
+
     print(
-        f"Sending {len(matches)} matches "
-        f"to dashboard template"
+        f"Sending "
+        f"{len(matches)} "
+        f"markets and "
+        f"{len(formatted_bets)} "
+        f"bets to dashboard"
     )
 
     # ------------------------------------------------------
@@ -670,7 +1149,15 @@ async def dashboard(
         request=request,
         name="dashboard.html",
         context={
-            "user": user,
-            "matches": matches,
+
+            "user":
+                user,
+
+            "matches":
+                matches,
+
+            "bets":
+                formatted_bets,
+
         },
     )

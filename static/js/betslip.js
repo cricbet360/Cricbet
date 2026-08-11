@@ -1,25 +1,19 @@
 "use strict";
 
-
 /* =========================================================
-   BEX BET SLIP
-========================================================= */
+   CRICKBET — FAST BET SLIP
+   ========================================================= */
 
 const betSlipState = [];
 
 
 /* =========================================================
    ELEMENTS
-========================================================= */
+   ========================================================= */
 
-const overlay =
-    document.getElementById("betslipOverlay");
-
-const betslip =
-    document.getElementById("betslip");
-
-const closeButton =
-    document.getElementById("closeBetslip");
+const overlay = document.getElementById("betslipOverlay");
+const betslip = document.getElementById("betslip");
+const closeButton = document.getElementById("closeBetslip");
 
 const selectionsContainer =
     document.getElementById("betslipSelections");
@@ -48,7 +42,7 @@ const mobileBetslipCount =
 
 /* =========================================================
    OPEN BET SLIP
-========================================================= */
+   ========================================================= */
 
 function openBetSlip() {
 
@@ -64,13 +58,12 @@ function openBetSlip() {
     );
 
     document.body.style.overflow = "hidden";
-
 }
 
 
 /* =========================================================
    CLOSE BET SLIP
-========================================================= */
+   ========================================================= */
 
 function closeBetSlip() {
 
@@ -86,13 +79,12 @@ function closeBetSlip() {
     );
 
     document.body.style.overflow = "";
-
 }
 
 
 /* =========================================================
-   SHOW ERROR
-========================================================= */
+   ERROR
+   ========================================================= */
 
 function showError(message) {
 
@@ -101,15 +93,9 @@ function showError(message) {
     }
 
     betslipError.textContent = message;
-
     betslipError.hidden = false;
-
 }
 
-
-/* =========================================================
-   HIDE ERROR
-========================================================= */
 
 function hideError() {
 
@@ -118,17 +104,50 @@ function hideError() {
     }
 
     betslipError.textContent = "";
-
     betslipError.hidden = true;
+}
 
+
+/* =========================================================
+   FORMAT MONEY
+   ========================================================= */
+
+function formatMoney(value) {
+
+    const number = Number(value);
+
+    if (!Number.isFinite(number)) {
+        return "₹0.00";
+    }
+
+    return "₹" + number.toFixed(2);
+}
+
+
+/* =========================================================
+   HTML ESCAPE
+   ========================================================= */
+
+function escapeHtml(value) {
+
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 }
 
 
 /* =========================================================
    ADD / UPDATE SELECTION
-========================================================= */
+   ========================================================= */
 
 function addSelection(button) {
+
+    if (!button || button.disabled) {
+        return;
+    }
 
     const marketId =
         button.dataset.marketId;
@@ -137,32 +156,48 @@ function addSelection(button) {
         button.dataset.selectionId;
 
     const runnerName =
-        button.dataset.runnerName;
+        button.dataset.runnerName || "Selection";
 
     const side =
-        button.dataset.side;
+        String(button.dataset.side || "")
+            .toUpperCase();
 
     const price =
-        parseFloat(button.dataset.price);
+        Number(button.dataset.price);
 
 
     if (!marketId) {
+
         showError("Market ID is missing.");
+        openBetSlip();
+
         return;
     }
+
 
     if (!selectionId) {
+
         showError("Selection ID is missing.");
+        openBetSlip();
+
         return;
     }
 
-    if (!side) {
-        showError("Bet side is missing.");
+
+    if (!["BACK", "LAY"].includes(side)) {
+
+        showError("Invalid bet side.");
+        openBetSlip();
+
         return;
     }
+
 
     if (!Number.isFinite(price) || price <= 0) {
+
         showError("Selected odds are unavailable.");
+        openBetSlip();
+
         return;
     }
 
@@ -171,13 +206,13 @@ function addSelection(button) {
 
 
     /*
-       Same market + same selection:
+       One selection can only exist once.
 
-       Clicking BACK after LAY
-       changes the selection to BACK.
+       Same side:
+       remove it.
 
-       Clicking the same button again
-       removes it.
+       Different side:
+       change BACK ↔ LAY.
     */
 
     const existingIndex =
@@ -233,13 +268,12 @@ function addSelection(button) {
     renderBetSlip();
 
     openBetSlip();
-
 }
 
 
 /* =========================================================
    REMOVE SELECTION
-========================================================= */
+   ========================================================= */
 
 function removeSelection(
     marketId,
@@ -265,13 +299,12 @@ function removeSelection(
 
 
     renderBetSlip();
-
 }
 
 
 /* =========================================================
-   CALCULATE TOTAL ODDS
-========================================================= */
+   TOTAL ODDS
+   ========================================================= */
 
 function calculateTotalOdds() {
 
@@ -283,26 +316,35 @@ function calculateTotalOdds() {
     return betSlipState.reduce(
         (total, selection) => {
 
-            return total * Number(
-                selection.price
-            );
+            const price =
+                Number(selection.price);
+
+            if (
+                !Number.isFinite(price) ||
+                price <= 0
+            ) {
+                return total;
+            }
+
+            return total * price;
 
         },
         1
     );
-
 }
 
 
 /* =========================================================
-   CALCULATE POTENTIAL WIN
-========================================================= */
+   POTENTIAL WIN
+   ========================================================= */
 
 function calculatePotentialWin() {
 
     const stake =
-        parseFloat(
-            stakeInput.value
+        Number(
+            stakeInput
+                ? stakeInput.value
+                : 0
         );
 
 
@@ -313,7 +355,6 @@ function calculatePotentialWin() {
     ) {
 
         return 0;
-
     }
 
 
@@ -321,13 +362,12 @@ function calculatePotentialWin() {
         stake *
         calculateTotalOdds()
     );
-
 }
 
 
 /* =========================================================
    UPDATE POTENTIAL WIN
-========================================================= */
+   ========================================================= */
 
 function updatePotentialWin() {
 
@@ -341,9 +381,7 @@ function updatePotentialWin() {
     if (potentialWinElement) {
 
         potentialWinElement.textContent =
-            "₹" +
-            potentialWin.toFixed(2);
-
+            formatMoney(potentialWin);
     }
 
 
@@ -352,7 +390,6 @@ function updatePotentialWin() {
         placeBetButton.disabled =
             betSlipState.length === 0 ||
             potentialWin <= 0;
-
     }
 
 
@@ -360,13 +397,12 @@ function updatePotentialWin() {
         totalOdds,
         potentialWin
     };
-
 }
 
 
 /* =========================================================
    RENDER BET SLIP
-========================================================= */
+   ========================================================= */
 
 function renderBetSlip() {
 
@@ -378,6 +414,8 @@ function renderBetSlip() {
     const count =
         betSlipState.length;
 
+
+    /* Desktop count */
 
     if (betslipCount) {
 
@@ -395,19 +433,20 @@ function renderBetSlip() {
                         ? " selection"
                         : " selections"
                 );
-
         }
-
     }
 
+
+    /* Mobile count */
 
     if (mobileBetslipCount) {
 
         mobileBetslipCount.textContent =
             String(count);
-
     }
 
+
+    /* Empty */
 
     if (count === 0) {
 
@@ -475,9 +514,7 @@ function renderBetSlip() {
 
                     <div class="slip-item-meta">
 
-                        <span
-                            class="slip-side ${sideClass}"
-                        >
+                        <span class="slip-side ${sideClass}">
                             ${escapeHtml(selection.side)}
                         </span>
 
@@ -489,14 +526,12 @@ function renderBetSlip() {
 
 
                     <div class="slip-market">
-                        Market ID:
                         ${escapeHtml(selection.marketId)}
                     </div>
 
                 </div>
 
             `;
-
         }
     );
 
@@ -506,29 +541,57 @@ function renderBetSlip() {
 
 
     updatePotentialWin();
-
 }
 
 
 /* =========================================================
-   HTML ESCAPE
-========================================================= */
+   UPDATE BALANCE WITHOUT PAGE RELOAD
+   ========================================================= */
 
-function escapeHtml(value) {
+function updateDisplayedBalance(balance) {
 
-    return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+    if (balance === undefined || balance === null) {
+        return;
+    }
 
+
+    const number =
+        Number(balance);
+
+
+    if (!Number.isFinite(number)) {
+        return;
+    }
+
+
+    /*
+       Your dashboard currently has:
+
+       <span class="balance">
+           ₹...
+       </span>
+    */
+
+    const balanceElements =
+        document.querySelectorAll(
+            ".balance"
+        );
+
+
+    balanceElements.forEach(
+        element => {
+
+            element.textContent =
+                formatMoney(number);
+
+        }
+    );
 }
 
 
 /* =========================================================
-   CLICK HANDLER FOR ODDS
-========================================================= */
+   ODDS CLICK
+   ========================================================= */
 
 document.addEventListener(
     "click",
@@ -551,14 +614,13 @@ document.addEventListener(
 
 
         addSelection(button);
-
     }
 );
 
 
 /* =========================================================
-   REMOVE BUTTON
-========================================================= */
+   REMOVE CLICK
+   ========================================================= */
 
 document.addEventListener(
     "click",
@@ -575,25 +637,17 @@ document.addEventListener(
         }
 
 
-        const marketId =
-            button.dataset.removeMarket;
-
-        const selectionId =
-            button.dataset.removeSelection;
-
-
         removeSelection(
-            marketId,
-            selectionId
+            button.dataset.removeMarket,
+            button.dataset.removeSelection
         );
-
     }
 );
 
 
 /* =========================================================
    CLOSE BUTTON
-========================================================= */
+   ========================================================= */
 
 if (closeButton) {
 
@@ -601,13 +655,12 @@ if (closeButton) {
         "click",
         closeBetSlip
     );
-
 }
 
 
 /* =========================================================
    CLICK OUTSIDE
-========================================================= */
+   ========================================================= */
 
 if (overlay) {
 
@@ -620,18 +673,15 @@ if (overlay) {
             ) {
 
                 closeBetSlip();
-
             }
-
         }
     );
-
 }
 
 
 /* =========================================================
-   MOBILE BET SLIP BUTTON
-========================================================= */
+   MOBILE BET SLIP
+   ========================================================= */
 
 if (mobileBetslipButton) {
 
@@ -639,13 +689,12 @@ if (mobileBetslipButton) {
         "click",
         openBetSlip
     );
-
 }
 
 
 /* =========================================================
-   STAKE
-========================================================= */
+   STAKE INPUT
+   ========================================================= */
 
 if (stakeInput) {
 
@@ -656,16 +705,14 @@ if (stakeInput) {
             hideError();
 
             updatePotentialWin();
-
         }
     );
-
 }
 
 
 /* =========================================================
-   ESCAPE KEY
-========================================================= */
+   ESCAPE
+   ========================================================= */
 
 document.addEventListener(
     "keydown",
@@ -674,16 +721,14 @@ document.addEventListener(
         if (event.key === "Escape") {
 
             closeBetSlip();
-
         }
-
     }
 );
 
 
 /* =========================================================
    PLACE BET
-========================================================= */
+   ========================================================= */
 
 if (placeBetButton) {
 
@@ -701,13 +746,14 @@ if (placeBetButton) {
                 );
 
                 return;
-
             }
 
 
             const stake =
-                parseFloat(
-                    stakeInput.value
+                Number(
+                    stakeInput
+                        ? stakeInput.value
+                        : 0
                 );
 
 
@@ -720,21 +766,44 @@ if (placeBetButton) {
                     "Please enter a valid stake."
                 );
 
-                stakeInput.focus();
+                if (stakeInput) {
+                    stakeInput.focus();
+                }
 
                 return;
-
             }
 
 
-            const totalOdds =
-                calculateTotalOdds();
+            /*
+               Snapshot the selections.
+
+               This prevents the user from
+               changing the original request
+               while the request is being sent.
+            */
+
+            const selectionsToPlace =
+                betSlipState.map(
+                    selection => ({
+
+                        marketId:
+                            selection.marketId,
+
+                        selectionId:
+                            selection.selectionId,
+
+                        side:
+                            selection.side
+
+                    })
+                );
 
 
-            placeBetButton.disabled = true;
+            placeBetButton.disabled =
+                true;
 
             placeBetButton.textContent =
-                "Placing Bet...";
+                "Placing...";
 
 
             try {
@@ -747,45 +816,36 @@ if (placeBetButton) {
                             method: "POST",
 
                             headers: {
+
                                 "Content-Type":
                                     "application/json",
 
                                 "Accept":
                                     "application/json"
+
                             },
 
                             credentials:
                                 "same-origin",
 
-                            body: JSON.stringify({
+                            body:
+                                JSON.stringify({
 
-                                selections:
-                                    betSlipState.map(
-                                        selection => ({
+                                    selections:
+                                        selectionsToPlace,
 
-                                            marketId:
-                                                selection.marketId,
+                                    stake:
+                                        stake
 
-                                            selectionId:
-                                                selection.selectionId,
-
-                                            side:
-                                                selection.side
-
-                                        })
-                                    ),
-
-                                stake:
-                                    stake
-
-                            })
+                                })
 
                         }
                     );
 
 
                 const result =
-                    await response.json()
+                    await response
+                        .json()
                         .catch(
                             () => ({})
                         );
@@ -797,58 +857,125 @@ if (placeBetButton) {
                         result.message ||
                         "Could not place bet."
                     );
-
                 }
 
 
-                if (
-                    !result.success
-                ) {
+                if (!result.success) {
 
                     throw new Error(
                         result.message ||
                         "Could not place bet."
                     );
-
                 }
 
 
                 /*
-                    Successful bet
+                   ==========================================
+                   SUCCESS
+                   ==========================================
                 */
-
-                alert(
-                    "Bet placed successfully.\n\n" +
-                    "Bet ID: " +
-                    result.bet_id +
-                    "\n" +
-                    "Odds: " +
-                    Number(
-                        result.total_odds
-                    ).toFixed(2) +
-                    "\n" +
-                    "Potential win: ₹" +
-                    Number(
-                        result.potential_win
-                    ).toFixed(2)
-                );
-
-
-                betSlipState.length = 0;
-
-                stakeInput.value = "";
-
-                renderBetSlip();
-
-                closeBetSlip();
 
 
                 /*
-                    Refresh balance and
-                    dashboard data.
+                   Update balance immediately.
+                   NO PAGE RELOAD.
                 */
 
-                window.location.reload();
+                if (
+                    result.balance !== undefined
+                ) {
+
+                    updateDisplayedBalance(
+                        result.balance
+                    );
+                }
+
+
+                /*
+                   Remove only the selections
+                   that were successfully placed.
+                */
+
+                selectionsToPlace.forEach(
+                    placed => {
+
+                        const index =
+                            betSlipState.findIndex(
+                                item =>
+                                    String(
+                                        item.marketId
+                                    ) === String(
+                                        placed.marketId
+                                    ) &&
+                                    String(
+                                        item.selectionId
+                                    ) === String(
+                                        placed.selectionId
+                                    ) &&
+                                    item.side ===
+                                        placed.side
+                            );
+
+
+                        if (index !== -1) {
+
+                            betSlipState.splice(
+                                index,
+                                1
+                            );
+                        }
+                    }
+                );
+
+
+                /*
+                   Clear stake so the user can
+                   immediately enter the next stake.
+                */
+
+                if (stakeInput) {
+
+                    stakeInput.value = "";
+                }
+
+
+                renderBetSlip();
+
+
+                /*
+                   Keep the betslip OPEN.
+
+                   This is important for fast
+                   2nd / 3rd / 4th betting.
+                */
+
+                openBetSlip();
+
+
+                /*
+                   Small success message instead
+                   of blocking alert().
+                */
+
+                showSuccessMessage(
+                    "Bet placed successfully • Bet #" +
+                    result.bet_id
+                );
+
+
+                /*
+                   Dispatch event so other
+                   frontend components can react.
+                */
+
+                document.dispatchEvent(
+                    new CustomEvent(
+                        "crickbet:betPlaced",
+                        {
+                            detail: result
+                        }
+                    )
+                );
 
 
             } catch (error) {
@@ -864,6 +991,7 @@ if (placeBetButton) {
                     "Could not place bet."
                 );
 
+
             } finally {
 
                 placeBetButton.textContent =
@@ -871,17 +999,61 @@ if (placeBetButton) {
 
 
                 updatePotentialWin();
-
             }
-
         }
     );
+}
 
+
+/* =========================================================
+   SUCCESS MESSAGE
+   ========================================================= */
+
+function showSuccessMessage(message) {
+
+    if (!betslipError) {
+        return;
+    }
+
+
+    betslipError.textContent =
+        message;
+
+
+    betslipError.hidden =
+        false;
+
+
+    betslipError.classList.add(
+        "success"
+    );
+
+
+    setTimeout(
+        function() {
+
+            if (!betslipError) {
+                return;
+            }
+
+            betslipError.classList.remove(
+                "success"
+            );
+
+            betslipError.textContent =
+                "";
+
+            betslipError.hidden =
+                true;
+
+        },
+        3000
+    );
 }
 
 
 /* =========================================================
    INITIAL RENDER
-========================================================= */
+   ========================================================= */
 
 renderBetSlip();

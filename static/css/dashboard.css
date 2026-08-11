@@ -6,15 +6,18 @@
     box-sizing: border-box;
 }
 
-html {
+html,
+body {
     margin: 0;
     padding: 0;
+    min-height: 100%;
+}
+
+html {
     background: #f3f5f8;
 }
 
 body {
-    margin: 0;
-    padding: 0;
     font-family:
         Inter,
         -apple-system,
@@ -97,6 +100,69 @@ body {
 
 
 /* =========================================================
+   MY BETS BUTTON
+========================================================= */
+
+.my-bets-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    min-height: 36px;
+    padding: 7px 11px;
+
+    border: 1px solid #334155;
+    border-radius: 7px;
+
+    background: #182235;
+    color: #ffffff;
+
+    font-size: 12px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        transform 0.1s ease;
+}
+
+.my-bets-button:hover {
+    background: #202d43;
+    border-color: #475569;
+}
+
+.my-bets-button:active {
+    transform: scale(0.97);
+}
+
+.my-bets-icon {
+    font-size: 14px;
+}
+
+.my-bets-count {
+    min-width: 19px;
+    height: 19px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 5px;
+
+    border-radius: 50%;
+
+    background: #16a34a;
+    color: white;
+
+    font-size: 10px;
+    font-weight: 900;
+}
+
+
+/* =========================================================
    MAIN DASHBOARD
 ========================================================= */
 
@@ -140,15 +206,13 @@ body {
 ========================================================= */
 
 .refresh-button {
-    border: 0;
+    border: 1px solid #d7dce3;
     border-radius: 8px;
 
     padding: 9px 14px;
 
     background: white;
     color: #111827;
-
-    border: 1px solid #d7dce3;
 
     font-weight: 700;
     font-size: 13px;
@@ -499,6 +563,481 @@ body {
 
 
 /* =========================================================
+   MY BETS OVERLAY
+========================================================= */
+
+.my-bets-overlay {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 600;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background: rgba(15, 23, 42, 0.48);
+
+    opacity: 0;
+    visibility: hidden;
+
+    pointer-events: none;
+
+    transition:
+        opacity 0.2s ease,
+        visibility 0.2s ease;
+}
+
+.my-bets-overlay.open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+
+/* =========================================================
+   MY BETS MODAL
+========================================================= */
+
+.my-bets-modal {
+    width: min(720px, 100%);
+    max-height: min(760px, 92vh);
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    background: white;
+
+    border: 1px solid #e1e5ea;
+    border-radius: 14px;
+
+    box-shadow:
+        0 20px 60px rgba(15, 23, 42, 0.25);
+
+    transform: translateY(12px) scale(0.98);
+
+    transition:
+        transform 0.2s ease;
+}
+
+.my-bets-overlay.open .my-bets-modal {
+    transform: translateY(0) scale(1);
+}
+
+
+/* =========================================================
+   MY BETS HEADER
+========================================================= */
+
+.my-bets-header {
+    min-height: 72px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 15px;
+
+    padding: 13px 17px;
+
+    border-bottom: 1px solid #e5e7eb;
+
+    background: white;
+}
+
+.my-bets-title {
+    margin: 0;
+
+    font-size: 21px;
+    font-weight: 850;
+}
+
+.my-bets-subtitle {
+    margin-top: 3px;
+
+    color: #6b7280;
+
+    font-size: 12px;
+}
+
+.close-my-bets {
+    width: 38px;
+    height: 38px;
+
+    flex: 0 0 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 0;
+    border-radius: 50%;
+
+    background: #f3f4f6;
+    color: #374151;
+
+    font-size: 27px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        transform 0.1s ease;
+}
+
+.close-my-bets:hover {
+    background: #e5e7eb;
+}
+
+.close-my-bets:active {
+    transform: scale(0.94);
+}
+
+
+/* =========================================================
+   MY BETS CONTENT
+========================================================= */
+
+.my-bets-content {
+    flex: 1;
+
+    min-height: 250px;
+
+    overflow-y: auto;
+
+    padding: 13px;
+}
+
+
+/* =========================================================
+   HISTORY LOADING
+========================================================= */
+
+.bets-history-loading {
+    min-height: 230px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+
+    text-align: center;
+
+    color: #6b7280;
+}
+
+.bets-loading-icon {
+    font-size: 32px;
+
+    margin-bottom: 8px;
+
+    animation:
+        betsLoadingPulse 1.2s ease-in-out infinite;
+}
+
+.bets-history-loading p {
+    margin: 0;
+
+    font-size: 13px;
+}
+
+@keyframes betsLoadingPulse {
+    0%,
+    100% {
+        opacity: 0.45;
+        transform: scale(0.95);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+
+/* =========================================================
+   HISTORY ERROR
+========================================================= */
+
+.bets-history-error {
+    min-height: 230px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+
+    text-align: center;
+
+    padding: 30px;
+}
+
+.bets-history-error h3 {
+    margin: 0;
+
+    font-size: 17px;
+}
+
+.bets-history-error p {
+    max-width: 430px;
+
+    margin: 7px 0 0;
+
+    color: #6b7280;
+
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   HISTORY EMPTY
+========================================================= */
+
+.bets-history-empty {
+    min-height: 230px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+
+    text-align: center;
+
+    color: #6b7280;
+}
+
+.bets-history-empty h3 {
+    margin: 0;
+
+    color: #111827;
+
+    font-size: 17px;
+}
+
+.bets-history-empty p {
+    margin: 7px 0 0;
+
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   HISTORY LIST
+========================================================= */
+
+.bets-history-list {
+    display: flex;
+    flex-direction: column;
+
+    gap: 9px;
+}
+
+
+/* =========================================================
+   BET HISTORY CARD
+========================================================= */
+
+.bet-history-card {
+    padding: 12px;
+
+    border: 1px solid #e1e5ea;
+    border-radius: 9px;
+
+    background: #fafbfc;
+
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.bet-history-card:hover {
+    border-color: #cbd5e1;
+
+    box-shadow:
+        0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+.bet-history-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    padding-bottom: 10px;
+
+    border-bottom: 1px solid #e8ebef;
+}
+
+.bet-history-id {
+    color: #111827;
+
+    font-size: 13px;
+    font-weight: 850;
+}
+
+.bet-history-date {
+    margin-top: 3px;
+
+    color: #6b7280;
+
+    font-size: 10px;
+}
+
+.bet-status {
+    flex: 0 0 auto;
+
+    padding: 4px 8px;
+
+    border-radius: 5px;
+
+    font-size: 9px;
+    font-weight: 900;
+
+    text-transform: uppercase;
+}
+
+.bet-status.won {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.bet-status.lost {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.bet-status.cancelled {
+    background: #f3f4f6;
+    color: #4b5563;
+}
+
+.bet-status.pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+
+/* =========================================================
+   BET HISTORY DETAILS
+========================================================= */
+
+.bet-history-details {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 8px;
+
+    padding-top: 10px;
+}
+
+.bet-history-detail {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+.bet-history-detail span {
+    color: #6b7280;
+
+    font-size: 10px;
+}
+
+.bet-history-detail strong {
+    color: #111827;
+
+    font-size: 13px;
+    font-weight: 850;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+/* =========================================================
+   MY BETS FOOTER
+========================================================= */
+
+.my-bets-footer {
+    min-height: 65px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 15px;
+
+    padding: 11px 15px;
+
+    border-top: 1px solid #e5e7eb;
+
+    background: white;
+}
+
+.my-bets-balance {
+    display: flex;
+    flex-direction: column;
+
+    gap: 2px;
+}
+
+.my-bets-balance span {
+    color: #6b7280;
+
+    font-size: 10px;
+}
+
+.my-bets-balance strong {
+    color: #15803d;
+
+    font-size: 15px;
+    font-weight: 900;
+}
+
+.refresh-bets-button {
+    min-height: 34px;
+
+    padding: 7px 12px;
+
+    border: 1px solid #d7dce3;
+    border-radius: 7px;
+
+    background: white;
+    color: #111827;
+
+    font-size: 12px;
+    font-weight: 750;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        opacity 0.15s ease;
+}
+
+.refresh-bets-button:hover:not(:disabled) {
+    background: #f8fafc;
+}
+
+.refresh-bets-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+
+/* =========================================================
    BET SLIP OVERLAY
 ========================================================= */
 
@@ -638,6 +1177,7 @@ body {
 
 .no-selection-icon {
     font-size: 35px;
+
     margin-bottom: 8px;
 }
 
@@ -934,9 +1474,17 @@ body {
                 auto-fill,
                 minmax(330px, 1fr)
             );
+
         gap: 10px;
     }
 
+    .topbar-right {
+        gap: 11px;
+    }
+
+    .welcome {
+        display: none;
+    }
 }
 
 
@@ -950,12 +1498,8 @@ body {
         background: #eef1f5;
     }
 
-
-    /* Topbar */
-
     .topbar {
         min-height: 55px;
-
         padding: 0 12px;
     }
 
@@ -968,8 +1512,7 @@ body {
     }
 
     .topbar-right {
-        gap: 9px;
-
+        gap: 7px;
         font-size: 11px;
     }
 
@@ -981,17 +1524,31 @@ body {
         font-size: 13px;
     }
 
+    .my-bets-button {
+        min-height: 32px;
+        padding: 5px 7px;
+        gap: 4px;
+        font-size: 10px;
+    }
+
+    .my-bets-icon {
+        font-size: 12px;
+    }
+
+    .my-bets-count {
+        min-width: 17px;
+        height: 17px;
+        padding: 0 4px;
+        font-size: 9px;
+    }
+
     .logout {
         font-size: 12px;
     }
 
-
-    /* Dashboard */
-
     .dashboard {
         padding: 11px 8px 85px;
     }
-
 
     .section-header {
         margin-bottom: 9px;
@@ -1010,19 +1567,10 @@ body {
         font-size: 11px;
     }
 
-
-    /* One compact column */
-
     .matches-grid {
-        display: grid;
-
         grid-template-columns: 1fr;
-
         gap: 7px;
     }
-
-
-    /* Match */
 
     .match-card {
         border-radius: 8px;
@@ -1047,12 +1595,8 @@ body {
 
     .market-title {
         padding: 5px 9px;
-
         font-size: 9px;
     }
-
-
-    /* Odds table */
 
     .odds-header {
         grid-template-columns:
@@ -1061,7 +1605,6 @@ body {
             57px;
 
         gap: 4px;
-
         padding: 4px 6px;
     }
 
@@ -1072,49 +1615,98 @@ body {
             57px;
 
         gap: 4px;
-
         min-height: 42px;
-
         padding: 4px 6px;
     }
 
     .runner-name {
         gap: 5px;
-
         font-size: 11px;
     }
 
     .runner-dot {
         width: 5px;
         height: 5px;
-
         flex-basis: 5px;
     }
 
     .odd-button {
         height: 31px;
-
         font-size: 12px;
-
         border-radius: 5px;
     }
-
-
-    /* Empty */
 
     .empty-state {
         min-height: 240px;
     }
 
-
-    /* Mobile betslip button */
-
     .mobile-betslip-button {
         display: flex;
     }
 
+    .my-bets-overlay {
+        align-items: flex-end;
+        justify-content: center;
+        padding: 0;
+    }
 
-    /* Bet slip becomes bottom sheet */
+    .my-bets-modal {
+        width: 100%;
+        max-height: 90vh;
+        border-radius: 16px 16px 0 0;
+        transform: translateY(100%);
+    }
+
+    .my-bets-overlay.open .my-bets-modal {
+        transform: translateY(0);
+    }
+
+    .my-bets-header {
+        min-height: 58px;
+        padding: 9px 13px;
+    }
+
+    .my-bets-title {
+        font-size: 18px;
+    }
+
+    .my-bets-subtitle {
+        font-size: 10px;
+    }
+
+    .close-my-bets {
+        width: 34px;
+        height: 34px;
+        flex-basis: 34px;
+        font-size: 24px;
+    }
+
+    .my-bets-content {
+        padding: 9px;
+        max-height: 60vh;
+    }
+
+    .bet-history-card {
+        padding: 10px;
+    }
+
+    .bet-history-details {
+        gap: 5px;
+    }
+
+    .bet-history-detail span {
+        font-size: 9px;
+    }
+
+    .bet-history-detail strong {
+        font-size: 12px;
+    }
+
+    .my-bets-footer {
+        padding:
+            9px 11px
+            calc(9px + env(safe-area-inset-bottom));
+    }
 
     .betslip-overlay {
         align-items: flex-end;
@@ -1125,9 +1717,7 @@ body {
         width: 100%;
         max-height: 88vh;
         height: auto;
-
         border-radius: 16px 16px 0 0;
-
         transform: translateY(100%);
     }
 
@@ -1137,7 +1727,6 @@ body {
 
     .betslip-header {
         min-height: 58px;
-
         padding: 9px 13px;
     }
 
@@ -1154,7 +1743,6 @@ body {
             10px 12px
             calc(10px + env(safe-area-inset-bottom));
     }
-
 }
 
 
@@ -1170,6 +1758,14 @@ body {
 
     .balance {
         font-size: 12px;
+    }
+
+    .my-bets-button {
+        padding: 5px;
+    }
+
+    .my-bets-button > span:not(.my-bets-icon):not(.my-bets-count) {
+        display: none;
     }
 
     .dashboard {
@@ -1189,4 +1785,40 @@ body {
         font-size: 11px;
     }
 
+    .bet-history-details {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .bet-history-detail:last-child {
+        grid-column: 1 / -1;
+    }
+}
+
+
+/* =========================================================
+   ACCESSIBILITY
+========================================================= */
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
 }
