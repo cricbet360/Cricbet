@@ -43,54 +43,33 @@
 
     <div class="topbar-right">
 
-        <span class="welcome">
-
-            Welcome,
-
-            <strong>
-                {{ user.username }}
-            </strong>
-
-        </span>
-
-
-        <span
-            class="balance"
-            id="walletBalance"
-            data-balance="{{ user.balance or 0 }}"
-        >
-
+        <span class="balance"
+              id="walletBalance"
+              data-balance="{{ user.balance or 0 }}">
             ₹{{ "%.2f"|format(user.balance or 0) }}
-
         </span>
 
-
-        <!-- MY BETS BUTTON -->
-
-        <button
-            type="button"
-            class="my-bets-button"
-            id="myBetsButton"
-            aria-label="Open my bets"
+        <a
+            href="/deposit"
+            class="topbar-action deposit-action"
         >
+            + Deposit
+    
+        </a>
 
-            <span class="my-bets-icon">
-                🎟️
-            </span>
+        <a
+            href="/withdraw"
+            class="topbar-action withdraw-action"
+        >
+            - Withdraw
+        </a>
 
-            <span>
-                My Bets
-            </span>
-
-            <span
-                id="myBetsCount"
-                class="my-bets-count"
-            >
-                0
-            </span>
-
-        </button>
-
+         <a
+            href="/profile"
+            class="topbar-action profile-action"
+        >
+            👤 Profile
+        </a>
 
         <a
             href="/logout"
@@ -98,7 +77,7 @@
         >
             Logout
         </a>
-
+        
     </div>
 
 </header>
@@ -812,7 +791,7 @@ window.CRICKBET_CONFIG = {
 
     placeBetUrl: "/bets/place",
 
-    myBetsUrl: "/bets/my-bets",
+    myBetsUrl: "/my-bets",
 
     dashboardUrl: "/dashboard"
 

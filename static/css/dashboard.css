@@ -1822,3 +1822,70 @@ input:focus-visible {
         animation-iteration-count: 1 !important;
     }
 }
+
+.topbar-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 35px;
+
+    padding: 7px 11px;
+
+    border-radius: 7px;
+
+    text-decoration: none;
+
+    font-size: 12px;
+    font-weight: 800;
+
+    transition:
+        background 0.15s ease,
+        transform 0.1s ease;
+}
+
+.deposit-action {
+    background: #16a34a;
+    color: white;
+}
+
+.deposit-action:hover {
+    background: #15803d;
+}
+
+.withdraw-action {
+    background: #334155;
+    color: white;
+}
+
+.withdraw-action:hover {
+    background: #475569;
+}
+
+.profile-action {
+    background: #182235;
+    color: white;
+    border: 1px solid #334155;
+}
+
+.profile-action:hover {
+    background: #202d43;
+}
+
+@media (max-width: 600px) {
+
+    .topbar-action {
+        min-height: 31px;
+        padding: 5px 7px;
+        font-size: 10px;
+    }
+
+    .profile-action {
+        font-size: 0;
+    }
+
+    .profile-action:first-letter {
+        font-size: 14px;
+    }
+
+}

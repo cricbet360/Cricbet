@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>My Profile - CrickBet</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family:
+                Inter,
+                Arial,
+                sans-serif;
+            background: #f3f5f8;
+            color: #111827;
+        }
+
+        .topbar {
+            min-height: 64px;
+            padding: 0 24px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            background: #101827;
+            color: white;
+        }
+
+        .brand {
+            font-size: 21px;
+            font-weight: 900;
+        }
+
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .top-actions a {
+            text-decoration: none;
+            color: white;
+        }
+
+        .balance {
+            color: #22c55e;
+            font-weight: 900;
+        }
+
+        .page {
+            width: min(1000px, 100%);
+            margin: auto;
+            padding: 25px 18px 60px;
+        }
+
+        .profile-card {
+            background: white;
+            border-radius: 15px;
+            padding: 24px;
+
+            border: 1px solid #e5e7eb;
+
+            box-shadow:
+                0 4px 15px
+                rgba(15, 23, 42, .05);
+        }
+
+        .profile-title {
+            margin: 0;
+            font-size: 25px;
+        }
+
+        .username {
+            margin-top: 5px;
+            color: #6b7280;
+        }
+
+        .balance-card {
+            margin-top: 20px;
+            padding: 20px;
+
+            border-radius: 12px;
+
+            background: #ecfdf5;
+        }
+
+        .balance-label {
+            color: #15803d;
+            font-size: 13px;
+        }
+
+        .balance-value {
+            margin-top: 5px;
+            color: #166534;
+            font-size: 30px;
+            font-weight: 900;
+        }
+
+        .menu {
+            margin-top: 20px;
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(
+                    auto-fit,
+                    minmax(210px, 1fr)
+                );
+
+            gap: 12px;
+        }
+
+        .menu a {
+            display: block;
+
+            padding: 18px;
+
+            background: white;
+
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+
+            text-decoration: none;
+            color: #111827;
+
+            font-weight: 800;
+        }
+
+        .menu a:hover {
+            border-color: #16a34a;
+        }
+
+        .menu small {
+            display: block;
+
+            margin-top: 5px;
+
+            color: #6b7280;
+            font-weight: 400;
+        }
+
+        @media (max-width: 600px) {
+
+            .topbar {
+                padding: 0 12px;
+            }
+
+            .page {
+                padding: 15px 10px 40px;
+            }
+
+            .profile-card {
+                padding: 17px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<header class="topbar">
+
+    <div class="brand">
+        🏏 CrickBet
+    </div>
+
+    <div class="top-actions">
+
+        <span class="balance">
+            ₹{{ "%.2f"|format(user.balance or 0) }}
+        </span>
+
+        <a href="/dashboard">
+            Dashboard
+        </a>
+
+        <a href="/logout">
+            Logout
+        </a>
+
+    </div>
+
+</header>
+
+<main class="page">
+
+    <section class="profile-card">
+
+        <h1 class="profile-title">
+            My Profile
+        </h1>
+
+        <div class="username">
+            {{ user.username }}
+        </div>
+
+        <div class="balance-card">
+
+            <div class="balance-label">
+                Available Balance
+            </div>
+
+            <div class="balance-value">
+                ₹{{ "%.2f"|format(user.balance or 0) }}
+            </div>
+
+        </div>
+
+        <div class="menu">
+
+            <a href="/my-bets">
+                🎟️ My Bets
+                <small>
+                    View your betting history
+                </small>
+            </a>
+
+            <a href="/profit-loss">
+                📊 Profit & Loss
+                <small>
+                    View your betting performance
+                </small>
+            </a>
+
+            <a href="/account-statement">
+                💳 Account Statement
+                <small>
+                    Deposits, withdrawals and adjustments
+                </small>
+            </a>
+
+            <a href="/game-rules">
+                📖 Game Rules
+                <small>
+                    Read CrickBet rules
+                </small>
+            </a>
+
+        </div>
+
+    </section>
+
+</main>
+
+</body>
+</html>

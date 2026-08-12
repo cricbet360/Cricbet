@@ -23,6 +23,10 @@ from routers.bets import router as bets_router
 from admin.auth import router as admin_auth_router
 from admin.routes import router as admin_router
 
+from routers.profile import router as profile_router
+from routers.account import router as account_router
+from routers.staff_balance import router as staff_balance_router
+
 
 app = FastAPI(
     title="CrickBet"
@@ -97,4 +101,16 @@ app.include_router(
 
 app.include_router(
     bets_router
+)
+
+app.include_router(
+    profile_router
+)
+
+app.include_router(
+    account_router
+)
+
+app.include_router(
+    staff_balance_router
 )

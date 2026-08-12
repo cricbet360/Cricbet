@@ -49,6 +49,8 @@ class User(Base):
     transactions = relationship(
         "Transaction",
         back_populates="user",
+        cascade="all, delete-orphan",
+        order_by="Transaction.created_at.desc()",
     )
 
     bets = relationship(
@@ -56,9 +58,4 @@ class User(Base):
         back_populates="user",
         order_by="Bet.created_at.desc()",
         cascade="all, delete-orphan",
-    )
-
-    bets = relationship(
-    "Bet",
-    back_populates="user"
     )
