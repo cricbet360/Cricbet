@@ -2,564 +2,382 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
 
     <meta
         name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover"
+        content="width=device-width, initial-scale=1.0"
     >
 
-    <title>CrickBet Dashboard</title>
+    <title>CrickBet</title>
 
     <link
         rel="stylesheet"
-        href="{{ url_for('static', path='css/dashboard.css') }}"
+        href="/static/css/dashboard.css"
     >
-
 </head>
 
 <body>
 
+    <!-- =====================================================
+         TOP BAR
+    ====================================================== -->
 
-<!-- ======================================================
-     TOP BAR
-====================================================== -->
+    <header class="topbar">
 
-<header class="topbar">
+        <div class="brand">
 
-    <div class="brand">
+            <span class="brand-icon">🏏</span>
 
-        <span class="brand-icon">
-            🏏
-        </span>
+            <span>CrickBet</span>
 
-        <span>
-            CrickBet
-        </span>
+        </div>
 
-    </div>
+        <div class="topbar-right">
 
+            <!-- BALANCE -->
 
-    <div class="topbar-right">
+            <span
+                class="balance"
+                id="walletBalance"
+                data-balance="{{ user.balance or 0 }}"
+            >
+                ₹{{ "%.2f"|format(user.balance or 0) }}
+            </span>
 
-        <span class="balance"
-              id="walletBalance"
-              data-balance="{{ user.balance or 0 }}">
-            ₹{{ "%.2f"|format(user.balance or 0) }}
-        </span>
+            <!-- DEPOSIT -->
 
-        <a
-            href="/deposit"
-            class="topbar-action deposit-action"
-        >
-            + Deposit
-    
-        </a>
+            <button
+                type="button"
+                class="topbar-action deposit-action"
+                id="openDeposit"
+            >
+                + Deposit
+            </button>
 
-        <a
-            href="/withdraw"
-            class="topbar-action withdraw-action"
-        >
-            - Withdraw
-        </a>
+            <!-- WITHDRAW -->
 
-         <a
-            href="/profile"
-            class="topbar-action profile-action"
-        >
-            👤 Profile
-        </a>
+            <button
+                type="button"
+                class="topbar-action withdraw-action"
+                id="openWithdraw"
+            >
+                - Withdraw
+            </button>
 
-        <a
-            href="/logout"
-            class="logout"
-        >
-            Logout
-        </a>
-        
-    </div>
+            <!-- PROFILE -->
 
-</header>
+            <a
+                href="/profile"
+                class="topbar-action profile-action"
+            >
+                👤 Profile
+            </a>
 
+            <!-- LOGOUT -->
 
+            <a
+                href="/logout"
+                class="logout"
+            >
+                Logout
+            </a>
 
-<!-- ======================================================
-     MAIN DASHBOARD
-====================================================== -->
+        </div>
 
-<main class="dashboard">
-
-
-    <!-- ==================================================
-         CRICKET MARKETS
-    ================================================== -->
-
-    <section class="matches-section">
+    </header>
 
 
-        <div class="section-header">
+    <!-- =====================================================
+         MAIN DASHBOARD
+    ====================================================== -->
+
+    <main class="dashboard-container">
+
+        <!-- =================================================
+             WELCOME / HEADER
+        ================================================== -->
+
+        <section class="dashboard-header">
 
             <div>
 
                 <h1>
-                    Cricket Matches
+                    Welcome, {{ user.username }}
                 </h1>
 
-                <div
-                    class="match-count"
-                    id="matchCount"
-                >
-
-                    {{ matches|length }} markets
-
-                </div>
-
-            </div>
-
-
-            <button
-                type="button"
-                class="refresh-button"
-                id="refreshButton"
-            >
-
-                ↻ Refresh
-
-            </button>
-
-        </div>
-
-
-
-        {% if matches and matches|length > 0 %}
-
-
-        <div
-            class="matches-grid"
-            id="matchesGrid"
-        >
-
-
-            {% for match in matches %}
-
-
-            <article
-                class="match-card"
-                data-market-id="{{ match.market_id }}"
-                data-event-id="{{ match.event_id }}"
-                data-competition-id="{{ match.competition_id }}"
-            >
-
-
-                <!-- MATCH HEADER -->
-
-                <div class="match-header">
-
-                    <div class="match-info">
-
-                        <div class="competition-name">
-
-                            {{ match.competition }}
-
-                        </div>
-
-
-                        <div class="match-name">
-
-                            {{ match.event_name }}
-
-                        </div>
-
-                    </div>
-
-
-                    <div
-                        class="market-status
-                        {% if match.market_status == 'OPEN' %}
-                            open
-                        {% else %}
-                            suspended
-                        {% endif %}"
-                    >
-
-                        {{ match.market_status }}
-
-                    </div>
-
-                </div>
-
-
-
-                <!-- MARKET NAME -->
-
-                <div class="market-title">
-
-                    {{ match.market_name }}
-
-                </div>
-
-
-
-                <!-- ODDS HEADER -->
-
-                <div class="odds-header">
-
-                    <div class="runner-title">
-
-                        Selection
-
-                    </div>
-
-
-                    <div class="odds-label back-label">
-
-                        BACK
-
-                    </div>
-
-
-                    <div class="odds-label lay-label">
-
-                        LAY
-
-                    </div>
-
-                </div>
-
-
-
-                <!-- RUNNERS -->
-
-                <div class="runners">
-
-
-                    {% for runner in match.runners %}
-
-
-                    <div
-                        class="runner-row"
-                        data-selection-id="{{ runner.selection_id }}"
-                        data-runner-name="{{ runner.name }}"
-                    >
-
-
-                        <div class="runner-name">
-
-                            <span class="runner-dot"></span>
-
-                            <span>
-
-                                {{ runner.name }}
-
-                            </span>
-
-                        </div>
-
-
-
-                        <!-- BACK -->
-
-                        <button
-                            type="button"
-                            class="odd-button back-button"
-
-                            data-market-id="{{ match.market_id }}"
-
-                            data-event-id="{{ match.event_id }}"
-
-                            data-selection-id="{{ runner.selection_id }}"
-
-                            data-runner-name="{{ runner.name }}"
-
-                            data-side="BACK"
-
-                            data-price="{{ runner.back if runner.back is not none else '' }}"
-
-                            {% if not runner.back %}
-                            disabled
-                            {% endif %}
-                        >
-
-                            {% if runner.back %}
-
-                                {{ "%.2f"|format(runner.back) }}
-
-                            {% else %}
-
-                                —
-
-                            {% endif %}
-
-                        </button>
-
-
-
-                        <!-- LAY -->
-
-                        <button
-                            type="button"
-                            class="odd-button lay-button"
-
-                            data-market-id="{{ match.market_id }}"
-
-                            data-event-id="{{ match.event_id }}"
-
-                            data-selection-id="{{ runner.selection_id }}"
-
-                            data-runner-name="{{ runner.name }}"
-
-                            data-side="LAY"
-
-                            data-price="{{ runner.lay if runner.lay is not none else '' }}"
-
-                            {% if not runner.lay %}
-                            disabled
-                            {% endif %}
-                        >
-
-                            {% if runner.lay %}
-
-                                {{ "%.2f"|format(runner.lay) }}
-
-                            {% else %}
-
-                                —
-
-                            {% endif %}
-
-                        </button>
-
-
-                    </div>
-
-
-                    {% endfor %}
-
-
-                </div>
-
-
-            </article>
-
-
-            {% endfor %}
-
-
-        </div>
-
-
-        {% else %}
-
-
-        <!-- EMPTY MATCH STATE -->
-
-        <div
-            class="empty-state"
-            id="emptyState"
-        >
-
-            <div class="empty-icon">
-                🏏
-            </div>
-
-            <h2>
-                No cricket matches available
-            </h2>
-
-            <p>
-                There are currently no markets available from BEX.
-            </p>
-
-            <button
-                type="button"
-                class="refresh-button large"
-                id="emptyRefreshButton"
-            >
-                Refresh Matches
-            </button>
-
-        </div>
-
-
-        {% endif %}
-
-
-    </section>
-
-
-</main>
-
-
-
-<!-- ======================================================
-     MY BETS MODAL
-====================================================== -->
-
-<div
-    id="myBetsOverlay"
-    class="my-bets-overlay"
-    aria-hidden="true"
->
-
-
-    <div
-        id="myBetsModal"
-        class="my-bets-modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="myBetsTitle"
-    >
-
-
-        <!-- MODAL HEADER -->
-
-        <div class="my-bets-header">
-
-
-            <div>
-
-                <h2
-                    id="myBetsTitle"
-                    class="my-bets-title"
-                >
-                    My Bets
-                </h2>
-
-
-                <div
-                    id="myBetsSubtitle"
-                    class="my-bets-subtitle"
-                >
-                    Your betting history
-                </div>
-
-            </div>
-
-
-            <button
-                type="button"
-                class="close-my-bets"
-                id="closeMyBets"
-                aria-label="Close my bets"
-            >
-
-                ×
-
-            </button>
-
-
-        </div>
-
-
-
-        <!-- MODAL CONTENT -->
-
-        <div class="my-bets-content">
-
-
-            <!-- LOADING -->
-
-            <div
-                id="betsHistoryLoading"
-                class="bets-history-loading"
-            >
-
-                <div class="bets-loading-icon">
-                    ⏳
-                </div>
-
                 <p>
-                    Loading your bets...
+                    Select a match and place your bets.
                 </p>
 
             </div>
 
-
-
-            <!-- ERROR -->
-
-            <div
-                id="betsHistoryError"
-                class="bets-history-error"
-                hidden
-            >
-
-                <div class="empty-icon">
-                    ⚠️
-                </div>
-
-                <h3>
-                    Could not load bet history
-                </h3>
-
-                <p id="betsHistoryErrorMessage">
-                    Please try again.
-                </p>
-
-                <button
-                    type="button"
-                    class="refresh-button"
-                    id="retryBetsButton"
-                >
-                    Try Again
-                </button>
-
-            </div>
-
-
-
-            <!-- EMPTY -->
-
-            <div
-                id="betsHistoryEmpty"
-                class="bets-history-empty"
-                hidden
-            >
-
-                <div class="empty-icon">
-                    🎟️
-                </div>
-
-                <h3>
-                    No bets yet
-                </h3>
-
-                <p>
-                    Your placed bets will appear here.
-                </p>
-
-            </div>
-
-
-
-            <!-- BET LIST -->
-
-            <div
-                id="betsHistoryList"
-                class="bets-history-list"
-                hidden
-            >
-
-            </div>
-
-
-        </div>
-
-
-
-        <!-- MODAL FOOTER -->
-
-        <div class="my-bets-footer">
-
-
-            <div class="my-bets-balance">
+            <div class="dashboard-balance">
 
                 <span>
                     Available Balance
                 </span>
 
-                <strong id="myBetsBalance">
+                <strong>
+                    ₹{{ "%.2f"|format(user.balance or 0) }}
+                </strong>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             MATCHES
+        ================================================== -->
+
+        <section class="matches-section">
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2>
+                        🏏 Live Cricket
+                    </h2>
+
+                    <p>
+                        Select an event to view available markets.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="matches-grid">
+
+                {% if matches %}
+
+                    {% for match in matches %}
+
+                        <article
+                            class="match-card"
+                            data-match-id="{{ match.id }}"
+                        >
+
+                            <div class="match-card-header">
+
+                                <span class="match-status">
+
+                                    {% if match.status %}
+                                        {{ match.status }}
+                                    {% else %}
+                                        LIVE
+                                    {% endif %}
+
+                                </span>
+
+
+                                {% if match.league %}
+
+                                    <span class="match-league">
+                                        {{ match.league }}
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            <div class="match-teams">
+
+                                <div class="team">
+
+                                    <span class="team-icon">
+                                        🏏
+                                    </span>
+
+                                    <strong>
+                                        {{ match.team1 }}
+                                    </strong>
+
+                                </div>
+
+
+                                <div class="match-vs">
+                                    VS
+                                </div>
+
+
+                                <div class="team">
+
+                                    <span class="team-icon">
+                                        🏏
+                                    </span>
+
+                                    <strong>
+                                        {{ match.team2 }}
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+
+                            {% if match.start_time %}
+
+                                <div class="match-time">
+
+                                    🕐
+                                    {{ match.start_time }}
+
+                                </div>
+
+                            {% endif %}
+
+
+                            <div class="match-action">
+
+                                <a
+                                    href="/match/{{ match.id }}"
+                                    class="view-match-button"
+                                >
+                                    View Match
+                                    <span>→</span>
+                                </a>
+
+                            </div>
+
+                        </article>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <div class="empty-state">
+
+                        <div class="empty-state-icon">
+                            🏏
+                        </div>
+
+                        <h3>
+                            No matches available
+                        </h3>
+
+                        <p>
+                            Please check again later for upcoming matches.
+                        </p>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             MY BETS
+        ================================================== -->
+
+        <section class="my-bets-section">
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2>
+                        📋 My Bets
+                    </h2>
+
+                    <p>
+                        View your recent betting activity.
+                    </p>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    id="openMyBets"
+                    class="secondary-button"
+                >
+                    View My Bets
+                </button>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =====================================================
+         BETSLIP
+    ====================================================== -->
+
+    <aside
+        id="betslip"
+        class="betslip"
+    >
+
+        <div class="betslip-header">
+
+            <div>
+
+                <h2>
+                    Bet Slip
+                </h2>
+
+                <span id="betslipCount">
+                    0 selections
+                </span>
+
+            </div>
+
+
+            <button
+                type="button"
+                id="closeBetslip"
+                class="betslip-close"
+                aria-label="Close bet slip"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div
+            id="betslipContent"
+            class="betslip-content"
+        >
+
+            <div class="betslip-empty">
+
+                <div>
+                    🎟️
+                </div>
+
+                <h3>
+                    Your bet slip is empty
+                </h3>
+
+                <p>
+                    Select odds from a match to add them here.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="betslip-footer">
+
+            <div class="betslip-balance">
+
+                <span>
+                    Balance
+                </span>
+
+                <strong id="betslipBalance">
                     ₹{{ "%.2f"|format(user.balance or 0) }}
                 </strong>
 
@@ -568,1118 +386,523 @@
 
             <button
                 type="button"
-                class="refresh-bets-button"
-                id="refreshBetsButton"
+                id="placeBetButton"
+                class="place-bet-button"
+                disabled
             >
-
-                ↻ Refresh
-
+                Place Bet
             </button>
-
 
         </div>
 
-
-    </div>
-
-</div>
+    </aside>
 
 
+    <!-- =====================================================
+         MOBILE BETSLIP BUTTON
+    ====================================================== -->
 
-<!-- ======================================================
-     BET SLIP OVERLAY
-====================================================== -->
-
-<div
-    id="betslipOverlay"
-    class="betslip-overlay"
-    aria-hidden="true"
->
-
-
-    <div
-        id="betslip"
-        class="betslip"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="betslipTitle"
+    <button
+        type="button"
+        id="mobileBetslipButton"
+        class="mobile-betslip-button"
     >
 
+        🎟️
 
-        <!-- BET SLIP HEADER -->
+        <span>
+            Bet Slip
+        </span>
 
-        <div class="betslip-header">
+        <span
+            id="mobileBetslipCount"
+            class="betslip-count"
+        >
+            0
+        </span>
 
-
-            <div>
-
-                <div
-                    class="betslip-title"
-                    id="betslipTitle"
-                >
-
-                    Bet Slip
-
-                </div>
+    </button>
 
 
-                <div
-                    id="betslipCount"
-                    class="betslip-count"
-                >
+    <!-- =====================================================
+         MY BETS OVERLAY
+    ====================================================== -->
 
-                    No selections
-
-                </div>
-
-            </div>
-
-
-            <button
-                type="button"
-                class="close-betslip"
-                id="closeBetslip"
-                aria-label="Close bet slip"
-            >
-
-                ×
-
-            </button>
-
-
-        </div>
-
-
-
-        <!-- BET SLIP SELECTIONS -->
+    <div
+        id="myBetsOverlay"
+        class="modal-overlay"
+        aria-hidden="true"
+    >
 
         <div
-            id="betslipSelections"
-            class="betslip-selections"
+            class="modal-card my-bets-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="myBetsTitle"
         >
 
+            <div class="modal-header">
 
-            <div class="no-selections">
+                <div>
 
-                <div class="no-selection-icon">
-                    🎟️
+                    <h2 id="myBetsTitle">
+                        📋 My Bets
+                    </h2>
+
+                    <p>
+                        Your recent betting activity
+                    </p>
+
                 </div>
 
-                <p>
 
-                    Select a BACK or LAY price
-                    to add a bet.
-
-                </p>
-
-            </div>
-
-
-        </div>
-
-
-
-        <!-- BET SLIP FOOTER -->
-
-        <div class="betslip-footer">
-
-
-            <div class="stake-label">
-
-                Stake
-
-            </div>
-
-
-            <div class="stake-wrapper">
-
-                <span class="currency">
-                    ₹
-                </span>
-
-                <input
-                    id="stakeInput"
-                    type="number"
-                    min="1"
-                    step="1"
-                    inputmode="decimal"
-                    autocomplete="off"
-                    placeholder="Enter stake"
+                <button
+                    type="button"
+                    id="closeMyBets"
+                    class="modal-close"
                 >
+                    ×
+                </button>
 
             </div>
 
 
-            <div class="potential-win">
+            <div class="my-bets-summary">
 
-                <span>
-                    Potential win
-                </span>
+                <div>
 
-                <strong id="potentialWin">
-                    ₹0.00
-                </strong>
+                    <span>
+                        Current Balance
+                    </span>
+
+                    <strong id="myBetsBalance">
+                        ₹{{ "%.2f"|format(user.balance or 0) }}
+                    </strong>
+
+                </div>
 
             </div>
 
 
             <div
-                id="betslipError"
-                class="betslip-error"
-                hidden
-            ></div>
-
-
-            <button
-                type="button"
-                id="placeBetButton"
-                class="place-bet-button"
-                disabled
+                id="myBetsContent"
+                class="my-bets-content"
             >
 
-                Place Bet
+                <div class="my-bets-loading">
+                    Loading bets...
+                </div>
 
-            </button>
-
+            </div>
 
         </div>
-
 
     </div>
 
 
-</div>
+    <!-- =====================================================
+         CONFIGURATION
+    ====================================================== -->
 
+    <script>
 
+        window.CRICKBET_CONFIG = {
 
-<!-- ======================================================
-     MOBILE BET SLIP BUTTON
-====================================================== -->
+            placeBetUrl: "/bets/place",
 
-<button
-    id="mobileBetslipButton"
-    class="mobile-betslip-button"
-    type="button"
->
+            myBetsUrl: "/my-bets",
 
-    <span>
-        🎟️
-    </span>
+            dashboardUrl: "/dashboard"
 
-    <span>
-        Bet Slip
-    </span>
+        };
 
-    <span
-        id="mobileBetslipCount"
-        class="mobile-betslip-count"
-    >
-        0
-    </span>
+    </script>
 
-</button>
 
+    <!-- =====================================================
+         MY BETS JAVASCRIPT
+    ====================================================== -->
 
+    <script>
 
-<!-- ======================================================
-     PAGE CONFIG
-====================================================== -->
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
 
-<script>
+                const openMyBets =
+                    document.getElementById(
+                        "openMyBets"
+                    );
 
-window.CRICKBET_CONFIG = {
+                const closeMyBets =
+                    document.getElementById(
+                        "closeMyBets"
+                    );
 
-    placeBetUrl: "/bets/place",
+                const myBetsOverlay =
+                    document.getElementById(
+                        "myBetsOverlay"
+                    );
 
-    myBetsUrl: "/my-bets",
+                const myBetsContent =
+                    document.getElementById(
+                        "myBetsContent"
+                    );
 
-    dashboardUrl: "/dashboard"
 
-};
+                function openMyBetsModal() {
 
-</script>
+                    if (!myBetsOverlay) {
+                        return;
+                    }
 
+                    myBetsOverlay.classList.add(
+                        "open"
+                    );
 
+                    myBetsOverlay.setAttribute(
+                        "aria-hidden",
+                        "false"
+                    );
 
-<!-- ======================================================
-     BET SLIP JAVASCRIPT
-====================================================== -->
+                    document.body.style.overflow =
+                        "hidden";
 
-<script
-    src="{{ url_for('static', path='js/betslip.js') }}"
-    defer
-></script>
-
-
-
-<!-- ======================================================
-     MY BETS JAVASCRIPT
-====================================================== -->
-
-<script>
-
-"use strict";
-
-
-/* ======================================================
-   ELEMENTS
-====================================================== */
-
-const myBetsButton =
-    document.getElementById(
-        "myBetsButton"
-    );
-
-
-const myBetsOverlay =
-    document.getElementById(
-        "myBetsOverlay"
-    );
-
-
-const myBetsModal =
-    document.getElementById(
-        "myBetsModal"
-    );
-
-
-const closeMyBets =
-    document.getElementById(
-        "closeMyBets"
-    );
-
-
-const historyList =
-    document.getElementById(
-        "betsHistoryList"
-    );
-
-
-const historyLoading =
-    document.getElementById(
-        "betsHistoryLoading"
-    );
-
-
-const historyEmpty =
-    document.getElementById(
-        "betsHistoryEmpty"
-    );
-
-
-const historyError =
-    document.getElementById(
-        "betsHistoryError"
-    );
-
-
-const historyErrorMessage =
-    document.getElementById(
-        "betsHistoryErrorMessage"
-    );
-
-
-const historyCount =
-    document.getElementById(
-        "myBetsSubtitle"
-    );
-
-
-const myBetsCount =
-    document.getElementById(
-        "myBetsCount"
-    );
-
-
-const myBetsBalance =
-    document.getElementById(
-        "myBetsBalance"
-    );
-
-
-const walletBalance =
-    document.getElementById(
-        "walletBalance"
-    );
-
-
-const refreshBetsButton =
-    document.getElementById(
-        "refreshBetsButton"
-    );
-
-
-const retryBetsButton =
-    document.getElementById(
-        "retryBetsButton"
-    );
-
-
-/* ======================================================
-   ESCAPE HTML
-====================================================== */
-
-function escapeHistoryHtml(value) {
-
-    return String(value ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-
-}
-
-
-/* ======================================================
-   FORMAT MONEY
-====================================================== */
-
-function formatMoney(value) {
-
-    const number =
-        Number(value);
-
-    if (
-        !Number.isFinite(number)
-    ) {
-
-        return "₹0.00";
-
-    }
-
-    return (
-        "₹" +
-        number.toFixed(2)
-    );
-
-}
-
-
-/* ======================================================
-   FORMAT DATE
-====================================================== */
-
-function formatBetDate(value) {
-
-    if (!value) {
-
-        return "Unknown date";
-
-    }
-
-    const date =
-        new Date(value);
-
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-
-        return escapeHistoryHtml(
-            value
-        );
-
-    }
-
-    return date.toLocaleString(
-        "en-IN",
-        {
-            dateStyle: "medium",
-            timeStyle: "short"
-        }
-    );
-
-}
-
-
-/* ======================================================
-   STATUS CLASS
-====================================================== */
-
-function getStatusClass(status) {
-
-    const normalized =
-        String(
-            status || "pending"
-        )
-        .toLowerCase();
-
-    if (
-        normalized === "won" ||
-        normalized === "win" ||
-        normalized === "settled_won"
-    ) {
-
-        return "won";
-
-    }
-
-    if (
-        normalized === "lost" ||
-        normalized === "loss" ||
-        normalized === "settled_lost"
-    ) {
-
-        return "lost";
-
-    }
-
-    if (
-        normalized === "cancelled" ||
-        normalized === "canceled" ||
-        normalized === "void"
-    ) {
-
-        return "cancelled";
-
-    }
-
-    return "pending";
-
-}
-
-
-/* ======================================================
-   OPEN MY BETS
-====================================================== */
-
-function openMyBets() {
-
-    if (!myBetsOverlay) {
-
-        return;
-
-    }
-
-    myBetsOverlay.classList.add(
-        "open"
-    );
-
-    myBetsOverlay.setAttribute(
-        "aria-hidden",
-        "false"
-    );
-
-    document.body.style.overflow =
-        "hidden";
-
-    loadBetHistory();
-
-}
-
-
-/* ======================================================
-   CLOSE MY BETS
-====================================================== */
-
-function closeMyBetsModal() {
-
-    if (!myBetsOverlay) {
-
-        return;
-
-    }
-
-    myBetsOverlay.classList.remove(
-        "open"
-    );
-
-    myBetsOverlay.setAttribute(
-        "aria-hidden",
-        "true"
-    );
-
-    document.body.style.overflow =
-        "";
-
-}
-
-
-/* ======================================================
-   RENDER BET HISTORY
-====================================================== */
-
-function renderBetHistory(bets) {
-
-    if (!historyList) {
-
-        return;
-
-    }
-
-
-    if (
-        !Array.isArray(bets) ||
-        bets.length === 0
-    ) {
-
-        historyList.innerHTML = "";
-
-        historyList.hidden = true;
-
-        if (historyEmpty) {
-
-            historyEmpty.hidden = false;
-
-        }
-
-        if (myBetsCount) {
-
-            myBetsCount.textContent =
-                "0";
-
-        }
-
-        if (historyCount) {
-
-            historyCount.textContent =
-                "No bets yet";
-
-        }
-
-        return;
-
-    }
-
-
-    if (historyEmpty) {
-
-        historyEmpty.hidden = true;
-
-    }
-
-    historyList.hidden = false;
-
-
-    if (myBetsCount) {
-
-        myBetsCount.textContent =
-            String(bets.length);
-
-    }
-
-
-    if (historyCount) {
-
-        historyCount.textContent =
-            bets.length +
-            (
-                bets.length === 1
-                    ? " bet"
-                    : " bets"
-            );
-
-    }
-
-
-    let html = "";
-
-
-    bets.forEach(
-        function(bet) {
-
-            const status =
-                String(
-                    bet.status || "pending"
-                );
-
-
-            const statusClass =
-                getStatusClass(
-                    status
-                );
-
-
-            const odds =
-                Number(
-                    bet.total_odds || 0
-                );
-
-
-            html += `
-
-                <article
-                    class="bet-history-card"
-                    data-bet-id="${escapeHistoryHtml(bet.id)}"
-                >
-
-                    <div class="bet-history-top">
-
-                        <div>
-
-                            <div class="bet-history-id">
-
-                                Bet #${escapeHistoryHtml(bet.id)}
-
-                            </div>
-
-                            <div class="bet-history-date">
-
-                                ${formatBetDate(bet.created_at)}
-
-                            </div>
-
-                        </div>
-
-
-                        <span
-                            class="bet-status ${statusClass}"
-                        >
-
-                            ${escapeHistoryHtml(status)}
-
-                        </span>
-
-                    </div>
-
-
-                    <div class="bet-history-details">
-
-
-                        <div class="bet-history-detail">
-
-                            <span>
-                                Stake
-                            </span>
-
-                            <strong>
-                                ${formatMoney(bet.stake)}
-                            </strong>
-
-                        </div>
-
-
-                        <div class="bet-history-detail">
-
-                            <span>
-                                Odds
-                            </span>
-
-                            <strong>
-                                ${Number.isFinite(odds)
-                                    ? odds.toFixed(2)
-                                    : "0.00"}
-                            </strong>
-
-                        </div>
-
-
-                        <div class="bet-history-detail">
-
-                            <span>
-                                Potential Win
-                            </span>
-
-                            <strong>
-                                ${formatMoney(bet.potential_win)}
-                            </strong>
-
-                        </div>
-
-
-                    </div>
-
-                </article>
-
-            `;
-
-        }
-    );
-
-
-    historyList.innerHTML =
-        html;
-
-}
-
-
-/* ======================================================
-   LOAD BET HISTORY
-====================================================== */
-
-async function loadBetHistory() {
-
-    if (!historyList) {
-
-        return;
-
-    }
-
-
-    if (historyLoading) {
-
-        historyLoading.hidden =
-            false;
-
-    }
-
-
-    historyList.hidden =
-        true;
-
-
-    if (historyEmpty) {
-
-        historyEmpty.hidden =
-            true;
-
-    }
-
-
-    if (historyError) {
-
-        historyError.hidden =
-            true;
-
-    }
-
-
-    try {
-
-        const response =
-            await fetch(
-                window.CRICKBET_CONFIG.myBetsUrl,
-                {
-
-                    method: "GET",
-
-                    headers: {
-
-                        "Accept":
-                            "application/json"
-
-                    },
-
-                    credentials:
-                        "same-origin",
-
-                    cache:
-                        "no-store"
+                    loadMyBets();
 
                 }
-            );
 
 
-        const result =
-            await response
-                .json()
-                .catch(
-                    function() {
+                function closeMyBetsModal() {
 
-                        return {};
+                    if (!myBetsOverlay) {
+                        return;
+                    }
+
+                    myBetsOverlay.classList.remove(
+                        "open"
+                    );
+
+                    myBetsOverlay.setAttribute(
+                        "aria-hidden",
+                        "true"
+                    );
+
+                    document.body.style.overflow =
+                        "";
+
+                }
+
+
+                async function loadMyBets() {
+
+                    if (!myBetsContent) {
+                        return;
+                    }
+
+                    myBetsContent.innerHTML = `
+                        <div class="my-bets-loading">
+                            Loading bets...
+                        </div>
+                    `;
+
+
+                    try {
+
+                        const response =
+                            await fetch(
+                                window.CRICKBET_CONFIG
+                                    .myBetsUrl,
+                                {
+                                    method: "GET",
+                                    credentials:
+                                        "same-origin",
+                                    headers: {
+                                        "Accept":
+                                            "application/json"
+                                    }
+                                }
+                            );
+
+
+                        if (!response.ok) {
+
+                            throw new Error(
+                                "Unable to load bets."
+                            );
+
+                        }
+
+
+                        const result =
+                            await response.json();
+
+
+                        const bets =
+                            Array.isArray(result)
+                                ? result
+                                : (
+                                    result.bets || []
+                                );
+
+
+                        if (!bets.length) {
+
+                            myBetsContent.innerHTML = `
+
+                                <div class="my-bets-empty">
+
+                                    <div>
+                                        📋
+                                    </div>
+
+                                    <h3>
+                                        No bets yet
+                                    </h3>
+
+                                    <p>
+                                        Your betting history will
+                                        appear here.
+                                    </p>
+
+                                </div>
+
+                            `;
+
+                            return;
+
+                        }
+
+
+                        myBetsContent.innerHTML =
+                            bets.map(
+                                function (bet) {
+
+                                    return `
+
+                                        <div class="bet-history-card">
+
+                                            <div class="bet-history-top">
+
+                                                <strong>
+                                                    ${escapeHtml(
+                                                        bet.match_name ||
+                                                        bet.match ||
+                                                        "Cricket Match"
+                                                    )}
+                                                </strong>
+
+                                                <span class="bet-status">
+                                                    ${escapeHtml(
+                                                        bet.status ||
+                                                        "Pending"
+                                                    )}
+                                                </span>
+
+                                            </div>
+
+
+                                            <div class="bet-history-details">
+
+                                                <div>
+
+                                                    <span>
+                                                        Selection
+                                                    </span>
+
+                                                    <strong>
+                                                        ${escapeHtml(
+                                                            bet.selection ||
+                                                            bet.team ||
+                                                            "-"
+                                                        )}
+                                                    </strong>
+
+                                                </div>
+
+
+                                                <div>
+
+                                                    <span>
+                                                        Odds
+                                                    </span>
+
+                                                    <strong>
+                                                        ${escapeHtml(
+                                                            String(
+                                                                bet.odds ||
+                                                                "-"
+                                                            )
+                                                        )}
+                                                    </strong>
+
+                                                </div>
+
+
+                                                <div>
+
+                                                    <span>
+                                                        Stake
+                                                    </span>
+
+                                                    <strong>
+                                                        ₹${escapeHtml(
+                                                            String(
+                                                                bet.amount ||
+                                                                bet.stake ||
+                                                                "0"
+                                                            )
+                                                        )}
+                                                    </strong>
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                    `;
+
+                                }
+                            ).join("");
+
+                    }
+
+
+                    catch (error) {
+
+                        console.error(
+                            "My Bets error:",
+                            error
+                        );
+
+
+                        myBetsContent.innerHTML = `
+
+                            <div class="my-bets-empty">
+
+                                <div>
+                                    ⚠️
+                                </div>
+
+                                <h3>
+                                    Unable to load bets
+                                </h3>
+
+                                <p>
+                                    Please try again later.
+                                </p>
+
+                            </div>
+
+                        `;
+
+                    }
+
+                }
+
+
+                function escapeHtml(value) {
+
+                    return String(value)
+                        .replace(
+                            /&/g,
+                            "&amp;"
+                        )
+                        .replace(
+                            /</g,
+                            "&lt;"
+                        )
+                        .replace(
+                            />/g,
+                            "&gt;"
+                        )
+                        .replace(
+                            /"/g,
+                            "&quot;"
+                        )
+                        .replace(
+                            /'/g,
+                            "&#039;"
+                        );
+
+                }
+
+
+                if (openMyBets) {
+
+                    openMyBets.addEventListener(
+                        "click",
+                        openMyBetsModal
+                    );
+
+                }
+
+
+                if (closeMyBets) {
+
+                    closeMyBets.addEventListener(
+                        "click",
+                        closeMyBetsModal
+                    );
+
+                }
+
+
+                if (myBetsOverlay) {
+
+                    myBetsOverlay.addEventListener(
+                        "click",
+                        function (event) {
+
+                            if (
+                                event.target ===
+                                myBetsOverlay
+                            ) {
+
+                                closeMyBetsModal();
+
+                            }
+
+                        }
+                    );
+
+                }
+
+
+                document.addEventListener(
+                    "keydown",
+                    function (event) {
+
+                        if (
+                            event.key === "Escape" &&
+                            myBetsOverlay &&
+                            myBetsOverlay.classList.contains(
+                                "open"
+                            )
+                        ) {
+
+                            closeMyBetsModal();
+
+                        }
 
                     }
                 );
 
-
-        if (!response.ok) {
-
-            throw new Error(
-                result.message ||
-                "Could not load bet history."
-            );
-
-        }
-
-
-        if (!result.success) {
-
-            throw new Error(
-                result.message ||
-                "Could not load bet history."
-            );
-
-        }
-
-
-        /* ==============================================
-           UPDATE BALANCE
-        ============================================== */
-
-        if (
-            typeof result.balance !==
-            "undefined"
-        ) {
-
-            const balance =
-                Number(
-                    result.balance
-                );
-
-
-            if (
-                Number.isFinite(balance)
-            ) {
-
-                if (walletBalance) {
-
-                    walletBalance.textContent =
-                        formatMoney(balance);
-
-                    walletBalance.dataset.balance =
-                        String(balance);
-
-                }
-
-
-                if (myBetsBalance) {
-
-                    myBetsBalance.textContent =
-                        formatMoney(balance);
-
-                }
-
             }
-
-        }
-
-
-        /* ==============================================
-           RENDER
-        ============================================== */
-
-        renderBetHistory(
-            result.bets || []
         );
 
+    </script>
 
-    } catch (error) {
 
-        console.error(
-            "Bet history error:",
-            error
-        );
+    <!-- =====================================================
+         DASHBOARD JAVASCRIPT
+    ====================================================== -->
 
-
-        historyList.hidden =
-            true;
-
-
-        if (historyEmpty) {
-
-            historyEmpty.hidden =
-                true;
-
-        }
-
-
-        if (historyErrorMessage) {
-
-            historyErrorMessage.textContent =
-                error.message ||
-                "Please try again.";
-
-        }
-
-
-        if (historyError) {
-
-            historyError.hidden =
-                false;
-
-        }
-
-
-        if (myBetsCount) {
-
-            myBetsCount.textContent =
-                "!";
-
-        }
-
-
-        if (historyCount) {
-
-            historyCount.textContent =
-                "Unable to load bets";
-
-        }
-
-    } finally {
-
-        if (historyLoading) {
-
-            historyLoading.hidden =
-                true;
-
-        }
-
-    }
-
-}
-
-
-/* ======================================================
-   MY BETS BUTTON
-====================================================== */
-
-if (myBetsButton) {
-
-    myBetsButton.addEventListener(
-        "click",
-        openMyBets
-    );
-
-}
-
-
-/* ======================================================
-   CLOSE BUTTON
-====================================================== */
-
-if (closeMyBets) {
-
-    closeMyBets.addEventListener(
-        "click",
-        closeMyBetsModal
-    );
-
-}
-
-
-/* ======================================================
-   CLICK OUTSIDE MODAL
-====================================================== */
-
-if (myBetsOverlay) {
-
-    myBetsOverlay.addEventListener(
-        "click",
-        function(event) {
-
-            if (
-                event.target ===
-                myBetsOverlay
-            ) {
-
-                closeMyBetsModal();
-
-            }
-
-        }
-    );
-
-}
-
-
-/* ======================================================
-   REFRESH BETS
-====================================================== */
-
-if (refreshBetsButton) {
-
-    refreshBetsButton.addEventListener(
-        "click",
-        async function() {
-
-            refreshBetsButton.disabled =
-                true;
-
-            refreshBetsButton.textContent =
-                "↻ Loading...";
-
-            try {
-
-                await loadBetHistory();
-
-            } finally {
-
-                refreshBetsButton.disabled =
-                    false;
-
-                refreshBetsButton.textContent =
-                    "↻ Refresh";
-
-            }
-
-        }
-    );
-
-}
-
-
-/* ======================================================
-   RETRY
-====================================================== */
-
-if (retryBetsButton) {
-
-    retryBetsButton.addEventListener(
-        "click",
-        loadBetHistory
-    );
-
-}
-
-
-/* ======================================================
-   ESCAPE KEY
-====================================================== */
-
-document.addEventListener(
-    "keydown",
-    function(event) {
-
-        if (
-            event.key === "Escape" &&
-            myBetsOverlay &&
-            myBetsOverlay.classList.contains("open")
-        ) {
-
-            closeMyBetsModal();
-
-        }
-
-    }
-);
-
-
-/* ======================================================
-   REFRESH MATCHES
-====================================================== */
-
-const refreshButton =
-    document.getElementById(
-        "refreshButton"
-    );
-
-
-const emptyRefreshButton =
-    document.getElementById(
-        "emptyRefreshButton"
-    );
-
-
-function refreshDashboard() {
-
-    window.location.reload();
-
-}
-
-
-if (refreshButton) {
-
-    refreshButton.addEventListener(
-        "click",
-        refreshDashboard
-    );
-
-}
-
-
-if (emptyRefreshButton) {
-
-    emptyRefreshButton.addEventListener(
-        "click",
-        refreshDashboard
-    );
-
-}
-
-</script>
-
+    <script
+        src="/static/js/dashboard.js"
+        defer
+    ></script>
 
 </body>
 

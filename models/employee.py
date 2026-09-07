@@ -1,19 +1,13 @@
-from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    DateTime
-)
-
+from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
 
 from database.database import Base
 
 
-class Admin(Base):
+class Employee(Base):
 
-    __tablename__ = "admins"
-
+    __tablename__ = "employees"
 
     id = Column(
         Integer,
@@ -21,20 +15,17 @@ class Admin(Base):
         index=True
     )
 
-
-    username = Column(
+    employee_id = Column(
         String(50),
         unique=True,
         nullable=False,
         index=True
     )
 
-
     password = Column(
         String(255),
         nullable=False
     )
-
 
     status = Column(
         String(20),
@@ -42,9 +33,17 @@ class Admin(Base):
         nullable=False
     )
 
-
     created_at = Column(
         DateTime,
-        server_default=func.now(),
-        nullable=False
+        server_default=func.now()
+    )
+
+    deposit_requests = relationship(
+        "DepositRequest",
+        back_populates="employee"
+    )
+
+    withdrawal_requests = relationship(
+        "WithdrawalRequest",
+        back_populates="employee"
     )

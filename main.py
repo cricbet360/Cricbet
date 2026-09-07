@@ -11,6 +11,10 @@ from models.wallet import Wallet
 from models.transaction import Transaction
 from models.match import Match
 from models.bet import Bet
+from models.employee import Employee
+from models.admin import Admin
+from models.deposit_request import DepositRequest
+from models.withdrawal_request import WithdrawalRequest
 
 from auth.session import router as session_router
 from auth.routes import router as auth_router
@@ -26,7 +30,17 @@ from admin.routes import router as admin_router
 from routers.profile import router as profile_router
 from routers.account import router as account_router
 from routers.staff_balance import router as staff_balance_router
+from routers.wallet_transactions import (
+    router as wallet_transactions_router
+)
 
+from employee.auth import (
+    router as employee_auth_router
+)
+
+from employee.routes import (
+    router as employee_router
+)
 
 app = FastAPI(
     title="CrickBet"
@@ -113,4 +127,16 @@ app.include_router(
 
 app.include_router(
     staff_balance_router
+)
+
+app.include_router(
+    wallet_transactions_router
+)
+
+app.include_router(
+    employee_auth_router
+)
+
+app.include_router(
+    employee_router
 )

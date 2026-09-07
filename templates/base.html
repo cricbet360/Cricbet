@@ -7,7 +7,7 @@
 
     <title>CrickBet</title>
 
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/style.css?v2">
     <link rel="stylesheet" href="/static/css/navbar.css">
     <link rel="stylesheet" href="/static/css/sidebar.css">
     <link rel="stylesheet" href="/static/css/cards.css">
@@ -34,6 +34,10 @@
 </div>
 
 {% include "partials/footer.html" %}
+
+<script
+    src="{{ url_for('static', path='js/main.js') }}"
+></script>
 
 </body>
 
