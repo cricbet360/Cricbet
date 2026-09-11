@@ -10,16 +10,18 @@ router = APIRouter(
 )
 
 
-# ==========================================================
+# =========================================================
 # HEALTH
-# ==========================================================
+# =========================================================
 
 @router.get("/health")
 async def health():
 
     try:
 
-        data = proexch_api.health_check()
+        data = (
+            proexch_api.health_check()
+        )
 
         return {
             "ok": True,
@@ -39,16 +41,18 @@ async def health():
         )
 
 
-# ==========================================================
+# =========================================================
 # MATCHES
-# ==========================================================
+# =========================================================
 
 @router.get("/matches")
 async def matches():
 
     try:
 
-        data = proexch_api.get_matches()
+        data = (
+            proexch_api.get_matches()
+        )
 
         return {
             "ok": True,
@@ -68,21 +72,23 @@ async def matches():
         )
 
 
-# ==========================================================
+# =========================================================
 # ODDS
-# ==========================================================
+# =========================================================
 
 @router.get("/odds")
 async def odds(
     game_id: str,
-    market_id: str,
+    market_id: str = "",
 ):
 
     try:
 
-        data = proexch_api.get_odds(
-            game_id,
-            market_id,
+        data = (
+            proexch_api.get_odds(
+                game_id,
+                market_id,
+            )
         )
 
         return {
@@ -103,9 +109,9 @@ async def odds(
         )
 
 
-# ==========================================================
+# =========================================================
 # RESULTS
-# ==========================================================
+# =========================================================
 
 @router.get("/results")
 async def results(
@@ -115,12 +121,16 @@ async def results(
     try:
 
         ids = [
-            x.strip()
-            for x in market_ids.split(",")
-            if x.strip()
+            value.strip()
+            for value in market_ids.split(",")
+            if value.strip()
         ]
 
-        data = proexch_api.get_results(ids)
+        data = (
+            proexch_api.get_results(
+                ids
+            )
+        )
 
         return {
             "ok": True,

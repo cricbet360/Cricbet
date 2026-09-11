@@ -13,12 +13,12 @@ BASE_URL = "https://apidata.proexch.in"
 REQUEST_TIMEOUT = 10
 MAX_RETRIES = 2
 
-# Leave empty because your VPS IP is whitelisted.
+# Keep empty when the VPS/IP is directly allowed by ProExch.
 PROXY = ""
 
 
 # =========================================================
-# SESSION
+# HTTP SESSION
 # =========================================================
 
 session = requests.Session()
@@ -64,8 +64,6 @@ def _request(
 ):
     url = f"{BASE_URL}{endpoint}"
 
-    proxies = _get_proxies()
-
     print()
     print("========================================")
     print("PROEXCH REQUEST")
@@ -80,14 +78,19 @@ def _request(
     last_error = None
 
     for attempt in range(1, MAX_RETRIES + 2):
+
         try:
-            print("ATTEMPT:", attempt)
+
+            print(
+                "ATTEMPT:",
+                attempt,
+            )
 
             response = session.get(
                 url,
                 params=params,
                 timeout=REQUEST_TIMEOUT,
-                proxies=proxies,
+                proxies=_get_proxies(),
             )
 
             print(
@@ -101,6 +104,7 @@ def _request(
                 data = response.json()
 
             except ValueError as exc:
+
                 raise ProExchError(
                     "ProExch returned invalid JSON."
                 ) from exc
@@ -113,6 +117,7 @@ def _request(
             return data
 
         except requests.RequestException as exc:
+
             last_error = exc
 
             print(
@@ -121,6 +126,7 @@ def _request(
             )
 
             if attempt <= MAX_RETRIES:
+
                 delay = attempt
 
                 print(
@@ -130,6 +136,7 @@ def _request(
                 time.sleep(delay)
 
         except ProExchError as exc:
+
             last_error = exc
             break
 
@@ -139,83 +146,92 @@ def _request(
 
 
 # =========================================================
-# RESPONSE EXTRACTION
+# UNWRAP PROVIDER RESPONSE
 # =========================================================
 
-def _extract_data(data):
+def _unwrap_data(data):
     """
-    Handles common ProExch response structures.
-
-    Examples:
+    ProExch commonly returns:
 
     {
         "statusCode": 200,
         "data": {
-            "data": [...]
+            ...
         }
     }
 
-    or:
-
-    {
-        "data": [...]
-    }
-
-    or:
-
-    [...]
+    This function returns the inner data object.
     """
-
-    if isinstance(data, list):
-        return data
 
     if not isinstance(data, dict):
         return data
 
-    value = data.get("data")
+    inner = data.get("data")
 
-    if isinstance(value, dict):
-        nested = value.get("data")
-
-        if nested is not None:
-            return nested
-
-        return value
-
-    if value is not None:
-        return value
+    if inner is not None:
+        return inner
 
     return data
 
 
+# =========================================================
+# EXTRACT LIST
+# =========================================================
+
 def _extract_list(data):
+
     if isinstance(data, list):
         return data
 
     if not isinstance(data, dict):
         return []
 
-    candidates = [
-        data.get("data"),
-        data.get("result"),
-        data.get("results"),
-        data.get("matches"),
-        data.get("odds"),
-    ]
+    for key in (
+        "data",
+        "result",
+        "results",
+        "matches",
+        "odds",
+    ):
 
-    for candidate in candidates:
+        value = data.get(key)
 
-        if isinstance(candidate, list):
-            return candidate
+        if isinstance(value, list):
+            return value
 
-        if isinstance(candidate, dict):
+        if isinstance(value, dict):
 
-            nested = candidate.get("data")
+            nested = value.get("data")
 
             if isinstance(nested, list):
                 return nested
 
     return []
+
+
+# =========================================================
+# HEALTH CHECK
+# =========================================================
+
+def health_check():
+
+    try:
+
+        data = _request(
+            "/api/cricket/matches"
+        )
+
+        return {
+            "status": "ok",
+            "base_url": BASE_URL,
+            "response": data,
+        }
+
+    except Exception as exc:
+
+        raise ProExchError(
+            str(exc)
+        )
 
 
 # =========================================================
@@ -245,13 +261,17 @@ def get_matches():
 def get_match(game_id):
 
     if game_id is None:
+
         raise ProExchError(
             "game_id is required."
         )
 
-    game_id = str(game_id).strip()
+    game_id = str(
+        game_id
+    ).strip()
 
     if not game_id:
+
         raise ProExchError(
             "game_id is empty."
         )
@@ -263,12 +283,17 @@ def get_match(game_id):
         if not isinstance(match, dict):
             continue
 
-        match_game_id = match.get("gameId")
+        current_game_id = (
+            match.get("gameId")
+        )
 
-        if match_game_id is None:
+        if current_game_id is None:
             continue
 
-        if str(match_game_id).strip() == game_id:
+        if (
+            str(current_game_id).strip()
+            == game_id
+        ):
             return match
 
     return None
@@ -278,42 +303,512 @@ def get_match(game_id):
 # ODDS
 # =========================================================
 
-def get_odds(game_id):
+def get_odds(
+    game_id,
+    market_id=None,
+):
 
     if game_id is None:
+
         raise ProExchError(
             "game_id is required."
         )
 
-    game_id = str(game_id).strip()
+    game_id = str(
+        game_id
+    ).strip()
 
     if not game_id:
+
         raise ProExchError(
             "game_id is empty."
         )
 
-    return _request(
+    params = {
+        "gameId": game_id,
+    }
+
+    # Some existing CricBet code passes market_id.
+    # The current ProExch endpoint primarily uses gameId,
+    # but accepting market_id keeps the project compatible.
+
+    if market_id is not None:
+
+        market_id = str(
+            market_id
+        ).strip()
+
+        if market_id:
+
+            params["marketId"] = market_id
+
+    raw = _request(
         "/api/cricket/odds",
-        params={
-            "gameId": game_id,
-        },
+        params=params,
     )
+
+    odds = _unwrap_data(raw)
+
+    if not isinstance(odds, dict):
+
+        odds = {}
+
+    return odds
+
+
+# =========================================================
+# PARSE MATCH ODDS
+# =========================================================
+
+def parse_match_odds(
+    match_odds_raw,
+):
+
+    if not isinstance(
+        match_odds_raw,
+        list,
+    ):
+        return []
+
+    parsed = []
+
+    for market in match_odds_raw:
+
+        if not isinstance(
+            market,
+            dict,
+        ):
+            continue
+
+        market_name = (
+            market.get("mName")
+            or market.get("marketName")
+            or "MATCH ODDS"
+        )
+
+        odd_datas = market.get(
+            "oddDatas"
+        )
+
+        if not isinstance(
+            odd_datas,
+            list,
+        ):
+            odd_datas = []
+
+        # Sometimes the provider may return
+        # runner data directly.
+        if not odd_datas:
+
+            runners = market.get(
+                "runners"
+            )
+
+            if isinstance(
+                runners,
+                list,
+            ):
+                odd_datas = runners
+
+        runners_result = []
+
+        for odd in odd_datas:
+
+            if not isinstance(
+                odd,
+                dict,
+            ):
+                continue
+
+            selection_id = (
+                odd.get("sid")
+                or odd.get("selectionId")
+                or odd.get("selection_id")
+            )
+
+            runner_name = (
+                odd.get("sName")
+                or odd.get("runnerName")
+                or odd.get("selectionName")
+                or odd.get("name")
+                or ""
+            )
+
+            back = _extract_price(
+                odd,
+                [
+                    "back",
+                    "backPrice",
+                    "backOdds",
+                    "b1",
+                    "b1Price",
+                    "back1",
+                ],
+            )
+
+            lay = _extract_price(
+                odd,
+                [
+                    "lay",
+                    "layPrice",
+                    "layOdds",
+                    "l1",
+                    "l1Price",
+                    "lay1",
+                ],
+            )
+
+            back_size = _extract_price(
+                odd,
+                [
+                    "backSize",
+                    "backVolume",
+                    "b1Size",
+                ],
+            )
+
+            lay_size = _extract_price(
+                odd,
+                [
+                    "laySize",
+                    "layVolume",
+                    "l1Size",
+                ],
+            )
+
+            runners_result.append(
+                {
+                    "selection_id": (
+                        str(selection_id)
+                        if selection_id is not None
+                        else ""
+                    ),
+                    "name": str(
+                        runner_name
+                    ),
+                    "back": back,
+                    "lay": lay,
+                    "back_size": back_size,
+                    "lay_size": lay_size,
+                    "raw": odd,
+                }
+            )
+
+        parsed.append(
+            {
+                "name": str(
+                    market_name
+                ),
+                "market_name": str(
+                    market_name
+                ),
+                "runners": runners_result,
+                "raw": market,
+            }
+        )
+
+    return parsed
+
+
+# =========================================================
+# PARSE FANCY ODDS
+# =========================================================
+
+def parse_fancy_odds(
+    fancy_odds_raw,
+):
+
+    if not isinstance(
+        fancy_odds_raw,
+        list,
+    ):
+        return []
+
+    parsed = []
+
+    for market in fancy_odds_raw:
+
+        if not isinstance(
+            market,
+            dict,
+        ):
+            continue
+
+        market_name = (
+            market.get("mName")
+            or market.get("marketName")
+            or market.get("name")
+            or "FANCY"
+        )
+
+        odd_datas = market.get(
+            "oddDatas"
+        )
+
+        if not isinstance(
+            odd_datas,
+            list,
+        ):
+            odd_datas = []
+
+        rows = []
+
+        for odd in odd_datas:
+
+            if not isinstance(
+                odd,
+                dict,
+            ):
+                continue
+
+            sid = (
+                odd.get("sid")
+                or odd.get("selectionId")
+                or odd.get("selection_id")
+            )
+
+            name = (
+                odd.get("sName")
+                or odd.get("runnerName")
+                or odd.get("selectionName")
+                or odd.get("name")
+                or ""
+            )
+
+            yes = _extract_price(
+                odd,
+                [
+                    "yes",
+                    "yesPrice",
+                    "back",
+                    "backPrice",
+                    "b1",
+                ],
+            )
+
+            no = _extract_price(
+                odd,
+                [
+                    "no",
+                    "noPrice",
+                    "lay",
+                    "layPrice",
+                    "l1",
+                ],
+            )
+
+            rows.append(
+                {
+                    "sid": (
+                        str(sid)
+                        if sid is not None
+                        else ""
+                    ),
+                    "name": str(name),
+                    "yes": yes,
+                    "no": no,
+                    "raw": odd,
+                }
+            )
+
+        parsed.append(
+            {
+                "name": str(
+                    market_name
+                ),
+                "market_name": str(
+                    market_name
+                ),
+                "odd_datas": rows,
+                "raw": market,
+            }
+        )
+
+    return parsed
+
+
+# =========================================================
+# PRICE EXTRACTION
+# =========================================================
+
+def _extract_price(
+    data,
+    keys,
+):
+
+    if not isinstance(
+        data,
+        dict,
+    ):
+        return None
+
+    for key in keys:
+
+        value = data.get(key)
+
+        if value is None:
+            continue
+
+        if isinstance(
+            value,
+            dict,
+        ):
+
+            for nested_key in (
+                "price",
+                "odds",
+                "rate",
+                "value",
+            ):
+
+                nested_value = value.get(
+                    nested_key
+                )
+
+                if nested_value is not None:
+
+                    return _to_float(
+                        nested_value
+                    )
+
+        value = _to_float(
+            value
+        )
+
+        if value is not None:
+
+            return value
+
+    return None
+
+
+def _to_float(value):
+
+    if value is None:
+        return None
+
+    try:
+
+        number = float(
+            str(value).strip()
+        )
+
+        if number <= 0:
+            return None
+
+        return number
+
+    except (
+        TypeError,
+        ValueError,
+    ):
+
+        return None
+
+
+# =========================================================
+# FANCY MARKET IDS
+# =========================================================
+
+def get_fancy_market_ids(
+    game_id,
+    fancy_odds,
+):
+
+    if game_id is None:
+        return []
+
+    game_id = str(
+        game_id
+    ).strip()
+
+    if not game_id:
+        return []
+
+    if not isinstance(
+        fancy_odds,
+        list,
+    ):
+        return []
+
+    market_ids = []
+
+    for market in fancy_odds:
+
+        if not isinstance(
+            market,
+            dict,
+        ):
+            continue
+
+        odd_datas = market.get(
+            "oddDatas",
+            [],
+        )
+
+        if not isinstance(
+            odd_datas,
+            list,
+        ):
+            continue
+
+        for odd in odd_datas:
+
+            if not isinstance(
+                odd,
+                dict,
+            ):
+                continue
+
+            sid = (
+                odd.get("sid")
+                or odd.get("selectionId")
+                or odd.get("selection_id")
+            )
+
+            if sid is None:
+                continue
+
+            sid = str(
+                sid
+            ).strip()
+
+            if not sid:
+                continue
+
+            market_id = (
+                f"{game_id}_{sid}"
+            )
+
+            if market_id not in market_ids:
+
+                market_ids.append(
+                    market_id
+                )
+
+    return market_ids
 
 
 # =========================================================
 # MATCH RESULT
 # =========================================================
 
-def get_match_result(market_id):
+def get_match_result(
+    market_id,
+):
 
     if market_id is None:
+
         raise ProExchError(
             "market_id is required."
         )
 
-    market_id = str(market_id).strip()
+    market_id = str(
+        market_id
+    ).strip()
 
     if not market_id:
+
         raise ProExchError(
             "market_id is empty."
         )
@@ -331,19 +826,19 @@ def get_match_result(market_id):
 # BOOKMAKER RESULT
 # =========================================================
 
-def get_bookmaker_result(game_id):
+def get_bookmaker_result(
+    game_id,
+):
 
     if game_id is None:
+
         raise ProExchError(
             "game_id is required."
         )
 
-    game_id = str(game_id).strip()
-
-    if not game_id:
-        raise ProExchError(
-            "game_id is empty."
-        )
+    game_id = str(
+        game_id
+    ).strip()
 
     return _request(
         "/api/betfair-result",
@@ -373,49 +868,28 @@ def get_fancy_result(
             "sid is required."
         )
 
-    game_id = str(game_id).strip()
-    sid = str(sid).strip()
-
-    if not game_id:
-        raise ProExchError(
-            "game_id is empty."
-        )
-
-    if not sid:
-        raise ProExchError(
-            "sid is empty."
-        )
-
-    market_id = f"{game_id}_{sid}"
-
-    return _request(
-        "/api/betfair-result",
-        params={
-            "marketId": market_id,
-            "type": "new_fancy",
-        },
+    market_id = (
+        f"{str(game_id).strip()}_{str(sid).strip()}"
     )
 
+    return get_fancy_result_by_market_id(
+        market_id
+    )
 
-# =========================================================
-# FANCY RESULT BY MARKET ID
-# =========================================================
 
 def get_fancy_result_by_market_id(
     market_id,
 ):
 
     if market_id is None:
+
         raise ProExchError(
             "market_id is required."
         )
 
-    market_id = str(market_id).strip()
-
-    if not market_id:
-        raise ProExchError(
-            "market_id is empty."
-        )
+    market_id = str(
+        market_id
+    ).strip()
 
     return _request(
         "/api/betfair-result",
@@ -424,70 +898,6 @@ def get_fancy_result_by_market_id(
             "type": "new_fancy",
         },
     )
-
-
-# =========================================================
-# FANCY MARKET IDS
-# =========================================================
-
-def get_fancy_market_ids(
-    odds_data,
-    game_id,
-):
-
-    if not isinstance(odds_data, dict):
-        return []
-
-    fancy_odds = odds_data.get(
-        "fancyOdds",
-        [],
-    )
-
-    if not isinstance(fancy_odds, list):
-        return []
-
-    market_ids = []
-
-    for market in fancy_odds:
-
-        if not isinstance(market, dict):
-            continue
-
-        odd_datas = market.get(
-            "oddDatas",
-            [],
-        )
-
-        if not isinstance(odd_datas, list):
-            continue
-
-        for odd in odd_datas:
-
-            if not isinstance(odd, dict):
-                continue
-
-            sid = (
-                odd.get("sid")
-                or odd.get("selectionId")
-                or odd.get("selection_id")
-            )
-
-            if sid is None:
-                continue
-
-            sid = str(sid).strip()
-
-            if not sid:
-                continue
-
-            market_id = f"{game_id}_{sid}"
-
-            if market_id not in market_ids:
-                market_ids.append(
-                    market_id
-                )
-
-    return market_ids
 
 
 # =========================================================
@@ -499,9 +909,20 @@ def get_all_fancy_results(
     game_id,
 ):
 
-    market_ids = get_fancy_market_ids(
+    if not isinstance(
         odds_data,
+        dict,
+    ):
+        return []
+
+    fancy_odds = odds_data.get(
+        "fancyOdds",
+        [],
+    )
+
+    market_ids = get_fancy_market_ids(
         game_id,
+        fancy_odds,
     )
 
     results = []
@@ -510,7 +931,62 @@ def get_all_fancy_results(
 
         try:
 
-            result = get_fancy_result_by_market_id(
+            result = (
+                get_fancy_result_by_market_id(
+                    market_id
+                )
+            )
+
+            results.append(
+                {
+                    "market_id": market_id,
+                    "result": result,
+                }
+            )
+
+        except Exception as exc:
+
+            results.append(
+                {
+                    "market_id": market_id,
+                    "result": None,
+                    "error": str(exc),
+                }
+            )
+
+    return results
+
+
+# =========================================================
+# RESULTS
+# =========================================================
+
+def get_results(
+    market_ids,
+):
+
+    if not isinstance(
+        market_ids,
+        list,
+    ):
+        market_ids = [
+            str(market_ids)
+        ]
+
+    results = []
+
+    for market_id in market_ids:
+
+        market_id = str(
+            market_id
+        ).strip()
+
+        if not market_id:
+            continue
+
+        try:
+
+            result = get_match_result(
                 market_id
             )
 
@@ -543,7 +1019,10 @@ def get_complete_match_data(
     market_id,
 ):
 
-    odds = get_odds(game_id)
+    odds = get_odds(
+        game_id,
+        market_id,
+    )
 
     match_result = None
 
@@ -579,9 +1058,11 @@ def get_complete_match_data(
 
     try:
 
-        fancy_results = get_all_fancy_results(
-            odds,
-            game_id,
+        fancy_results = (
+            get_all_fancy_results(
+                odds,
+                game_id,
+            )
         )
 
     except Exception as exc:

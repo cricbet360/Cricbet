@@ -11,11 +11,16 @@ router = APIRouter(
 
 
 # =========================================================
-# AUTHENTICATION
+# AUTH CHECK
 # =========================================================
 
-def _is_logged_in(request: Request):
-    return request.session.get("user_id") is not None
+def _is_logged_in(
+    request: Request,
+):
+    return (
+        request.session.get("user_id")
+        is not None
+    )
 
 
 # =========================================================
@@ -33,20 +38,7 @@ async def cricket_matches(
     print("GET /api/cricket/matches")
     print("========================================")
 
-    user_id = request.session.get(
-        "user_id"
-    )
-
-    print(
-        "SESSION USER ID:",
-        user_id,
-    )
-
-    if not user_id:
-
-        print(
-            "CRICKET API: USER NOT AUTHENTICATED"
-        )
+    if not _is_logged_in(request):
 
         return JSONResponse(
             {
@@ -59,16 +51,16 @@ async def cricket_matches(
 
     try:
 
-        matches = proexch_api.get_matches()
+        matches = (
+            proexch_api.get_matches()
+        )
 
     except Exception as exc:
 
-        print()
-        print("========================================")
-        print("PROEXCH MATCH LIST ERROR")
-        print(str(exc))
-        print("========================================")
-        print()
+        print(
+            "PROEXCH MATCH ERROR:",
+            str(exc),
+        )
 
         return JSONResponse(
             {
@@ -83,15 +75,22 @@ async def cricket_matches(
 
     for item in matches:
 
-        if not isinstance(item, dict):
+        if not isinstance(
+            item,
+            dict,
+        ):
             continue
 
-        game_id = item.get("gameId")
+        game_id = item.get(
+            "gameId"
+        )
 
         if game_id is None:
             continue
 
-        game_id = str(game_id).strip()
+        game_id = str(
+            game_id
+        ).strip()
 
         if not game_id:
             continue
@@ -102,57 +101,6 @@ async def cricket_matches(
 
         event_id = item.get(
             "eventId"
-        )
-
-        event_name = (
-            item.get("eventName")
-            or "Cricket Match"
-        )
-
-        event_time = (
-            item.get("eventTime")
-            or ""
-        )
-
-        in_play = bool(
-            item.get(
-                "inPlay",
-                False,
-            )
-        )
-
-        tv = bool(
-            item.get(
-                "tv",
-                False,
-            )
-        )
-
-        team1 = (
-            item.get("runnerName1")
-            or "Team 1"
-        )
-
-        team2 = (
-            item.get("runnerName2")
-            or "Team 2"
-        )
-
-        team3 = (
-            item.get("runnerName3")
-            or "The Draw"
-        )
-
-        selection_id1 = item.get(
-            "selectionId1"
-        )
-
-        selection_id2 = item.get(
-            "selectionId2"
-        )
-
-        selection_id3 = item.get(
-            "selectionId3"
         )
 
         result.append(
@@ -172,45 +120,73 @@ async def cricket_matches(
                 ),
 
                 "event_name": str(
-                    event_name
+                    item.get(
+                        "eventName"
+                    )
+                    or "Cricket Match"
                 ),
 
                 "event_time": str(
-                    event_time
+                    item.get(
+                        "eventTime"
+                    )
+                    or ""
                 ),
 
-                "in_play": in_play,
+                "in_play": bool(
+                    item.get(
+                        "inPlay",
+                        False,
+                    )
+                ),
 
-                "tv": tv,
+                "tv": bool(
+                    item.get(
+                        "tv",
+                        False,
+                    )
+                ),
 
                 "team1": str(
-                    team1
+                    item.get(
+                        "runnerName1"
+                    )
+                    or "Team 1"
                 ),
 
                 "team2": str(
-                    team2
+                    item.get(
+                        "runnerName2"
+                    )
+                    or "Team 2"
                 ),
 
                 "team3": str(
-                    team3
+                    item.get(
+                        "runnerName3"
+                    )
+                    or "The Draw"
                 ),
 
-                "selection_id1": (
-                    str(selection_id1)
-                    if selection_id1 is not None
-                    else ""
+                "selection_id1": str(
+                    item.get(
+                        "selectionId1"
+                    )
+                    or ""
                 ),
 
-                "selection_id2": (
-                    str(selection_id2)
-                    if selection_id2 is not None
-                    else ""
+                "selection_id2": str(
+                    item.get(
+                        "selectionId2"
+                    )
+                    or ""
                 ),
 
-                "selection_id3": (
-                    str(selection_id3)
-                    if selection_id3 is not None
-                    else ""
+                "selection_id3": str(
+                    item.get(
+                        "selectionId3"
+                    )
+                    or ""
                 ),
             }
         )
@@ -219,20 +195,6 @@ async def cricket_matches(
         "PROEXCH MATCHES:",
         len(result),
     )
-
-    for match in result[:10]:
-
-        print(
-            "GAME:",
-            match["game_id"],
-            "| MARKET:",
-            match["market_id"],
-            "| EVENT:",
-            match["event_name"],
-        )
-
-    print("========================================")
-    print()
 
     return {
         "success": True,
@@ -248,12 +210,14 @@ async def cricket_matches(
 async def cricket_odds(
     request: Request,
     gameId: str,
+    marketId: str = "",
 ):
 
     print()
     print("========================================")
     print("CRICBET ODDS API")
     print("GAME ID:", gameId)
+    print("MARKET ID:", marketId)
     print("========================================")
 
     if not _is_logged_in(request):
@@ -267,35 +231,19 @@ async def cricket_odds(
             status_code=401,
         )
 
-    game_id = str(
-        gameId
-    ).strip()
-
-    if not game_id:
-
-        return JSONResponse(
-            {
-                "success": False,
-                "error": "gameId is required",
-                "odds": None,
-            },
-            status_code=400,
-        )
-
     try:
 
         odds = proexch_api.get_odds(
-            game_id
+            game_id=gameId,
+            market_id=marketId,
         )
 
     except Exception as exc:
 
-        print()
-        print("========================================")
-        print("PROEXCH ODDS ERROR")
-        print(str(exc))
-        print("========================================")
-        print()
+        print(
+            "PROEXCH ODDS ERROR:",
+            str(exc),
+        )
 
         return JSONResponse(
             {
@@ -308,7 +256,8 @@ async def cricket_odds(
 
     return {
         "success": True,
-        "game_id": game_id,
+        "game_id": str(gameId),
+        "market_id": str(marketId),
         "odds": odds,
     }
 
@@ -323,12 +272,6 @@ async def cricket_match(
     game_id: str,
 ):
 
-    print()
-    print("========================================")
-    print("CRICBET SINGLE MATCH API")
-    print("GAME ID:", game_id)
-    print("========================================")
-
     if not _is_logged_in(request):
 
         return JSONResponse(
@@ -341,16 +284,13 @@ async def cricket_match(
 
     try:
 
-        match = proexch_api.get_match(
-            game_id
+        match = (
+            proexch_api.get_match(
+                game_id
+            )
         )
 
     except Exception as exc:
-
-        print(
-            "PROEXCH SINGLE MATCH ERROR:",
-            str(exc),
-        )
 
         return JSONResponse(
             {
@@ -387,13 +327,6 @@ async def complete_match(
     marketId: str = "",
 ):
 
-    print()
-    print("========================================")
-    print("CRICBET COMPLETE MATCH API")
-    print("GAME ID:", game_id)
-    print("MARKET ID:", marketId)
-    print("========================================")
-
     if not _is_logged_in(request):
 
         return JSONResponse(
@@ -406,8 +339,10 @@ async def complete_match(
 
     try:
 
-        match = proexch_api.get_match(
-            game_id
+        match = (
+            proexch_api.get_match(
+                game_id
+            )
         )
 
         if match is None:
@@ -430,15 +365,14 @@ async def complete_match(
 
             return {
                 "success": True,
-                "game_id": game_id,
                 "match": match,
-                "odds": None,
+                "odds": {},
                 "match_result": None,
                 "bookmaker_result": None,
                 "fancy_results": [],
             }
 
-        complete = (
+        data = (
             proexch_api.get_complete_match_data(
                 game_id,
                 market_id,
@@ -448,17 +382,15 @@ async def complete_match(
         return {
             "success": True,
             "match": match,
-            **complete,
+            **data,
         }
 
     except Exception as exc:
 
-        print()
-        print("========================================")
-        print("COMPLETE MATCH ERROR")
-        print(str(exc))
-        print("========================================")
-        print()
+        print(
+            "COMPLETE MATCH ERROR:",
+            str(exc),
+        )
 
         return JSONResponse(
             {
