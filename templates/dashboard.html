@@ -1,7 +1,9 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -9,359 +11,159 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>CrickBet</title>
+    <title>CricBet - Cricket</title>
 
     <link
         rel="stylesheet"
-        href="/static/css/dashboard.css"
+        href="/static/css/dashboard.css?v=32"
     >
+
+    <script
+        src="/static/js/dashboard.js?v=32"
+        defer
+    ></script>
+
 </head>
+
 
 <body>
 
-    <!-- =====================================================
-         TOP BAR
-    ====================================================== -->
 
-    <header class="topbar">
+<!-- =====================================================
+     TOP BAR
+===================================================== -->
 
-        <div class="brand">
+<header class="topbar">
 
-            <span class="brand-icon">🏏</span>
+    <div class="brand">
 
-            <span>CrickBet</span>
+        <span class="brand-icon">🏏</span>
 
-        </div>
+        <span class="brand-text">
+            CRIC<span class="brand-accent">BET</span>
+        </span>
 
-        <div class="topbar-right">
+    </div>
 
-            <!-- BALANCE -->
 
-            <span
-                class="balance"
-                id="walletBalance"
-                data-balance="{{ user.balance or 0 }}"
-            >
-                ₹{{ "%.2f"|format(user.balance or 0) }}
+    <div class="topbar-right">
+
+
+        <!-- BALANCE -->
+
+        <div class="balance">
+
+            <span class="balance-label">
+                Balance
             </span>
 
-            <!-- DEPOSIT -->
-
-            <button
-                type="button"
-                class="topbar-action deposit-action"
-                id="openDeposit"
+            <span
+                id="balance"
+                class="balance-value"
             >
-                + Deposit
-            </button>
-
-            <!-- WITHDRAW -->
-
-            <button
-                type="button"
-                class="topbar-action withdraw-action"
-                id="openWithdraw"
-            >
-                - Withdraw
-            </button>
-
-            <!-- PROFILE -->
-
-            <a
-                href="/profile"
-                class="topbar-action profile-action"
-            >
-                👤 Profile
-            </a>
-
-            <!-- LOGOUT -->
-
-            <a
-                href="/logout"
-                class="logout"
-            >
-                Logout
-            </a>
+                ₹0.00
+            </span>
 
         </div>
 
-    </header>
 
+        <!-- DEPOSIT -->
 
-    <!-- =====================================================
-         MAIN DASHBOARD
-    ====================================================== -->
+        <button
+            type="button"
+            id="depositBtn"
+            class="topbar-action deposit-action"
+        >
+            Deposit
+        </button>
 
-    <main class="dashboard-container">
 
-        <!-- =================================================
-             WELCOME / HEADER
-        ================================================== -->
+        <!-- WITHDRAW -->
 
-        <section class="dashboard-header">
+        <button
+            type="button"
+            id="withdrawBtn"
+            class="topbar-action withdraw-action"
+        >
+            Withdraw
+        </button>
 
-            <div>
 
-                <h1>
-                    Welcome, {{ user.username }}
-                </h1>
+        <!-- PROFILE -->
 
-                <p>
-                    Select a match and place your bets.
-                </p>
+        <a
+            href="/profile"
+            class="profile-link"
+        >
+            Profile
+        </a>
 
-            </div>
 
-            <div class="dashboard-balance">
+        <!-- LOGOUT -->
 
-                <span>
-                    Available Balance
-                </span>
+        <a
+            href="/logout"
+            class="logout"
+        >
+            Logout
+        </a>
 
-                <strong>
-                    ₹{{ "%.2f"|format(user.balance or 0) }}
-                </strong>
+    </div>
 
-            </div>
+</header>
 
-        </section>
 
+<!-- =====================================================
+     MAIN NAVIGATION
+===================================================== -->
 
-        <!-- =================================================
-             MATCHES
-        ================================================== -->
+<nav class="main-mode-nav">
 
-        <section class="matches-section">
-
-            <div class="section-header">
-
-                <div>
-
-                    <h2>
-                        🏏 Live Cricket
-                    </h2>
-
-                    <p>
-                        Select an event to view available markets.
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <div class="matches-grid">
-
-                {% if matches %}
-
-                    {% for match in matches %}
-
-                        <article
-                            class="match-card"
-                            data-match-id="{{ match.id }}"
-                        >
-
-                            <div class="match-card-header">
-
-                                <span class="match-status">
-
-                                    {% if match.status %}
-                                        {{ match.status }}
-                                    {% else %}
-                                        LIVE
-                                    {% endif %}
-
-                                </span>
-
-
-                                {% if match.league %}
-
-                                    <span class="match-league">
-                                        {{ match.league }}
-                                    </span>
-
-                                {% endif %}
-
-                            </div>
-
-
-                            <div class="match-teams">
-
-                                <div class="team">
-
-                                    <span class="team-icon">
-                                        🏏
-                                    </span>
-
-                                    <strong>
-                                        {{ match.team1 }}
-                                    </strong>
-
-                                </div>
-
-
-                                <div class="match-vs">
-                                    VS
-                                </div>
-
-
-                                <div class="team">
-
-                                    <span class="team-icon">
-                                        🏏
-                                    </span>
-
-                                    <strong>
-                                        {{ match.team2 }}
-                                    </strong>
-
-                                </div>
-
-                            </div>
-
-
-                            {% if match.start_time %}
-
-                                <div class="match-time">
-
-                                    🕐
-                                    {{ match.start_time }}
-
-                                </div>
-
-                            {% endif %}
-
-
-                            <div class="match-action">
-
-                                <a
-                                    href="/match/{{ match.id }}"
-                                    class="view-match-button"
-                                >
-                                    View Match
-                                    <span>→</span>
-                                </a>
-
-                            </div>
-
-                        </article>
-
-                    {% endfor %}
-
-                {% else %}
-
-                    <div class="empty-state">
-
-                        <div class="empty-state-icon">
-                            🏏
-                        </div>
-
-                        <h3>
-                            No matches available
-                        </h3>
-
-                        <p>
-                            Please check again later for upcoming matches.
-                        </p>
-
-                    </div>
-
-                {% endif %}
-
-            </div>
-
-        </section>
-
-
-        <!-- =================================================
-             MY BETS
-        ================================================== -->
-
-        <section class="my-bets-section">
-
-            <div class="section-header">
-
-                <div>
-
-                    <h2>
-                        📋 My Bets
-                    </h2>
-
-                    <p>
-                        View your recent betting activity.
-                    </p>
-
-                </div>
-
-
-                <button
-                    type="button"
-                    id="openMyBets"
-                    class="secondary-button"
-                >
-                    View My Bets
-                </button>
-
-            </div>
-
-        </section>
-
-    </main>
-
-
-    <!-- =====================================================
-         BETSLIP
-    ====================================================== -->
-
-    <aside
-        id="betslip"
-        class="betslip"
+    <button
+        type="button"
+        class="mode-tab"
+        onclick="window.location.href='/dashboard'"
     >
+        HOME
+    </button>
 
-        <div class="betslip-header">
+
+    <button
+        type="button"
+        class="mode-tab active"
+    >
+        CRICKET
+    </button>
+
+</nav>
+
+
+<!-- =====================================================
+     MAIN CONTENT
+===================================================== -->
+
+<main class="sportsbook-container">
+
+
+    <!-- CRICKET HEADER -->
+
+    <section class="sportsbook-header">
+
+        <div class="sport-title">
+
+            <div class="sport-icon">
+                🏏
+            </div>
+
 
             <div>
 
                 <h2>
-                    Bet Slip
+                    Cricket
                 </h2>
 
-                <span id="betslipCount">
-                    0 selections
-                </span>
-
-            </div>
-
-
-            <button
-                type="button"
-                id="closeBetslip"
-                class="betslip-close"
-                aria-label="Close bet slip"
-            >
-                ×
-            </button>
-
-        </div>
-
-
-        <div
-            id="betslipContent"
-            class="betslip-content"
-        >
-
-            <div class="betslip-empty">
-
-                <div>
-                    🎟️
-                </div>
-
-                <h3>
-                    Your bet slip is empty
-                </h3>
-
                 <p>
-                    Select odds from a match to add them here.
+                    Live &amp; upcoming cricket matches
                 </p>
 
             </div>
@@ -369,541 +171,206 @@
         </div>
 
 
-        <div class="betslip-footer">
+        <div class="sport-filters">
 
-            <div class="betslip-balance">
-
-                <span>
-                    Balance
-                </span>
-
-                <strong id="betslipBalance">
-                    ₹{{ "%.2f"|format(user.balance or 0) }}
-                </strong>
-
-            </div>
+            <button
+                type="button"
+                class="sport-filter active"
+                data-filter="all"
+            >
+                All
+            </button>
 
 
             <button
                 type="button"
-                id="placeBetButton"
-                class="place-bet-button"
-                disabled
+                class="sport-filter"
+                data-filter="live"
             >
-                Place Bet
+                Live
+            </button>
+
+
+            <button
+                type="button"
+                class="sport-filter"
+                data-filter="upcoming"
+            >
+                Upcoming
             </button>
 
         </div>
 
-    </aside>
+    </section>
 
 
-    <!-- =====================================================
-         MOBILE BETSLIP BUTTON
-    ====================================================== -->
+    <!-- MATCHES -->
 
-    <button
-        type="button"
-        id="mobileBetslipButton"
-        class="mobile-betslip-button"
-    >
+    <section class="matches-wrapper">
 
-        🎟️
+        <div class="odds-header">
 
-        <span>
-            Bet Slip
-        </span>
+            <div class="match-column">
+                Match
+            </div>
 
-        <span
-            id="mobileBetslipCount"
-            class="betslip-count"
+
+            <div class="odds-column-header back-header">
+                BACK
+            </div>
+
+
+            <div class="odds-column-header lay-header">
+                LAY
+            </div>
+
+
+            <div class="odds-column-header draw-header">
+                DRAW
+            </div>
+
+        </div>
+
+
+        <div id="matches">
+
+            <div class="empty-state">
+
+                <div class="empty-state-icon">
+                    🏏
+                </div>
+
+
+                <div class="empty-state-title">
+                    Loading cricket matches...
+                </div>
+
+
+                <div class="empty-state-text">
+                    Fetching live cricket data.
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- =====================================================
+     BET SLIP
+===================================================== -->
+
+<div
+    id="betslip"
+    class="betslip"
+>
+
+    <div class="betslip-header">
+
+        <div>
+
+            <h2>
+                Bet Slip
+            </h2>
+
+            <span>
+                Cricket
+            </span>
+
+        </div>
+
+
+        <button
+            type="button"
+            id="betslipClose"
+            class="betslip-close"
         >
-            0
-        </span>
+            ×
+        </button>
 
-    </button>
+    </div>
 
-
-    <!-- =====================================================
-         MY BETS OVERLAY
-    ====================================================== -->
 
     <div
-        id="myBetsOverlay"
-        class="modal-overlay"
-        aria-hidden="true"
+        id="betslipContent"
+        class="betslip-content"
     >
 
-        <div
-            class="modal-card my-bets-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="myBetsTitle"
-        >
+        <div class="betslip-empty">
 
-            <div class="modal-header">
+            <h3>
+                Your bet slip is empty
+            </h3>
 
-                <div>
-
-                    <h2 id="myBetsTitle">
-                        📋 My Bets
-                    </h2>
-
-                    <p>
-                        Your recent betting activity
-                    </p>
-
-                </div>
-
-
-                <button
-                    type="button"
-                    id="closeMyBets"
-                    class="modal-close"
-                >
-                    ×
-                </button>
-
-            </div>
-
-
-            <div class="my-bets-summary">
-
-                <div>
-
-                    <span>
-                        Current Balance
-                    </span>
-
-                    <strong id="myBetsBalance">
-                        ₹{{ "%.2f"|format(user.balance or 0) }}
-                    </strong>
-
-                </div>
-
-            </div>
-
-
-            <div
-                id="myBetsContent"
-                class="my-bets-content"
-            >
-
-                <div class="my-bets-loading">
-                    Loading bets...
-                </div>
-
-            </div>
+            <p>
+                Select odds from a match to add a bet.
+            </p>
 
         </div>
 
     </div>
 
 
-    <!-- =====================================================
-         CONFIGURATION
-    ====================================================== -->
+    <div class="betslip-footer">
 
-    <script>
+        <div class="betslip-balance">
 
-        window.CRICKBET_CONFIG = {
+            <span>
+                Balance
+            </span>
 
-            placeBetUrl: "/bets/place",
+            <strong
+                id="betslipBalance"
+                class="balance-value"
+            >
+                ₹0.00
+            </strong>
 
-            myBetsUrl: "/my-bets",
+        </div>
 
-            dashboardUrl: "/dashboard"
 
-        };
+        <button
+            type="button"
+            id="placeBetButton"
+            class="place-bet-button"
+            disabled
+        >
+            PLACE BET
+        </button>
 
-    </script>
+    </div>
 
+</div>
 
-    <!-- =====================================================
-         MY BETS JAVASCRIPT
-    ====================================================== -->
 
-    <script>
+<!-- =====================================================
+     MOBILE BET SLIP
+===================================================== -->
 
-        document.addEventListener(
-            "DOMContentLoaded",
-            function () {
+<button
+    type="button"
+    id="mobileBetslipButton"
+    class="mobile-betslip-button"
+>
 
-                const openMyBets =
-                    document.getElementById(
-                        "openMyBets"
-                    );
+    <span>
+        BET SLIP
+    </span>
 
-                const closeMyBets =
-                    document.getElementById(
-                        "closeMyBets"
-                    );
 
-                const myBetsOverlay =
-                    document.getElementById(
-                        "myBetsOverlay"
-                    );
+    <span
+        id="betslipCount"
+        class="betslip-count"
+    >
+        0
+    </span>
 
-                const myBetsContent =
-                    document.getElementById(
-                        "myBetsContent"
-                    );
+</button>
 
-
-                function openMyBetsModal() {
-
-                    if (!myBetsOverlay) {
-                        return;
-                    }
-
-                    myBetsOverlay.classList.add(
-                        "open"
-                    );
-
-                    myBetsOverlay.setAttribute(
-                        "aria-hidden",
-                        "false"
-                    );
-
-                    document.body.style.overflow =
-                        "hidden";
-
-                    loadMyBets();
-
-                }
-
-
-                function closeMyBetsModal() {
-
-                    if (!myBetsOverlay) {
-                        return;
-                    }
-
-                    myBetsOverlay.classList.remove(
-                        "open"
-                    );
-
-                    myBetsOverlay.setAttribute(
-                        "aria-hidden",
-                        "true"
-                    );
-
-                    document.body.style.overflow =
-                        "";
-
-                }
-
-
-                async function loadMyBets() {
-
-                    if (!myBetsContent) {
-                        return;
-                    }
-
-                    myBetsContent.innerHTML = `
-                        <div class="my-bets-loading">
-                            Loading bets...
-                        </div>
-                    `;
-
-
-                    try {
-
-                        const response =
-                            await fetch(
-                                window.CRICKBET_CONFIG
-                                    .myBetsUrl,
-                                {
-                                    method: "GET",
-                                    credentials:
-                                        "same-origin",
-                                    headers: {
-                                        "Accept":
-                                            "application/json"
-                                    }
-                                }
-                            );
-
-
-                        if (!response.ok) {
-
-                            throw new Error(
-                                "Unable to load bets."
-                            );
-
-                        }
-
-
-                        const result =
-                            await response.json();
-
-
-                        const bets =
-                            Array.isArray(result)
-                                ? result
-                                : (
-                                    result.bets || []
-                                );
-
-
-                        if (!bets.length) {
-
-                            myBetsContent.innerHTML = `
-
-                                <div class="my-bets-empty">
-
-                                    <div>
-                                        📋
-                                    </div>
-
-                                    <h3>
-                                        No bets yet
-                                    </h3>
-
-                                    <p>
-                                        Your betting history will
-                                        appear here.
-                                    </p>
-
-                                </div>
-
-                            `;
-
-                            return;
-
-                        }
-
-
-                        myBetsContent.innerHTML =
-                            bets.map(
-                                function (bet) {
-
-                                    return `
-
-                                        <div class="bet-history-card">
-
-                                            <div class="bet-history-top">
-
-                                                <strong>
-                                                    ${escapeHtml(
-                                                        bet.match_name ||
-                                                        bet.match ||
-                                                        "Cricket Match"
-                                                    )}
-                                                </strong>
-
-                                                <span class="bet-status">
-                                                    ${escapeHtml(
-                                                        bet.status ||
-                                                        "Pending"
-                                                    )}
-                                                </span>
-
-                                            </div>
-
-
-                                            <div class="bet-history-details">
-
-                                                <div>
-
-                                                    <span>
-                                                        Selection
-                                                    </span>
-
-                                                    <strong>
-                                                        ${escapeHtml(
-                                                            bet.selection ||
-                                                            bet.team ||
-                                                            "-"
-                                                        )}
-                                                    </strong>
-
-                                                </div>
-
-
-                                                <div>
-
-                                                    <span>
-                                                        Odds
-                                                    </span>
-
-                                                    <strong>
-                                                        ${escapeHtml(
-                                                            String(
-                                                                bet.odds ||
-                                                                "-"
-                                                            )
-                                                        )}
-                                                    </strong>
-
-                                                </div>
-
-
-                                                <div>
-
-                                                    <span>
-                                                        Stake
-                                                    </span>
-
-                                                    <strong>
-                                                        ₹${escapeHtml(
-                                                            String(
-                                                                bet.amount ||
-                                                                bet.stake ||
-                                                                "0"
-                                                            )
-                                                        )}
-                                                    </strong>
-
-                                                </div>
-
-                                            </div>
-
-                                        </div>
-
-                                    `;
-
-                                }
-                            ).join("");
-
-                    }
-
-
-                    catch (error) {
-
-                        console.error(
-                            "My Bets error:",
-                            error
-                        );
-
-
-                        myBetsContent.innerHTML = `
-
-                            <div class="my-bets-empty">
-
-                                <div>
-                                    ⚠️
-                                </div>
-
-                                <h3>
-                                    Unable to load bets
-                                </h3>
-
-                                <p>
-                                    Please try again later.
-                                </p>
-
-                            </div>
-
-                        `;
-
-                    }
-
-                }
-
-
-                function escapeHtml(value) {
-
-                    return String(value)
-                        .replace(
-                            /&/g,
-                            "&amp;"
-                        )
-                        .replace(
-                            /</g,
-                            "&lt;"
-                        )
-                        .replace(
-                            />/g,
-                            "&gt;"
-                        )
-                        .replace(
-                            /"/g,
-                            "&quot;"
-                        )
-                        .replace(
-                            /'/g,
-                            "&#039;"
-                        );
-
-                }
-
-
-                if (openMyBets) {
-
-                    openMyBets.addEventListener(
-                        "click",
-                        openMyBetsModal
-                    );
-
-                }
-
-
-                if (closeMyBets) {
-
-                    closeMyBets.addEventListener(
-                        "click",
-                        closeMyBetsModal
-                    );
-
-                }
-
-
-                if (myBetsOverlay) {
-
-                    myBetsOverlay.addEventListener(
-                        "click",
-                        function (event) {
-
-                            if (
-                                event.target ===
-                                myBetsOverlay
-                            ) {
-
-                                closeMyBetsModal();
-
-                            }
-
-                        }
-                    );
-
-                }
-
-
-                document.addEventListener(
-                    "keydown",
-                    function (event) {
-
-                        if (
-                            event.key === "Escape" &&
-                            myBetsOverlay &&
-                            myBetsOverlay.classList.contains(
-                                "open"
-                            )
-                        ) {
-
-                            closeMyBetsModal();
-
-                        }
-
-                    }
-                );
-
-            }
-        );
-
-    </script>
-
-
-    <!-- =====================================================
-         DASHBOARD JAVASCRIPT
-    ====================================================== -->
-
-    <script
-        src="/static/js/dashboard.js"
-        defer
-    ></script>
 
 </body>
-
 </html>
+

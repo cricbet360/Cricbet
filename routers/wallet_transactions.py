@@ -1,3 +1,4 @@
+
 import os
 import uuid
 from decimal import Decimal, InvalidOperation
@@ -108,6 +109,50 @@ def parse_amount(
 
 
 # ==========================================================
+# DASHBOARD BALANCE API
+#
+# IMPORTANT:
+# User.balance is the main/source balance.
+# Wallet.balance is kept synchronized.
+# ==========================================================
+
+@router.get(
+    "/api/user/balance"
+)
+async def get_user_balance(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+
+    user = get_current_user(
+        request,
+        db
+    )
+
+    if not user:
+
+        return JSONResponse(
+            status_code=401,
+            content={
+                "success": False,
+                "balance": 0,
+                "message": "Please login first."
+            }
+        )
+
+    balance = (
+        user.balance
+        if user.balance is not None
+        else Decimal("0.00")
+    )
+
+    return {
+        "success": True,
+        "balance": float(balance)
+    }
+
+
+# ==========================================================
 # DEPOSIT
 # ==========================================================
 
@@ -212,7 +257,10 @@ async def submit_deposit(
         )
 
 
-    if len(utr_number) < 6 or len(utr_number) > 100:
+    if (
+        len(utr_number) < 6
+        or len(utr_number) > 100
+    ):
 
         return JSONResponse(
             status_code=400,
@@ -301,6 +349,7 @@ async def submit_deposit(
     valid_signature = False
 
 
+    # JPEG
     if content.startswith(
         b"\xff\xd8\xff"
     ):
@@ -308,6 +357,7 @@ async def submit_deposit(
         valid_signature = True
 
 
+    # PNG
     elif content.startswith(
         b"\x89PNG\r\n\x1a\n"
     ):
@@ -315,6 +365,7 @@ async def submit_deposit(
         valid_signature = True
 
 
+    # WEBP
     elif (
         content.startswith(b"RIFF")
         and content[8:12] == b"WEBP"
@@ -558,227 +609,7 @@ async def submit_withdraw(
     )
 
 
-    if not account_holder_name:
-
-        return JSONResponse(
-            status_code=400,
-            content={
-                "success": False,
-                "message":
-                    "Account holder name is required."
-            }
-        )
-
-
-    if len(account_holder_name) > 150:
-
-        return JSONResponse(
-            status_code=400,
-            content={
-                "success": False,
-                "message":
-                    "Account holder name is too long."
-            }
-        )
-
-
-    if not bank_name:
-
-        return JSONResponse(
-            status_code=400,
-            content={
-                "success": False,
-                "message":
-                    "Bank name is required."
-            }
-        )
-
-
-    if len(bank_name) > 150:
-
-        return JSONResponse(
-            status_code=400,
-            content={
-                "success": False,
-                "message":
-                    "Bank name is too long."
-            }
-        )
-
-
     # ------------------------------------------------------
-    # ACCOUNT NUMBER
-    # ------------------------------------------------------
+    # ACCOUNT HOLDER NAME
+    # -------------------------------------------
 
-    if (
-        not account_number.isdigit()
-        or not 8 <= len(account_number) <= 20
-    ):
-
-        return JSONResponse(
-            status_code=400,
-            content={
-                "success": False,
-                "message":
-                    "Invalid account number."
-            }
-        )
-
-
-    # ------------------------------------------------------
-    # IFSC
-    # ------------------------------------------------------
-
-    if (
-        len(ifsc_code) != 11
-        or not ifsc_code.isalnum()
-        or ifsc_code[4] != "0"
-        or not ifsc_code[:4].isalpha()
-    ):
-
-        return JSONResponse(
-            status_code=400,
-            content={
-                "success": False,
-                "message":
-                    "Invalid IFSC code."
-            }
-        )
-
-
-    # ------------------------------------------------------
-    # GET WALLET
-    # ------------------------------------------------------
-
-    wallet = (
-        db.query(Wallet)
-        .filter(
-            Wallet.user_id == user.id
-        )
-        .first()
-    )
-
-
-    if wallet is None:
-
-        wallet = Wallet(
-            user_id=user.id,
-            balance=Decimal("0.00"),
-            exposure=Decimal("0.00")
-        )
-
-        db.add(wallet)
-
-        db.flush()
-
-
-    # ------------------------------------------------------
-    # BALANCE
-    # ------------------------------------------------------
-
-    current_balance = (
-        wallet.balance or Decimal("0.00")
-    )
-
-
-    if withdrawal_amount > current_balance:
-
-        return JSONResponse(
-            status_code=400,
-            content={
-                "success": False,
-                "message":
-                    "Insufficient balance."
-            }
-        )
-
-
-    # ------------------------------------------------------
-    # RESERVE WITHDRAWAL AMOUNT
-    #
-    # The amount is removed from available balance now
-    # so the user cannot submit another withdrawal using
-    # the same money.
-    #
-    # It will NOT be deducted again when employee completes.
-    # ------------------------------------------------------
-
-    wallet.balance = (
-        current_balance
-        - withdrawal_amount
-    )
-
-
-    # ------------------------------------------------------
-    # CREATE WITHDRAWAL REQUEST
-    # ------------------------------------------------------
-
-    withdrawal = WithdrawalRequest(
-
-        user_id=user.id,
-
-        amount=withdrawal_amount,
-
-        account_holder_name=
-            account_holder_name,
-
-        bank_name=
-            bank_name,
-
-        account_number=
-            account_number,
-
-        ifsc_code=
-            ifsc_code,
-
-        status="Pending",
-
-    )
-
-
-    db.add(withdrawal)
-
-
-    try:
-
-        db.commit()
-
-        db.refresh(withdrawal)
-
-        db.refresh(wallet)
-
-    except Exception:
-
-        db.rollback()
-
-        return JSONResponse(
-            status_code=500,
-            content={
-                "success": False,
-                "message":
-                    "Could not create withdrawal request."
-            }
-        )
-
-
-    # ------------------------------------------------------
-    # RESPONSE
-    # ------------------------------------------------------
-
-    return {
-
-        "success": True,
-
-        "message":
-            "Withdrawal request submitted successfully and is waiting for employee processing.",
-
-        "withdrawal_id":
-            withdrawal.id,
-
-        "status":
-            withdrawal.status,
-
-        "balance":
-            float(wallet.balance),
-
-    }

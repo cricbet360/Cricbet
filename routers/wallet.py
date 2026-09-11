@@ -1,3 +1,4 @@
+
 from decimal import Decimal
 
 from fastapi import (
@@ -31,9 +32,11 @@ async def wallet_page(
     db: Session = Depends(get_db)
 ):
 
-    user_id = request.session.get(
-        "user_id"
-    )
+    # =========================================================
+    # CHECK LOGIN
+    # =========================================================
+
+    user_id = request.session.get("user_id")
 
     if not user_id:
 
@@ -42,6 +45,10 @@ async def wallet_page(
             status_code=303
         )
 
+
+    # =========================================================
+    # GET USER
+    # =========================================================
 
     user = (
         db.query(User)
@@ -60,6 +67,10 @@ async def wallet_page(
         )
 
 
+    # =========================================================
+    # GET WALLET
+    # =========================================================
+
     wallet = (
         db.query(Wallet)
         .filter(Wallet.user_id == user.id)
@@ -67,11 +78,20 @@ async def wallet_page(
     )
 
 
+    # =========================================================
+    # CREATE WALLET
+    #
+    # IMPORTANT:
+    # Use User.balance instead of 0.00
+    # =========================================================
+
     if wallet is None:
 
         wallet = Wallet(
             user_id=user.id,
-            balance=Decimal("0.00"),
+            balance=Decimal(
+                str(user.balance or 0)
+            ),
             exposure=Decimal("0.00")
         )
 
@@ -82,6 +102,31 @@ async def wallet_page(
         db.refresh(wallet)
 
 
+    # =========================================================
+    # KEEP WALLET BALANCE IN SYNC
+    #
+    # Your Profile currently uses User.balance.
+    # Therefore Wallet should show the same amount.
+    # =========================================================
+
+    user_balance = Decimal(
+        str(user.balance or 0)
+    )
+
+
+    if wallet.balance != user_balance:
+
+        wallet.balance = user_balance
+
+        db.commit()
+
+        db.refresh(wallet)
+
+
+    # =========================================================
+    # WALLET PAGE
+    # =========================================================
+
     return templates.TemplateResponse(
         "wallet.html",
         {
@@ -90,3 +135,4 @@ async def wallet_page(
             "wallet": wallet
         }
     )
+
