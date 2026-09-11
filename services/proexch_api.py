@@ -13,10 +13,7 @@ BASE_URL = "https://apidata.proexch.in"
 REQUEST_TIMEOUT = 10
 MAX_RETRIES = 2
 
-# Leave empty if your VPS IP is whitelisted.
-# Example:
-# PROXY = "http://username:password@host:port"
-
+# Leave empty because your VPS IP is whitelisted.
 PROXY = ""
 
 
@@ -74,7 +71,10 @@ def _request(
     print("PROEXCH REQUEST")
     print("URL:", url)
     print("PARAMS:", params)
-    print("PROXY:", PROXY if PROXY else "DIRECT")
+    print(
+        "PROXY:",
+        PROXY if PROXY else "DIRECT",
+    )
     print("========================================")
 
     last_error = None
@@ -99,10 +99,16 @@ def _request(
 
             try:
                 data = response.json()
+
             except ValueError as exc:
                 raise ProExchError(
                     "ProExch returned invalid JSON."
                 ) from exc
+
+            print()
+            print("PROEXCH RESPONSE:")
+            print(data)
+            print()
 
             return data
 
@@ -133,8 +139,54 @@ def _request(
 
 
 # =========================================================
-# EXTRACT LIST FROM RESPONSE
+# RESPONSE EXTRACTION
 # =========================================================
+
+def _extract_data(data):
+    """
+    Handles common ProExch response structures.
+
+    Examples:
+
+    {
+        "statusCode": 200,
+        "data": {
+            "data": [...]
+        }
+    }
+
+    or:
+
+    {
+        "data": [...]
+    }
+
+    or:
+
+    [...]
+    """
+
+    if isinstance(data, list):
+        return data
+
+    if not isinstance(data, dict):
+        return data
+
+    value = data.get("data")
+
+    if isinstance(value, dict):
+        nested = value.get("data")
+
+        if nested is not None:
+            return nested
+
+        return value
+
+    if value is not None:
+        return value
+
+    return data
+
 
 def _extract_list(data):
     if isinstance(data, list):
@@ -152,10 +204,12 @@ def _extract_list(data):
     ]
 
     for candidate in candidates:
+
         if isinstance(candidate, list):
             return candidate
 
         if isinstance(candidate, dict):
+
             nested = candidate.get("data")
 
             if isinstance(nested, list):
@@ -165,10 +219,11 @@ def _extract_list(data):
 
 
 # =========================================================
-# MATCHES
+# MATCH LIST
 # =========================================================
 
 def get_matches():
+
     data = _request(
         "/api/cricket/matches"
     )
@@ -184,10 +239,47 @@ def get_matches():
 
 
 # =========================================================
+# SINGLE MATCH
+# =========================================================
+
+def get_match(game_id):
+
+    if game_id is None:
+        raise ProExchError(
+            "game_id is required."
+        )
+
+    game_id = str(game_id).strip()
+
+    if not game_id:
+        raise ProExchError(
+            "game_id is empty."
+        )
+
+    matches = get_matches()
+
+    for match in matches:
+
+        if not isinstance(match, dict):
+            continue
+
+        match_game_id = match.get("gameId")
+
+        if match_game_id is None:
+            continue
+
+        if str(match_game_id).strip() == game_id:
+            return match
+
+    return None
+
+
+# =========================================================
 # ODDS
 # =========================================================
 
 def get_odds(game_id):
+
     if game_id is None:
         raise ProExchError(
             "game_id is required."
@@ -209,10 +301,11 @@ def get_odds(game_id):
 
 
 # =========================================================
-# MATCH ODDS RESULT
+# MATCH RESULT
 # =========================================================
 
 def get_match_result(market_id):
+
     if market_id is None:
         raise ProExchError(
             "market_id is required."
@@ -239,6 +332,7 @@ def get_match_result(market_id):
 # =========================================================
 
 def get_bookmaker_result(game_id):
+
     if game_id is None:
         raise ProExchError(
             "game_id is required."
@@ -264,7 +358,11 @@ def get_bookmaker_result(game_id):
 # FANCY RESULT
 # =========================================================
 
-def get_fancy_result(game_id, sid):
+def get_fancy_result(
+    game_id,
+    sid,
+):
+
     if game_id is None:
         raise ProExchError(
             "game_id is required."
@@ -303,7 +401,10 @@ def get_fancy_result(game_id, sid):
 # FANCY RESULT BY MARKET ID
 # =========================================================
 
-def get_fancy_result_by_market_id(market_id):
+def get_fancy_result_by_market_id(
+    market_id,
+):
+
     if market_id is None:
         raise ProExchError(
             "market_id is required."
@@ -326,10 +427,14 @@ def get_fancy_result_by_market_id(market_id):
 
 
 # =========================================================
-# EXTRACT FANCY MARKET IDS
+# FANCY MARKET IDS
 # =========================================================
 
-def get_fancy_market_ids(odds_data, game_id):
+def get_fancy_market_ids(
+    odds_data,
+    game_id,
+):
+
     if not isinstance(odds_data, dict):
         return []
 
@@ -344,6 +449,7 @@ def get_fancy_market_ids(odds_data, game_id):
     market_ids = []
 
     for market in fancy_odds:
+
         if not isinstance(market, dict):
             continue
 
@@ -356,6 +462,7 @@ def get_fancy_market_ids(odds_data, game_id):
             continue
 
         for odd in odd_datas:
+
             if not isinstance(odd, dict):
                 continue
 
@@ -387,7 +494,11 @@ def get_fancy_market_ids(odds_data, game_id):
 # ALL FANCY RESULTS
 # =========================================================
 
-def get_all_fancy_results(odds_data, game_id):
+def get_all_fancy_results(
+    odds_data,
+    game_id,
+):
+
     market_ids = get_fancy_market_ids(
         odds_data,
         game_id,
@@ -396,7 +507,9 @@ def get_all_fancy_results(odds_data, game_id):
     results = []
 
     for market_id in market_ids:
+
         try:
+
             result = get_fancy_result_by_market_id(
                 market_id
             )
@@ -409,6 +522,7 @@ def get_all_fancy_results(odds_data, game_id):
             )
 
         except Exception as exc:
+
             results.append(
                 {
                     "market_id": market_id,
@@ -428,22 +542,19 @@ def get_complete_match_data(
     game_id,
     market_id,
 ):
-    print()
-    print("========================================")
-    print("PROEXCH COMPLETE MATCH DATA")
-    print("GAME ID:", game_id)
-    print("MARKET ID:", market_id)
-    print("========================================")
 
     odds = get_odds(game_id)
 
     match_result = None
 
     try:
+
         match_result = get_match_result(
             market_id
         )
+
     except Exception as exc:
+
         print(
             "MATCH RESULT ERROR:",
             str(exc),
@@ -452,10 +563,13 @@ def get_complete_match_data(
     bookmaker_result = None
 
     try:
+
         bookmaker_result = get_bookmaker_result(
             game_id
         )
+
     except Exception as exc:
+
         print(
             "BOOKMAKER RESULT ERROR:",
             str(exc),
@@ -464,11 +578,14 @@ def get_complete_match_data(
     fancy_results = []
 
     try:
+
         fancy_results = get_all_fancy_results(
             odds,
             game_id,
         )
+
     except Exception as exc:
+
         print(
             "FANCY RESULTS ERROR:",
             str(exc),
