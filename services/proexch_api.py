@@ -45,6 +45,7 @@ class ProExchError(Exception):
 # =========================================================
 
 def _get_proxies():
+
     if not PROXY:
         return None
 
@@ -62,6 +63,7 @@ def _request(
     endpoint: str,
     params: dict[str, Any] | None = None,
 ):
+
     url = f"{BASE_URL}{endpoint}"
 
     print()
@@ -150,6 +152,7 @@ def _request(
 # =========================================================
 
 def _unwrap_data(data):
+
     """
     ProExch commonly returns:
 
@@ -294,6 +297,7 @@ def get_match(game_id):
             str(current_game_id).strip()
             == game_id
         ):
+
             return match
 
     return None
@@ -301,10 +305,19 @@ def get_match(game_id):
 
 # =========================================================
 # ODDS
+#
+# IMPORTANT:
+# ProExch requires BOTH:
+#
+# gameId
+# eventId
+#
+# marketId is optional.
 # =========================================================
 
 def get_odds(
     game_id,
+    event_id=None,
     market_id=None,
 ):
 
@@ -324,13 +337,34 @@ def get_odds(
             "game_id is empty."
         )
 
+    if event_id is None:
+
+        raise ProExchError(
+            "event_id is required for ProExch odds."
+        )
+
+    event_id = str(
+        event_id
+    ).strip()
+
+    if not event_id:
+
+        raise ProExchError(
+            "event_id is empty."
+        )
+
+    # =====================================================
+    # REQUIRED PROEXCH PARAMETERS
+    # =====================================================
+
     params = {
         "gameId": game_id,
+        "eventId": event_id,
     }
 
-    # Some existing CricBet code passes market_id.
-    # The current ProExch endpoint primarily uses gameId,
-    # but accepting market_id keeps the project compatible.
+    # =====================================================
+    # OPTIONAL MARKET ID
+    # =====================================================
 
     if market_id is not None:
 
@@ -342,6 +376,18 @@ def get_odds(
 
             params["marketId"] = market_id
 
+    print()
+    print("========================================")
+    print("PROEXCH ODDS PARAMETERS")
+    print("gameId:", game_id)
+    print("eventId:", event_id)
+    print(
+        "marketId:",
+        market_id if market_id else "NOT PROVIDED",
+    )
+    print("========================================")
+    print()
+
     raw = _request(
         "/api/cricket/odds",
         params=params,
@@ -350,7 +396,6 @@ def get_odds(
     odds = _unwrap_data(raw)
 
     if not isinstance(odds, dict):
-
         odds = {}
 
     return odds
@@ -368,6 +413,7 @@ def parse_match_odds(
         match_odds_raw,
         list,
     ):
+
         return []
 
     parsed = []
@@ -378,6 +424,7 @@ def parse_match_odds(
             market,
             dict,
         ):
+
             continue
 
         market_name = (
@@ -394,9 +441,10 @@ def parse_match_odds(
             odd_datas,
             list,
         ):
+
             odd_datas = []
 
-        # Sometimes the provider may return
+        # Sometimes provider returns
         # runner data directly.
         if not odd_datas:
 
@@ -408,6 +456,7 @@ def parse_match_odds(
                 runners,
                 list,
             ):
+
                 odd_datas = runners
 
         runners_result = []
@@ -418,6 +467,7 @@ def parse_match_odds(
                 odd,
                 dict,
             ):
+
                 continue
 
             selection_id = (
@@ -522,6 +572,7 @@ def parse_fancy_odds(
         fancy_odds_raw,
         list,
     ):
+
         return []
 
     parsed = []
@@ -532,6 +583,7 @@ def parse_fancy_odds(
             market,
             dict,
         ):
+
             continue
 
         market_name = (
@@ -549,6 +601,7 @@ def parse_fancy_odds(
             odd_datas,
             list,
         ):
+
             odd_datas = []
 
         rows = []
@@ -559,6 +612,7 @@ def parse_fancy_odds(
                 odd,
                 dict,
             ):
+
                 continue
 
             sid = (
@@ -640,6 +694,7 @@ def _extract_price(
         data,
         dict,
     ):
+
         return None
 
     for key in keys:
@@ -729,6 +784,7 @@ def get_fancy_market_ids(
         fancy_odds,
         list,
     ):
+
         return []
 
     market_ids = []
@@ -739,6 +795,7 @@ def get_fancy_market_ids(
             market,
             dict,
         ):
+
             continue
 
         odd_datas = market.get(
@@ -750,6 +807,7 @@ def get_fancy_market_ids(
             odd_datas,
             list,
         ):
+
             continue
 
         for odd in odd_datas:
@@ -758,6 +816,7 @@ def get_fancy_market_ids(
                 odd,
                 dict,
             ):
+
                 continue
 
             sid = (
@@ -859,11 +918,13 @@ def get_fancy_result(
 ):
 
     if game_id is None:
+
         raise ProExchError(
             "game_id is required."
         )
 
     if sid is None:
+
         raise ProExchError(
             "sid is required."
         )
@@ -913,6 +974,7 @@ def get_all_fancy_results(
         odds_data,
         dict,
     ):
+
         return []
 
     fancy_odds = odds_data.get(
@@ -969,6 +1031,7 @@ def get_results(
         market_ids,
         list,
     ):
+
         market_ids = [
             str(market_ids)
         ]
@@ -1016,28 +1079,38 @@ def get_results(
 
 def get_complete_match_data(
     game_id,
-    market_id,
+    event_id,
+    market_id=None,
 ):
 
+    if not event_id:
+
+        raise ProExchError(
+            "event_id is required."
+        )
+
     odds = get_odds(
-        game_id,
-        market_id,
+        game_id=game_id,
+        event_id=event_id,
+        market_id=market_id,
     )
 
     match_result = None
 
-    try:
+    if market_id:
 
-        match_result = get_match_result(
-            market_id
-        )
+        try:
 
-    except Exception as exc:
+            match_result = get_match_result(
+                market_id
+            )
 
-        print(
-            "MATCH RESULT ERROR:",
-            str(exc),
-        )
+        except Exception as exc:
+
+            print(
+                "MATCH RESULT ERROR:",
+                str(exc),
+            )
 
     bookmaker_result = None
 
@@ -1074,7 +1147,12 @@ def get_complete_match_data(
 
     return {
         "game_id": str(game_id),
-        "market_id": str(market_id),
+        "event_id": str(event_id),
+        "market_id": (
+            str(market_id)
+            if market_id is not None
+            else None
+        ),
         "odds": odds,
         "match_result": match_result,
         "bookmaker_result": bookmaker_result,

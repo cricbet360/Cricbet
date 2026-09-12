@@ -19,9 +19,7 @@ async def health():
 
     try:
 
-        data = (
-            proexch_api.health_check()
-        )
+        data = proexch_api.health_check()
 
         return {
             "ok": True,
@@ -33,6 +31,17 @@ async def health():
 
         return JSONResponse(
             status_code=502,
+            content={
+                "ok": False,
+                "provider": "ProExch",
+                "error": str(exc),
+            },
+        )
+
+    except Exception as exc:
+
+        return JSONResponse(
+            status_code=500,
             content={
                 "ok": False,
                 "provider": "ProExch",
@@ -50,9 +59,7 @@ async def matches():
 
     try:
 
-        data = (
-            proexch_api.get_matches()
-        )
+        data = proexch_api.get_matches()
 
         return {
             "ok": True,
@@ -71,29 +78,66 @@ async def matches():
             },
         )
 
+    except Exception as exc:
+
+        return JSONResponse(
+            status_code=500,
+            content={
+                "ok": False,
+                "provider": "ProExch",
+                "error": str(exc),
+            },
+        )
+
 
 # =========================================================
 # ODDS
+#
+# ProExch requires:
+# gameId
+# eventId
 # =========================================================
 
 @router.get("/odds")
 async def odds(
-    game_id: str,
-    market_id: str = "",
+    gameId: str,
+    eventId: str,
 ):
 
     try:
 
-        data = (
-            proexch_api.get_odds(
-                game_id,
-                market_id,
+        if not gameId.strip():
+
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "ok": False,
+                    "provider": "ProExch",
+                    "error": "gameId is required",
+                },
             )
+
+        if not eventId.strip():
+
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "ok": False,
+                    "provider": "ProExch",
+                    "error": "eventId is required",
+                },
+            )
+
+        data = proexch_api.get_odds(
+            game_id=gameId.strip(),
+            event_id=eventId.strip(),
         )
 
         return {
             "ok": True,
             "provider": "ProExch",
+            "gameId": gameId.strip(),
+            "eventId": eventId.strip(),
             "data": data,
         }
 
@@ -104,6 +148,21 @@ async def odds(
             content={
                 "ok": False,
                 "provider": "ProExch",
+                "gameId": gameId,
+                "eventId": eventId,
+                "error": str(exc),
+            },
+        )
+
+    except Exception as exc:
+
+        return JSONResponse(
+            status_code=500,
+            content={
+                "ok": False,
+                "provider": "ProExch",
+                "gameId": gameId,
+                "eventId": eventId,
                 "error": str(exc),
             },
         )
@@ -126,15 +185,23 @@ async def results(
             if value.strip()
         ]
 
-        data = (
-            proexch_api.get_results(
-                ids
+        if not ids:
+
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "ok": False,
+                    "provider": "ProExch",
+                    "error": "At least one market ID is required",
+                },
             )
-        )
+
+        data = proexch_api.get_results(ids)
 
         return {
             "ok": True,
             "provider": "ProExch",
+            "marketIds": ids,
             "data": data,
         }
 
@@ -142,6 +209,17 @@ async def results(
 
         return JSONResponse(
             status_code=502,
+            content={
+                "ok": False,
+                "provider": "ProExch",
+                "error": str(exc),
+            },
+        )
+
+    except Exception as exc:
+
+        return JSONResponse(
+            status_code=500,
             content={
                 "ok": False,
                 "provider": "ProExch",
