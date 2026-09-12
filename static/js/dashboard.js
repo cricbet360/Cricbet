@@ -2,9 +2,13 @@
 "use strict";
 
 /* =========================================================
-   CRICBET DASHBOARD
-   PROEXCH MATCH + ODDS
+   CONFIG
 ========================================================= */
+
+const WHATSAPP_NUMBER = "918895898319";
+
+const MATCH_REFRESH_MS = 30000;
+const ODDS_REFRESH_MS = 5000;
 
 let allMatches = [];
 let currentFilter = "all";
@@ -12,18 +16,12 @@ let currentFilter = "all";
 const oddsCache = new Map();
 const oddsLoading = new Set();
 
-const WHATSAPP_NUMBER = "918895898319";
-
-const MATCH_REFRESH_MS = 30000;
-const ODDS_REFRESH_MS = 5000;
-
 
 /* =========================================================
-   HTML ESCAPE
+   HELPERS
 ========================================================= */
 
 function escapeHtml(value) {
-
     if (value === null || value === undefined) {
         return "";
     }
@@ -37,39 +35,56 @@ function escapeHtml(value) {
 }
 
 
-/* =========================================================
-   NUMBER
-========================================================= */
-
 function toNumber(value) {
-
-    if (
-        value === null ||
-        value === undefined ||
-        value === ""
-    ) {
+    if (value === null || value === undefined || value === "") {
         return null;
     }
 
-    const n = Number(value);
-
-    return Number.isFinite(n) ? n : null;
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
 }
 
 
-/* =========================================================
-   LIVE CHECK
-========================================================= */
+function getGameId(match) {
+    return String(
+        match?.game_id ??
+        match?.gameId ??
+        ""
+    ).trim();
+}
+
+
+function getEventId(match) {
+    return String(
+        match?.event_id ??
+        match?.eventId ??
+        ""
+    ).trim();
+}
+
+
+function getMarketId(match) {
+    return String(
+        match?.market_id ??
+        match?.marketId ??
+        ""
+    ).trim();
+}
+
+
+function getSelectionId(match, index) {
+    return String(
+        match?.[`selection_id${index}`] ??
+        match?.[`selectionId${index}`] ??
+        ""
+    ).trim();
+}
+
 
 function isLive(match) {
-
-    if (!match) {
-        return false;
-    }
-
     const value =
-        match.in_play ??
-        match.inPlay;
+        match?.in_play ??
+        match?.inPlay;
 
     return (
         value === true ||
@@ -81,40 +96,24 @@ function isLive(match) {
 }
 
 
-/* =========================================================
-   DATE
-========================================================= */
-
 function formatDate(value) {
-
     if (!value) {
         return "";
     }
 
-    try {
+    const date = new Date(value);
 
-        const date = new Date(value);
-
-        if (Number.isNaN(date.getTime())) {
-            return String(value);
-        }
-
-        return date.toLocaleString(
-            "en-IN",
-            {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit"
-            }
-        );
-
-    } catch {
-
+    if (Number.isNaN(date.getTime())) {
         return String(value);
-
     }
+
+    return date.toLocaleString("en-IN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+    });
 }
 
 
@@ -123,27 +122,18 @@ function formatDate(value) {
 ========================================================= */
 
 function openWhatsApp(message) {
-
     if (!WHATSAPP_NUMBER) {
-        console.error(
-            "WhatsApp number is not configured."
-        );
         return;
     }
 
     const url =
         `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 
-    window.open(
-        url,
-        "_blank",
-        "noopener,noreferrer"
-    );
+    window.open(url, "_blank", "noopener,noreferrer");
 }
 
 
 function openDepositWhatsApp() {
-
     openWhatsApp(
         "Hello, I want to make a deposit in CricBet."
     );
@@ -151,7 +141,6 @@ function openDepositWhatsApp() {
 
 
 function openWithdrawWhatsApp() {
-
     openWhatsApp(
         "Hello, I want to make a withdrawal from CricBet."
     );
@@ -159,51 +148,13 @@ function openWithdrawWhatsApp() {
 
 
 /* =========================================================
-   GET GAME ID
-========================================================= */
-
-function getGameId(match) {
-
-    return String(
-        match?.game_id ??
-        match?.gameId ??
-        ""
-    ).trim();
-}
-
-
-/* =========================================================
-   GET MARKET ID
-========================================================= */
-
-function getMarketId(match) {
-
-    return String(
-        match?.market_id ??
-        match?.marketId ??
-        ""
-    ).trim();
-}
-
-
-/* =========================================================
-   ODDS ROOT
+   ODDS PARSING
 ========================================================= */
 
 function getOddsRoot(payload) {
-
     if (!payload) {
         return null;
     }
-
-    /*
-     * Your router may return:
-     *
-     * {
-     *   success: true,
-     *   odds: {...}
-     * }
-     */
 
     if (
         payload.odds &&
@@ -212,212 +163,86 @@ function getOddsRoot(payload) {
         return payload.odds;
     }
 
-
-    /*
-     * Or:
-     *
-     * {
-     *   success: true,
-     *   data: {...}
-     * }
-     */
-
     if (
         payload.data &&
         typeof payload.data === "object"
     ) {
-
-        if (
-            payload.data.data &&
-            typeof payload.data.data === "object"
-        ) {
-            return payload.data.data;
-        }
-
-        return payload.data;
+        return payload.data.data ?? payload.data;
     }
-
 
     return payload;
 }
 
 
-/* =========================================================
-   FIND MATCH ODDS
-========================================================= */
-
 function findMatchOdds(payload) {
+    const root = getOddsRoot(payload);
 
-    const root =
-        getOddsRoot(payload);
-
-    if (!root) {
+    if (!root || typeof root !== "object") {
         return null;
     }
 
-
-    /*
-     * Direct:
-     *
-     * matchOdds: [...]
-     */
-
-    if (
-        Array.isArray(root.matchOdds)
-    ) {
+    if (root.matchOdds !== undefined) {
         return root.matchOdds;
     }
 
-
-    /*
-     * Lowercase variation.
-     */
-
-    if (
-        Array.isArray(root.match_odds)
-    ) {
+    if (root.match_odds !== undefined) {
         return root.match_odds;
     }
 
-
-    /*
-     * Uppercase variation.
-     */
-
-    if (
-        Array.isArray(root.MATCH_ODDS)
-    ) {
+    if (root.MATCH_ODDS !== undefined) {
         return root.MATCH_ODDS;
     }
 
-
-    /*
-     * Sometimes data is nested.
-     */
-
-    if (
-        root.matchOdds &&
-        typeof root.matchOdds === "object"
-    ) {
-        return root.matchOdds;
-    }
-
-
-    if (
-        root.MATCH_ODDS &&
-        typeof root.MATCH_ODDS === "object"
-    ) {
-        return root.MATCH_ODDS;
-    }
-
-
-    /*
-     * Search recursively for matchOdds.
-     */
-
-    if (
-        typeof root === "object"
-    ) {
-
-        for (
-            const key of Object.keys(root)
-        ) {
-
-            const value =
-                root[key];
-
-            if (
-                key.toLowerCase() ===
-                "matchodds"
-            ) {
-                return value;
-            }
-
+    for (const key of Object.keys(root)) {
+        if (key.toLowerCase() === "matchodds") {
+            return root[key];
         }
-
     }
-
 
     return null;
 }
 
 
-/* =========================================================
-   FIND RUNNERS
-========================================================= */
-
 function findRunners(value) {
-
     if (!value) {
         return [];
     }
 
-
-    /*
-     * Already a runner array.
-     */
-
     if (Array.isArray(value)) {
+        const isRunnerList = value.some(item =>
+            item &&
+            typeof item === "object" &&
+            (
+                item.selectionId !== undefined ||
+                item.selection_id !== undefined ||
+                item.runnerId !== undefined ||
+                item.runnerName !== undefined ||
+                item.runner_name !== undefined ||
+                item.back !== undefined ||
+                item.lay !== undefined
+            )
+        );
 
-        /*
-         * Check whether this itself is a runner list.
-         */
-
-        const looksLikeRunners =
-            value.some(
-                item =>
-                    item &&
-                    typeof item === "object" &&
-                    (
-                        item.selectionId !== undefined ||
-                        item.selection_id !== undefined ||
-                        item.sid !== undefined ||
-                        item.runnerName !== undefined ||
-                        item.runner_name !== undefined ||
-                        item.back !== undefined ||
-                        item.lay !== undefined
-                    )
-            );
-
-
-        if (looksLikeRunners) {
+        if (isRunnerList) {
             return value;
         }
 
-
-        /*
-         * Otherwise search each object.
-         */
-
-        for (
-            const item of value
-        ) {
-
-            const result =
-                findRunners(item);
+        for (const item of value) {
+            const result = findRunners(item);
 
             if (result.length) {
                 return result;
             }
-
         }
 
         return [];
     }
 
-
-    if (
-        typeof value !== "object"
-    ) {
+    if (typeof value !== "object") {
         return [];
     }
 
-
-    /*
-     * Common runner property names.
-     */
-
-    const possibleKeys = [
+    const keys = [
         "runners",
         "runner",
         "selections",
@@ -427,449 +252,182 @@ function findRunners(value) {
         "data"
     ];
 
-
-    for (
-        const key of possibleKeys
-    ) {
-
-        if (
-            value[key] !== undefined
-        ) {
-
-            const result =
-                findRunners(
-                    value[key]
-                );
+    for (const key of keys) {
+        if (value[key] !== undefined) {
+            const result = findRunners(value[key]);
 
             if (result.length) {
                 return result;
             }
-
         }
-
     }
-
-
-    /*
-     * Recursive fallback.
-     */
-
-    for (
-        const key of Object.keys(value)
-    ) {
-
-        const child =
-            value[key];
-
-        if (
-            child &&
-            typeof child === "object"
-        ) {
-
-            const result =
-                findRunners(child);
-
-            if (result.length) {
-                return result;
-            }
-
-        }
-
-    }
-
 
     return [];
 }
 
 
-/* =========================================================
-   SELECTION ID
-========================================================= */
-
-function getSelectionId(item) {
-
-    if (!item) {
-        return null;
-    }
-
+function getRunnerSelectionId(item) {
     return (
-        item.selectionId ??
-        item.selection_id ??
-        item.selectionID ??
-        item.sid ??
-        item.runnerId ??
-        item.runner_id ??
+        item?.selectionId ??
+        item?.selection_id ??
+        item?.selectionID ??
+        item?.sid ??
+        item?.runnerId ??
+        item?.runner_id ??
         null
     );
 }
 
 
-/* =========================================================
-   RUNNER NAME
-========================================================= */
-
 function getRunnerName(item) {
-
-    if (!item) {
-        return "";
-    }
-
     return (
-        item.runnerName ??
-        item.runner_name ??
-        item.selectionName ??
-        item.selection_name ??
-        item.name ??
-        item.runner ??
-        item.teamName ??
-        item.team ??
+        item?.runnerName ??
+        item?.runner_name ??
+        item?.selectionName ??
+        item?.selection_name ??
+        item?.name ??
+        item?.teamName ??
+        item?.team ??
         ""
     );
 }
 
 
-/* =========================================================
-   PRICE EXTRACTION
-========================================================= */
-
 function extractPrice(value) {
-
-    if (
-        value === null ||
-        value === undefined
-    ) {
+    if (value === null || value === undefined) {
         return null;
     }
 
-
-    if (
-        typeof value === "number"
-    ) {
-        return Number.isFinite(value)
-            ? value
-            : null;
+    if (typeof value === "number") {
+        return Number.isFinite(value) ? value : null;
     }
 
-
-    if (
-        typeof value === "string"
-    ) {
+    if (typeof value === "string") {
         return toNumber(value);
     }
 
-
-    if (
-        typeof value === "object"
-    ) {
-
+    if (typeof value === "object") {
         return (
             toNumber(value.price) ??
             toNumber(value.odds) ??
             toNumber(value.rate) ??
-            toNumber(value.value) ??
-            toNumber(value.size)
+            toNumber(value.value)
         );
-
     }
-
 
     return null;
 }
 
-
-/* =========================================================
-   BACK PRICE
-========================================================= */
 
 function getBackPrice(item) {
-
-    if (!item) {
-        return null;
-    }
-
-
-    /*
-     * Standard names.
-     */
-
-    const candidates = [
-        item.back,
-        item.Back,
-        item.backPrice,
-        item.back_price,
-        item.backOdds,
-        item.back_odds,
-        item.backRate,
-        item.back_rate,
-        item.backOdd,
-        item.back_odd,
-        item.b1,
-        item.batb,
-        item.back1
+    const values = [
+        item?.back,
+        item?.Back,
+        item?.backPrice,
+        item?.back_price,
+        item?.backOdds,
+        item?.back_odds,
+        item?.backRate,
+        item?.back_rate,
+        item?.backOdd,
+        item?.back_odd,
+        item?.b1,
+        item?.back1
     ];
 
-
-    for (
-        const value of candidates
-    ) {
-
-        const price =
-            extractPrice(value);
+    for (const value of values) {
+        const price = extractPrice(value);
 
         if (price !== null) {
             return price;
         }
-
     }
-
-
-    /*
-     * Some APIs return:
-     *
-     * back: [
-     *   {price: 1.50}
-     * ]
-     */
-
-    if (
-        Array.isArray(item.back)
-    ) {
-
-        for (
-            const entry of item.back
-        ) {
-
-            const price =
-                extractPrice(entry);
-
-            if (price !== null) {
-                return price;
-            }
-
-        }
-
-    }
-
 
     return null;
 }
 
-
-/* =========================================================
-   LAY PRICE
-========================================================= */
 
 function getLayPrice(item) {
-
-    if (!item) {
-        return null;
-    }
-
-
-    const candidates = [
-        item.lay,
-        item.Lay,
-        item.layPrice,
-        item.lay_price,
-        item.layOdds,
-        item.lay_odds,
-        item.layRate,
-        item.lay_rate,
-        item.layOdd,
-        item.lay_odd,
-        item.l1,
-        item.layb,
-        item.lay1
+    const values = [
+        item?.lay,
+        item?.Lay,
+        item?.layPrice,
+        item?.lay_price,
+        item?.layOdds,
+        item?.lay_odds,
+        item?.layRate,
+        item?.lay_rate,
+        item?.layOdd,
+        item?.lay_odd,
+        item?.l1,
+        item?.lay1
     ];
 
-
-    for (
-        const value of candidates
-    ) {
-
-        const price =
-            extractPrice(value);
+    for (const value of values) {
+        const price = extractPrice(value);
 
         if (price !== null) {
             return price;
         }
-
     }
-
-
-    if (
-        Array.isArray(item.lay)
-    ) {
-
-        for (
-            const entry of item.lay
-        ) {
-
-            const price =
-                extractPrice(entry);
-
-            if (price !== null) {
-                return price;
-            }
-
-        }
-
-    }
-
 
     return null;
 }
 
 
-/* =========================================================
-   NORMALIZE RUNNERS
-========================================================= */
-
 function normalizeRunners(runners) {
-
-    if (
-        !Array.isArray(runners)
-    ) {
+    if (!Array.isArray(runners)) {
         return [];
     }
 
-
     return runners
-        .map(
-            item => {
-
-                if (
-                    !item ||
-                    typeof item !== "object"
-                ) {
-                    return null;
-                }
-
-
-                return {
-                    selectionId:
-                        getSelectionId(item),
-
-                    name:
-                        getRunnerName(item),
-
-                    back:
-                        getBackPrice(item),
-
-                    lay:
-                        getLayPrice(item)
-                };
-
+        .map(item => {
+            if (!item || typeof item !== "object") {
+                return null;
             }
-        )
-        .filter(Boolean);
 
+            return {
+                selectionId: getRunnerSelectionId(item),
+                name: getRunnerName(item),
+                back: getBackPrice(item),
+                lay: getLayPrice(item)
+            };
+        })
+        .filter(Boolean);
 }
 
 
-/* =========================================================
-   NORMALIZE MATCH ODDS
-========================================================= */
+function emptyOdds() {
+    return {
+        team1: { back: null, lay: null },
+        team2: { back: null, lay: null },
+        team3: { back: null, lay: null }
+    };
+}
 
-function normalizeMatchOdds(
-    match,
-    payload
-) {
 
-    const matchOdds =
-        findMatchOdds(payload);
-
+function normalizeMatchOdds(match, payload) {
+    const matchOdds = findMatchOdds(payload);
 
     if (!matchOdds) {
-
-        console.warn(
-            "MATCH ODDS NOT FOUND:",
-            getGameId(match),
-            payload
-        );
-
-        return {
-            team1: {
-                back: null,
-                lay: null
-            },
-
-            team2: {
-                back: null,
-                lay: null
-            },
-
-            team3: {
-                back: null,
-                lay: null
-            }
-        };
-
+        return emptyOdds();
     }
 
-
-    const runners =
-        normalizeRunners(
-            findRunners(
-                matchOdds
-            )
-        );
-
+    const runners = normalizeRunners(
+        findRunners(matchOdds)
+    );
 
     if (!runners.length) {
-
-        console.warn(
-            "NO RUNNERS FOUND:",
-            getGameId(match),
-            matchOdds
-        );
-
-        return {
-            team1: {
-                back: null,
-                lay: null
-            },
-
-            team2: {
-                back: null,
-                lay: null
-            },
-
-            team3: {
-                back: null,
-                lay: null
-            }
-        };
-
+        return emptyOdds();
     }
 
-
-    console.log(
-        "NORMALIZED RUNNERS:",
-        getGameId(match),
-        runners
-    );
-
-
     const selectionIds = [
+        getSelectionId(match, 1),
+        getSelectionId(match, 2),
+        getSelectionId(match, 3)
+    ];
 
-        match.selection_id1 ??
-        match.selectionId1,
-
-        match.selection_id2 ??
-        match.selectionId2,
-
-        match.selection_id3 ??
-        match.selectionId3
-
-    ].map(
-        value =>
-            value === null ||
-            value === undefined
-                ? null
-                : String(value)
-    );
-
+    const result = emptyOdds();
 
     const slots = [
         "team1",
@@ -877,274 +435,138 @@ function normalizeMatchOdds(
         "team3"
     ];
 
+    runners.forEach(runner => {
+        const runnerId =
+            runner.selectionId === null ||
+            runner.selectionId === undefined
+                ? ""
+                : String(runner.selectionId);
 
-    const result = {
+        const index =
+            selectionIds.indexOf(runnerId);
 
-        team1: {
-            back: null,
-            lay: null
-        },
-
-        team2: {
-            back: null,
-            lay: null
-        },
-
-        team3: {
-            back: null,
-            lay: null
+        if (index >= 0) {
+            result[slots[index]] = {
+                back: runner.back,
+                lay: runner.lay
+            };
         }
+    });
 
-    };
+    runners.slice(0, 3).forEach((runner, index) => {
+        const slot = slots[index];
 
-
-    /*
-     * First match by selection ID.
-     */
-
-    runners.forEach(
-        runner => {
-
-            if (
-                runner.selectionId === null ||
-                runner.selectionId === undefined
-            ) {
-                return;
-            }
-
-
-            const runnerId =
-                String(
-                    runner.selectionId
-                );
-
-
-            const index =
-                selectionIds.indexOf(
-                    runnerId
-                );
-
-
-            if (
-                index >= 0
-            ) {
-
-                result[
-                    slots[index]
-                ] = {
-
-                    back:
-                        runner.back,
-
-                    lay:
-                        runner.lay
-
-                };
-
-            }
-
+        if (
+            result[slot].back === null &&
+            result[slot].lay === null
+        ) {
+            result[slot] = {
+                back: runner.back,
+                lay: runner.lay
+            };
         }
-    );
-
-
-    /*
-     * If selection IDs aren't present,
-     * use runner order.
-     */
-
-    runners
-        .slice(0, 3)
-        .forEach(
-            (runner, index) => {
-
-                const slot =
-                    slots[index];
-
-
-                if (
-                    result[slot].back === null &&
-                    result[slot].lay === null
-                ) {
-
-                    result[slot] = {
-
-                        back:
-                            runner.back,
-
-                        lay:
-                            runner.lay
-
-                    };
-
-                }
-
-            }
-        );
-
+    });
 
     return result;
 }
 
 
 /* =========================================================
-   ODDS HTML
+   MATCH HTML
 ========================================================= */
 
 function createOddsButton({
     gameId,
+    eventId,
     marketId,
+    selectionId,
     team,
     side,
     price,
     className
 }) {
-
-    const numericPrice =
-        toNumber(price);
-
-
-    const disabled =
-        numericPrice === null;
-
-
-    const displayPrice =
-        numericPrice !== null
-            ? numericPrice.toFixed(2)
-            : "-";
-
+    const numericPrice = toNumber(price);
+    const disabled = numericPrice === null;
 
     return `
-
         <button
             type="button"
             class="odds-cell ${className}"
             data-game-id="${escapeHtml(gameId)}"
+            data-event-id="${escapeHtml(eventId)}"
             data-market-id="${escapeHtml(marketId)}"
+            data-selection-id="${escapeHtml(selectionId)}"
             data-team="${escapeHtml(team)}"
             data-side="${escapeHtml(side)}"
-            data-price="${
-                numericPrice !== null
-                    ? numericPrice
-                    : ""
-            }"
+            data-price="${numericPrice ?? ""}"
             ${disabled ? "disabled" : ""}
-            title="${escapeHtml(team)} ${escapeHtml(side)}"
         >
-
             <span class="odds-price">
-                ${escapeHtml(displayPrice)}
+                ${
+                    numericPrice !== null
+                        ? numericPrice.toFixed(2)
+                        : "-"
+                }
             </span>
-
         </button>
-
     `;
 }
 
 
-/* =========================================================
-   CREATE MATCH ROW
-========================================================= */
-
 function createMatchRow(match) {
-
-    const gameId =
-        getGameId(match);
-
-
-    const marketId =
-        getMarketId(match);
-
+    const gameId = getGameId(match);
+    const eventId = getEventId(match);
+    const marketId = getMarketId(match);
 
     const eventName =
         match.event_name ??
         match.eventName ??
         "Cricket Match";
 
-
     const eventTime =
         match.event_time ??
         match.eventTime ??
         "";
-
 
     const team1 =
         match.team1 ??
         match.runnerName1 ??
         "Team 1";
 
-
     const team2 =
         match.team2 ??
         match.runnerName2 ??
         "Team 2";
-
 
     const team3 =
         match.team3 ??
         match.runnerName3 ??
         "The Draw";
 
-
-    const live =
-        isLive(match);
-
-
-    /*
-     * Get cached odds.
-     */
-
-    let odds = {
-
-        team1: {
-            back: null,
-            lay: null
-        },
-
-        team2: {
-            back: null,
-            lay: null
-        },
-
-        team3: {
-            back: null,
-            lay: null
-        }
-
-    };
-
-
-    if (
+    const odds =
         oddsCache.has(gameId)
-    ) {
-
-        odds =
-            normalizeMatchOdds(
+            ? normalizeMatchOdds(
                 match,
                 oddsCache.get(gameId)
-            );
-
-    }
-
+            )
+            : emptyOdds();
 
     return `
-
         <div
             class="sportsbook-match-row"
             data-game-id="${escapeHtml(gameId)}"
+            data-event-id="${escapeHtml(eventId)}"
             data-market-id="${escapeHtml(marketId)}"
         >
-
-            <!-- MATCH INFORMATION -->
 
             <div class="match-information">
 
                 <div class="match-status-line">
 
                     ${
-                        live
+                        isLive(match)
                             ? `
                                 <span class="live-dot"></span>
-
                                 <span class="match-status live-status">
                                     LIVE
                                 </span>
@@ -1157,18 +579,14 @@ function createMatchRow(match) {
                     }
 
                     <span class="match-time">
-                        ${escapeHtml(
-                            formatDate(eventTime)
-                        )}
+                        ${escapeHtml(formatDate(eventTime))}
                     </span>
 
                 </div>
 
-
                 <div class="match-name">
                     ${escapeHtml(eventName)}
                 </div>
-
 
                 <div class="team-names">
 
@@ -1193,81 +611,44 @@ function createMatchRow(match) {
 
                 </div>
 
-
                 <div class="match-league">
                     Cricket
                 </div>
 
             </div>
 
-
-            <!-- TEAM 1 BACK -->
-
             ${createOddsButton({
-
                 gameId,
+                eventId,
                 marketId,
-
-                team:
-                    team1,
-
-                side:
-                    "back",
-
-                price:
-                    odds.team1.back,
-
-                className:
-                    "odds-team-1"
-
+                selectionId: getSelectionId(match, 1),
+                team: team1,
+                side: "back",
+                price: odds.team1.back,
+                className: "odds-team-1"
             })}
 
-
-            <!-- TEAM 2 BACK -->
-
             ${createOddsButton({
-
                 gameId,
+                eventId,
                 marketId,
-
-                team:
-                    team2,
-
-                side:
-                    "back",
-
-                price:
-                    odds.team2.back,
-
-                className:
-                    "odds-team-2"
-
+                selectionId: getSelectionId(match, 2),
+                team: team2,
+                side: "back",
+                price: odds.team2.back,
+                className: "odds-team-2"
             })}
 
-
-            <!-- DRAW BACK -->
-
             ${createOddsButton({
-
                 gameId,
+                eventId,
                 marketId,
-
-                team:
-                    team3,
-
-                side:
-                    "back",
-
-                price:
-                    odds.team3.back,
-
-                className:
-                    "odds-draw"
-
+                selectionId: getSelectionId(match, 3),
+                team: team3,
+                side: "back",
+                price: odds.team3.back,
+                className: "odds-draw"
             })}
-
-
-            <!-- VIEW MATCH -->
 
             <div class="match-action">
 
@@ -1282,7 +663,6 @@ function createMatchRow(match) {
             </div>
 
         </div>
-
     `;
 }
 
@@ -1292,162 +672,85 @@ function createMatchRow(match) {
 ========================================================= */
 
 async function loadMatches() {
-
     const container =
-        document.getElementById(
-            "matches"
-        );
-
+        document.getElementById("matches");
 
     if (!container) {
         return;
     }
 
-
-    /*
-     * Only show loading on first request.
-     */
-
     if (!allMatches.length) {
-
         container.innerHTML = `
-
             <div class="empty-state">
-
-                <div class="empty-state-icon">
-                    🏏
-                </div>
-
+                <div class="empty-state-icon">🏏</div>
                 <div class="empty-state-title">
                     Loading cricket matches...
                 </div>
-
                 <div class="empty-state-text">
                     Fetching live cricket data.
                 </div>
-
             </div>
-
         `;
-
     }
 
-
     try {
-
-        const response =
-            await fetch(
-                "/api/cricket/matches",
-                {
-                    method: "GET",
-                    credentials: "same-origin",
-                    cache: "no-store",
-                    headers: {
-                        "Accept": "application/json"
-                    }
+        const response = await fetch(
+            "/api/cricket/matches",
+            {
+                method: "GET",
+                credentials: "same-origin",
+                cache: "no-store",
+                headers: {
+                    Accept: "application/json"
                 }
-            );
+            }
+        );
 
-
-        let payload;
-
-
-        try {
-
-            payload =
-                await response.json();
-
-        } catch {
-
-            throw new Error(
-                "Server returned invalid JSON."
-            );
-
-        }
-
+        const payload = await response.json();
 
         if (!response.ok) {
-
             throw new Error(
                 payload?.error ||
                 payload?.detail ||
                 "Unable to load cricket matches."
             );
-
         }
 
-
-        if (
-            payload.success !== true
-        ) {
-
+        if (payload.success !== true) {
             throw new Error(
                 payload?.error ||
                 "Cricket API request failed."
             );
-
         }
 
-
-        if (
-            !Array.isArray(
-                payload.matches
-            )
-        ) {
-
+        if (!Array.isArray(payload.matches)) {
             throw new Error(
                 "Invalid matches response."
             );
-
         }
 
-
-        allMatches =
-            payload.matches;
-
-
-        console.log(
-            "CRICBET MATCHES:",
-            allMatches.length
-        );
-
+        allMatches = payload.matches;
 
         renderMatches();
-
-
-        /*
-         * Odds are loaded separately.
-         */
-
         loadAllOdds();
 
-
     } catch (error) {
-
         console.error(
             "CRICKET MATCH ERROR:",
             error
         );
 
-
         if (!allMatches.length) {
-
             container.innerHTML = `
-
                 <div class="empty-state">
-
-                    <div class="empty-state-icon">
-                        ⚠️
-                    </div>
+                    <div class="empty-state-icon">⚠️</div>
 
                     <div class="empty-state-title">
                         Unable to load cricket data
                     </div>
 
                     <div class="empty-state-text">
-                        ${escapeHtml(
-                            error.message
-                        )}
+                        ${escapeHtml(error.message)}
                     </div>
 
                     <button
@@ -1457,121 +760,78 @@ async function loadMatches() {
                     >
                         RETRY
                     </button>
-
                 </div>
-
             `;
-
         }
-
     }
-
 }
 
 
 /* =========================================================
-   LOAD ODDS FOR ONE MATCH
+   LOAD ODDS
 ========================================================= */
 
 async function loadOddsForMatch(match) {
+    const gameId = getGameId(match);
+    const eventId = getEventId(match);
+    const marketId = getMarketId(match);
 
-    const gameId =
-        getGameId(match);
+    if (!gameId || !eventId) {
+        console.warn(
+            "Missing gameId/eventId:",
+            {
+                gameId,
+                eventId
+            }
+        );
 
-
-    if (!gameId) {
         return;
     }
 
-
-    /*
-     * Don't request the same match twice
-     * at the same time.
-     */
-
-    if (
-        oddsLoading.has(gameId)
-    ) {
+    if (oddsLoading.has(gameId)) {
         return;
     }
-
 
     oddsLoading.add(gameId);
 
-
     try {
+        const params = new URLSearchParams({
+            gameId,
+            eventId
+        });
 
-        console.log(
-            "GET ODDS:",
-            gameId
-        );
-
-
-        /*
-         * IMPORTANT:
-         *
-         * New ProExch endpoint:
-         *
-         * /api/cricket/odds?gameId=<gameId>
-         */
-
-        const response =
-            await fetch(
-                `/api/cricket/odds?gameId=${encodeURIComponent(gameId)}`,
-                {
-                    method: "GET",
-                    credentials: "same-origin",
-                    cache: "no-store",
-                    headers: {
-                        "Accept": "application/json"
-                    }
-                }
-            );
-
-
-        let payload;
-
-
-        try {
-
-            payload =
-                await response.json();
-
-        } catch {
-
-            throw new Error(
-                "Invalid odds JSON."
-            );
-
+        if (marketId) {
+            params.set("marketId", marketId);
         }
 
+        const response = await fetch(
+            `/api/cricket/odds?${params.toString()}`,
+            {
+                method: "GET",
+                credentials: "same-origin",
+                cache: "no-store",
+                headers: {
+                    Accept: "application/json"
+                }
+            }
+        );
+
+        const payload = await response.json();
 
         if (!response.ok) {
-
             throw new Error(
                 payload?.error ||
                 payload?.detail ||
                 `Odds HTTP ${response.status}`
             );
-
         }
 
-
-        if (
-            payload.success !== true
-        ) {
-
+        if (payload.success !== true) {
             throw new Error(
                 payload?.error ||
                 "Odds request failed."
             );
-
         }
-
-
-        /*
-         * Store the entire odds object.
-         */
 
         oddsCache.set(
             gameId,
@@ -1580,121 +840,67 @@ async function loadOddsForMatch(match) {
             payload
         );
 
-
-        console.log(
-            "ODDS RECEIVED:",
-            gameId,
-            oddsCache.get(gameId)
-        );
-
-
-        /*
-         * Update only this row.
-         */
-
-        updateMatchOdds(
-            match
-        );
-
+        updateMatchOdds(match);
 
     } catch (error) {
-
         console.warn(
             "ODDS ERROR:",
             gameId,
             error.message
         );
-
     } finally {
-
-        oddsLoading.delete(
-            gameId
-        );
-
+        oddsLoading.delete(gameId);
     }
-
 }
 
 
-/* =========================================================
-   LOAD ALL ODDS
-========================================================= */
-
 async function loadAllOdds() {
-
     if (!allMatches.length) {
         return;
     }
 
-
-    /*
-     * Small batches prevent 26 requests
-     * from hitting the VPS at exactly
-     * the same time.
-     */
-
     const batchSize = 5;
-
 
     for (
         let i = 0;
         i < allMatches.length;
         i += batchSize
     ) {
-
         const batch =
             allMatches.slice(
                 i,
                 i + batchSize
             );
 
-
         await Promise.all(
             batch.map(
                 match =>
-                    loadOddsForMatch(
-                        match
-                    )
+                    loadOddsForMatch(match)
             )
         );
-
     }
-
 }
 
 
 /* =========================================================
-   UPDATE MATCH ODDS
+   UPDATE ODDS
 ========================================================= */
 
 function updateMatchOdds(match) {
+    const gameId = getGameId(match);
 
-    const gameId =
-        getGameId(match);
-
-
-    if (!gameId) {
+    if (!gameId || !oddsCache.has(gameId)) {
         return;
     }
-
 
     const row =
         document.querySelector(
             `.sportsbook-match-row[data-game-id="${CSS.escape(gameId)}"]`
         );
 
-
     if (!row) {
         return;
     }
-
-
-    if (
-        !oddsCache.has(gameId)
-    ) {
-        return;
-    }
-
 
     const odds =
         normalizeMatchOdds(
@@ -1702,63 +908,34 @@ function updateMatchOdds(match) {
             oddsCache.get(gameId)
         );
 
-
     updateOddsButton(
-        row.querySelector(
-            ".odds-team-1"
-        ),
+        row.querySelector(".odds-team-1"),
         odds.team1.back
     );
 
-
     updateOddsButton(
-        row.querySelector(
-            ".odds-team-2"
-        ),
+        row.querySelector(".odds-team-2"),
         odds.team2.back
     );
 
-
     updateOddsButton(
-        row.querySelector(
-            ".odds-draw"
-        ),
+        row.querySelector(".odds-draw"),
         odds.team3.back
     );
-
 }
 
 
-/* =========================================================
-   UPDATE ODDS BUTTON
-========================================================= */
-
-function updateOddsButton(
-    button,
-    price
-) {
-
+function updateOddsButton(button, price) {
     if (!button) {
         return;
     }
 
-
-    const numericPrice =
-        toNumber(price);
-
-
+    const numericPrice = toNumber(price);
     const span =
-        button.querySelector(
-            ".odds-price"
-        );
+        button.querySelector(".odds-price");
 
-
-    if (
-        numericPrice === null
-    ) {
-
+    if (numericPrice === null) {
         button.disabled = true;
-
         button.dataset.price = "";
 
         if (span) {
@@ -1768,20 +945,13 @@ function updateOddsButton(
         return;
     }
 
-
     button.disabled = false;
-
-    button.dataset.price =
-        String(numericPrice);
-
+    button.dataset.price = String(numericPrice);
 
     if (span) {
-
         span.textContent =
             numericPrice.toFixed(2);
-
     }
-
 }
 
 
@@ -1790,86 +960,45 @@ function updateOddsButton(
 ========================================================= */
 
 function setFilter(filter) {
-
-    currentFilter =
-        filter;
-
+    currentFilter = filter;
 
     document
-        .querySelectorAll(
-            ".sport-filter"
-        )
+        .querySelectorAll(".sport-filter")
         .forEach(button => {
-
             button.classList.toggle(
                 "active",
                 button.dataset.filter === filter
             );
-
         });
 
-
     renderMatches();
-
 }
 
 
-/* =========================================================
-   RENDER MATCHES
-========================================================= */
-
 function renderMatches() {
-
     const container =
-        document.getElementById(
-            "matches"
-        );
-
+        document.getElementById("matches");
 
     if (!container) {
         return;
     }
 
+    let matches = [...allMatches];
 
-    let matches =
-        [...allMatches];
-
-
-    if (
-        currentFilter === "live"
-    ) {
-
-        matches =
-            matches.filter(
-                match =>
-                    isLive(match)
-            );
-
+    if (currentFilter === "live") {
+        matches = matches.filter(isLive);
     }
 
-
-    if (
-        currentFilter === "upcoming"
-    ) {
-
-        matches =
-            matches.filter(
-                match =>
-                    !isLive(match)
-            );
-
+    if (currentFilter === "upcoming") {
+        matches = matches.filter(
+            match => !isLive(match)
+        );
     }
-
 
     if (!matches.length) {
-
         container.innerHTML = `
-
             <div class="empty-state">
-
-                <div class="empty-state-icon">
-                    🏏
-                </div>
+                <div class="empty-state-icon">🏏</div>
 
                 <div class="empty-state-title">
                     No cricket matches
@@ -1878,36 +1007,18 @@ function renderMatches() {
                 <div class="empty-state-text">
                     No matches are currently available for this filter.
                 </div>
-
             </div>
-
         `;
 
         return;
-
     }
-
 
     container.innerHTML =
         matches
-            .map(
-                match =>
-                    createMatchRow(match)
-            )
+            .map(createMatchRow)
             .join("");
 
-
-    /*
-     * Apply cached odds immediately.
-     */
-
-    matches.forEach(
-        match =>
-            updateMatchOdds(
-                match
-            )
-    );
-
+    matches.forEach(updateMatchOdds);
 }
 
 
@@ -1916,44 +1027,32 @@ function renderMatches() {
 ========================================================= */
 
 async function loadBalance() {
-
     try {
-
-        const response =
-            await fetch(
-                "/api/user/balance",
-                {
-                    method: "GET",
-                    credentials: "same-origin",
-                    cache: "no-store",
-                    headers: {
-                        "Accept": "application/json"
-                    }
+        const response = await fetch(
+            "/api/user/balance",
+            {
+                method: "GET",
+                credentials: "same-origin",
+                cache: "no-store",
+                headers: {
+                    Accept: "application/json"
                 }
-            );
-
+            }
+        );
 
         if (!response.ok) {
             return;
         }
 
-
         const data =
             await response.json();
 
-
-        if (
-            data.balance === undefined
-        ) {
+        if (data.balance === undefined) {
             return;
         }
 
-
         const balance =
-            Number(
-                data.balance
-            );
-
+            Number(data.balance);
 
         const formatted =
             Number.isFinite(balance)
@@ -1966,43 +1065,30 @@ async function loadBalance() {
                 )
                 : "0.00";
 
-
         const balanceElement =
-            document.getElementById(
-                "balance"
-            );
-
+            document.getElementById("balance");
 
         const betslipBalance =
             document.getElementById(
                 "betslipBalance"
             );
 
-
         if (balanceElement) {
-
             balanceElement.textContent =
                 `₹${formatted}`;
-
         }
 
-
         if (betslipBalance) {
-
             betslipBalance.textContent =
                 `₹${formatted}`;
-
         }
 
     } catch (error) {
-
         console.warn(
             "Balance loading failed:",
             error
         );
-
     }
-
 }
 
 
@@ -2011,62 +1097,36 @@ async function loadBalance() {
 ========================================================= */
 
 function setupBetslip() {
-
     const betslip =
-        document.getElementById(
-            "betslip"
-        );
-
+        document.getElementById("betslip");
 
     const closeButton =
         document.getElementById(
             "betslipClose"
         );
 
-
     const mobileButton =
         document.getElementById(
             "mobileBetslipButton"
         );
 
-
-    if (
-        closeButton &&
-        betslip
-    ) {
-
+    if (closeButton && betslip) {
         closeButton.addEventListener(
             "click",
             () => {
-
-                betslip.classList.remove(
-                    "open"
-                );
-
+                betslip.classList.remove("open");
             }
         );
-
     }
 
-
-    if (
-        mobileButton &&
-        betslip
-    ) {
-
+    if (mobileButton && betslip) {
         mobileButton.addEventListener(
             "click",
             () => {
-
-                betslip.classList.toggle(
-                    "open"
-                );
-
+                betslip.classList.toggle("open");
             }
         );
-
     }
-
 }
 
 
@@ -2077,41 +1137,32 @@ function setupBetslip() {
 document.addEventListener(
     "click",
     event => {
-
         const button =
-            event.target.closest(
-                ".odds-cell"
-            );
+            event.target.closest(".odds-cell");
 
-
-        if (!button) {
+        if (!button || button.disabled) {
             return;
         }
-
-
-        if (button.disabled) {
-            return;
-        }
-
 
         const price =
-            Number(
-                button.dataset.price
-            );
-
+            Number(button.dataset.price);
 
         if (!Number.isFinite(price)) {
             return;
         }
 
-
         const selection = {
-
             gameId:
                 button.dataset.gameId,
 
+            eventId:
+                button.dataset.eventId,
+
             marketId:
                 button.dataset.marketId,
+
+            selectionId:
+                button.dataset.selectionId,
 
             team:
                 button.dataset.team,
@@ -2119,33 +1170,22 @@ document.addEventListener(
             side:
                 button.dataset.side,
 
-            price:
-                price
-
+            price
         };
-
 
         console.log(
             "CRICBET ODDS SELECTED:",
             selection
         );
 
-
-        /*
-         * Existing betslip/place-bet code
-         * can listen for this event.
-         */
-
         document.dispatchEvent(
             new CustomEvent(
                 "cricbet:oddsSelected",
                 {
-                    detail:
-                        selection
+                    detail: selection
                 }
             )
         );
-
     }
 );
 
@@ -2158,94 +1198,50 @@ document.addEventListener(
     "DOMContentLoaded",
     () => {
 
-        /* -------------------------------------------------
-           FILTERS
-        ------------------------------------------------- */
-
         document
-            .querySelectorAll(
-                ".sport-filter"
-            )
+            .querySelectorAll(".sport-filter")
             .forEach(button => {
-
                 button.addEventListener(
                     "click",
                     () => {
-
                         setFilter(
                             button.dataset.filter
                         );
-
                     }
                 );
-
             });
 
-
-        /* -------------------------------------------------
-           DEPOSIT
-        ------------------------------------------------- */
 
         const depositButton =
             document.getElementById(
                 "depositBtn"
             );
 
-
         if (depositButton) {
-
             depositButton.addEventListener(
                 "click",
                 openDepositWhatsApp
             );
-
         }
 
-
-        /* -------------------------------------------------
-           WITHDRAW
-        ------------------------------------------------- */
 
         const withdrawButton =
             document.getElementById(
                 "withdrawBtn"
             );
 
-
         if (withdrawButton) {
-
             withdrawButton.addEventListener(
                 "click",
                 openWithdrawWhatsApp
             );
-
         }
 
 
-        /* -------------------------------------------------
-           BETSLIP
-        ------------------------------------------------- */
-
         setupBetslip();
-
-
-        /* -------------------------------------------------
-           BALANCE
-        ------------------------------------------------- */
-
         loadBalance();
-
-
-        /* -------------------------------------------------
-           MATCHES
-        ------------------------------------------------- */
-
         loadMatches();
 
-
-        /* -------------------------------------------------
-           MATCH REFRESH
-        ------------------------------------------------- */
 
         setInterval(
             loadMatches,
@@ -2253,48 +1249,23 @@ document.addEventListener(
         );
 
 
-        /* -------------------------------------------------
-           ODDS REFRESH
-        ------------------------------------------------- */
-
         setInterval(
             () => {
-
-                if (!allMatches.length) {
-                    return;
+                if (allMatches.length) {
+                    allMatches.forEach(
+                        loadOddsForMatch
+                    );
                 }
-
-
-                /*
-                 * Clear the loading state only for
-                 * completed requests. The Set itself
-                 * prevents duplicate requests.
-                 */
-
-                allMatches.forEach(
-                    match => {
-
-                        loadOddsForMatch(
-                            match
-                        );
-
-                    }
-                );
-
             },
             ODDS_REFRESH_MS
         );
 
 
-        /* -------------------------------------------------
-           BALANCE REFRESH
-        ------------------------------------------------- */
-
         setInterval(
             loadBalance,
             15000
         );
-
     }
 );
+
 
