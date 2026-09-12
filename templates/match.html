@@ -1,1692 +1,645 @@
-
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>
-        {% if match %}
-            {{ match.team1 }} vs {{ match.team2 }} | CricBet
-        {% else %}
-            Match | CricBet
-        {% endif %}
+        {{ match.event_name if match else "CrickBet Match" }}
     </title>
 
-
     <style>
-
-        /* =====================================================
-           RESET
-        ===================================================== */
-
         * {
             box-sizing: border-box;
         }
 
-        html,
         body {
             margin: 0;
-            padding: 0;
-            min-height: 100%;
+            background: #071b12;
+            color: #fff;
+            font-family: Arial, Helvetica, sans-serif;
         }
-
-        body {
-            font-family:
-                Inter,
-                -apple-system,
-                BlinkMacSystemFont,
-                "Segoe UI",
-                sans-serif;
-
-            background: #07120d;
-
-            color: #e8f5ed;
-        }
-
-
-        /* =====================================================
-           TOP BAR
-        ===================================================== */
-
-        .topbar {
-
-            height: 68px;
-
-            background: #071a12;
-
-            border-bottom:
-                1px solid #173b2b;
-
-            display: flex;
-
-            align-items: center;
-
-            justify-content: space-between;
-
-            padding: 0 28px;
-
-            position: sticky;
-
-            top: 0;
-
-            z-index: 100;
-        }
-
-
-        .brand {
-
-            display: flex;
-
-            align-items: center;
-
-            gap: 10px;
-        }
-
-
-        .brand-logo {
-
-            width: 38px;
-
-            height: 38px;
-
-            border-radius: 11px;
-
-            background: #10291e;
-
-            border:
-                1px solid #214a37;
-
-            display: flex;
-
-            align-items: center;
-
-            justify-content: center;
-
-            font-size: 20px;
-        }
-
-
-        .brand-name {
-
-            font-size: 20px;
-
-            font-weight: 800;
-
-            color: #ffffff;
-        }
-
-
-        .brand-accent {
-
-            color: #20c77a;
-        }
-
-
-        .back-button {
-
-            text-decoration: none;
-
-            color: #a9c3b5;
-
-            font-size: 14px;
-
-            font-weight: 600;
-
-            padding: 10px 14px;
-
-            border-radius: 9px;
-
-            transition:
-                background 0.2s,
-                color 0.2s;
-        }
-
-
-        .back-button:hover {
-
-            background: #10291e;
-
-            color: #ffffff;
-        }
-
-
-        /* =====================================================
-           PAGE
-        ===================================================== */
 
         .page {
-
-            width:
-                min(
-                    1180px,
-                    calc(100% - 32px)
-                );
-
-            margin:
-                28px auto 50px;
+            width: 100%;
+            max-width: 1150px;
+            margin: auto;
+            padding: 16px;
         }
 
+        /* Top bar */
 
-        /* =====================================================
-           MATCH HEADER
-        ===================================================== */
-
-        .match-header {
-
-            background: #0b1c14;
-
-            border:
-                1px solid #193b2c;
-
-            border-radius: 18px;
-
-            padding: 28px;
-
-            box-shadow:
-                0 8px 28px
-                rgba(0, 0, 0, 0.22);
-        }
-
-
-        .match-meta {
-
+        .topbar {
             display: flex;
-
-            align-items: center;
-
             justify-content: space-between;
-
-            gap: 15px;
-
-            margin-bottom: 28px;
-        }
-
-
-        .status {
-
-            display: inline-flex;
-
             align-items: center;
-
-            gap: 7px;
-
-            padding: 7px 12px;
-
-            border-radius: 999px;
-
-            background: #0d3826;
-
-            border:
-                1px solid #1d6646;
-
-            color: #38d98a;
-
-            font-size: 12px;
-
-            font-weight: 700;
+            margin-bottom: 16px;
+            padding: 13px 16px;
+            background: #0c2b1d;
+            border: 1px solid #174732;
+            border-radius: 12px;
         }
 
-
-        .status-dot {
-
-            width: 7px;
-
-            height: 7px;
-
-            border-radius: 50%;
-
-            background: #20c77a;
+        .brand {
+            color: #39d98a;
+            text-decoration: none;
+            font-size: 21px;
+            font-weight: 800;
         }
 
+        .back {
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: #123b28;
+            color: #d5e8de;
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        /* Match */
+
+        .match {
+            margin-bottom: 16px;
+            padding: 20px;
+            background: #0c2b1d;
+            border: 1px solid #174732;
+            border-radius: 14px;
+        }
+
+        .match-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .title {
+            margin: 0;
+            font-size: 24px;
+        }
 
         .league {
-
-            color: #8fa99b;
-
+            margin-top: 6px;
+            color: #8eae9d;
             font-size: 13px;
-
-            font-weight: 600;
-
-            text-align: right;
         }
 
+        .badge {
+            height: fit-content;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .live {
+            background: #d92323;
+        }
+
+        .upcoming {
+            background: #164a32;
+            color: #8fe0b6;
+        }
 
         .teams {
-
             display: grid;
-
-            grid-template-columns:
-                1fr 100px 1fr;
-
+            grid-template-columns: 1fr 50px 1fr;
+            gap: 10px;
             align-items: center;
-
-            gap: 20px;
+            margin-top: 20px;
         }
-
 
         .team {
-
+            padding: 18px 10px;
+            background: #09251a;
+            border: 1px solid #174932;
+            border-radius: 10px;
             text-align: center;
+            font-size: 17px;
+            font-weight: bold;
         }
-
-
-        .team-name {
-
-            font-size: 21px;
-
-            font-weight: 800;
-
-            line-height: 1.25;
-
-            color: #f1faf5;
-        }
-
 
         .vs {
-
+            color: #729988;
             text-align: center;
-
-            font-size: 14px;
-
-            font-weight: 800;
-
-            color: #6f8b7c;
-        }
-
-
-        .match-time {
-
-            margin-top: 25px;
-
-            padding-top: 20px;
-
-            border-top:
-                1px solid #193b2c;
-
-            text-align: center;
-
-            color: #8fa99b;
-
-            font-size: 13px;
-        }
-
-
-        /* =====================================================
-           ODDS
-        ===================================================== */
-
-        .odds-section {
-
-            margin-top: 22px;
-        }
-
-
-        .section-heading {
-
-            display: flex;
-
-            align-items: center;
-
-            justify-content: space-between;
-
-            margin-bottom: 14px;
-
-            gap: 12px;
-        }
-
-
-        .section-heading h2 {
-
-            margin: 0;
-
-            font-size: 19px;
-
-            color: #e8f5ed;
-        }
-
-
-        .bookmaker {
-
-            display: inline-flex;
-
-            align-items: center;
-
-            gap: 7px;
-
-            padding: 7px 11px;
-
-            background: #10291e;
-
-            border:
-                1px solid #214a37;
-
-            border-radius: 8px;
-
             font-size: 12px;
-
-            font-weight: 700;
-
-            color: #9eb9aa;
+            font-weight: bold;
         }
 
-
-        .bookmaker span {
-
-            color: #20c77a;
-        }
-
-
-        /* =====================================================
-           MARKETS
-        ===================================================== */
-
-        .markets {
-
-            display: grid;
-
-            grid-template-columns:
-                repeat(
-                    2,
-                    minmax(0, 1fr)
-                );
-
-            gap: 16px;
-        }
-
-
-        .market {
-
-            background: #0b1c14;
-
-            border:
-                1px solid #193b2c;
-
-            border-radius: 15px;
-
-            overflow: hidden;
-
-            box-shadow:
-                0 6px 20px
-                rgba(0, 0, 0, 0.18);
-        }
-
-
-        .market-header {
-
-            padding: 15px 17px;
-
-            background: #0e2118;
-
-            border-bottom:
-                1px solid #193b2c;
-
+        .meta {
             display: flex;
-
-            align-items: center;
-
-            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
         }
 
-
-        .market-name {
-
-            font-size: 14px;
-
-            font-weight: 800;
-
-            color: #e8f5ed;
-        }
-
-
-        .market-status {
-
-            font-size: 10px;
-
-            font-weight: 800;
-
-            color: #38d98a;
-
-            text-transform: uppercase;
-        }
-
-
-        .outcomes {
-
-            padding: 12px;
-
-            display: flex;
-
-            flex-direction: column;
-
-            gap: 9px;
-        }
-
-
-        /* =====================================================
-           OUTCOME
-        ===================================================== */
-
-        .outcome {
-
-            min-height: 72px;
-
-            padding: 12px;
-
-            border:
-                1px solid #214a37;
-
-            border-radius: 11px;
-
-            background: #10291e;
-
-            display: flex;
-
-            align-items: center;
-
-            justify-content: space-between;
-
-            gap: 12px;
-        }
-
-
-        .outcome-name {
-
-            flex: 1;
-
-            min-width: 0;
-
-            font-size: 13px;
-
-            font-weight: 650;
-
-            color: #c6dbce;
-
-            line-height: 1.3;
-        }
-
-
-        .outcome-id {
-
-            display: block;
-
-            margin-top: 4px;
-
-            font-size: 9px;
-
-            color: #668276;
-        }
-
-
-        /* =====================================================
-           PRICES
-        ===================================================== */
-
-        .outcome-prices {
-
-            display: flex;
-
-            gap: 6px;
-
-            flex-shrink: 0;
-        }
-
-
-        .price {
-
-            min-width: 62px;
-
-            padding: 7px 6px;
-
-            border-radius: 8px;
-
-            text-align: center;
-
-            border: 1px solid;
-        }
-
-
-        .price span {
-
-            display: block;
-
-            font-size: 9px;
-
-            font-weight: 700;
-
-            margin-bottom: 2px;
-
-            text-transform: uppercase;
-        }
-
-
-        .price strong {
-
-            display: block;
-
-            font-size: 14px;
-
-            font-weight: 800;
-        }
-
-
-        .price-size {
-
-            display: block;
-
-            margin-top: 2px;
-
-            font-size: 8px;
-
-            opacity: 0.7;
-        }
-
-
-        /* =====================================================
-           BACK
-        ===================================================== */
-
-        .back-price {
-
-            background: #123d62;
-
-            border-color: #28699c;
-
-            color: #8dccff;
-        }
-
-
-        /* =====================================================
-           LAY
-        ===================================================== */
-
-        .lay-price {
-
-            background: #4b2026;
-
-            border-color: #88404a;
-
-            color: #ff9da7;
-        }
-
-
-        /* =====================================================
-           FANCY
-        ===================================================== */
-
-        .fancy-market {
-
-            grid-column: 1 / -1;
-        }
-
-
-        .fancy-outcomes {
-
-            display: grid;
-
-            grid-template-columns:
-                repeat(
-                    2,
-                    minmax(0, 1fr)
-                );
-
-            gap: 9px;
-        }
-
-
-        /* =====================================================
-           REFRESH
-        ===================================================== */
-
-        .refresh-info {
-
-            margin-top: 12px;
-
-            display: flex;
-
-            justify-content: flex-end;
-
-            align-items: center;
-
-            gap: 7px;
-
-            color: #6f8b7c;
-
+        .meta span {
+            padding: 7px 10px;
+            border-radius: 7px;
+            background: #102f22;
+            color: #9fbeae;
             font-size: 11px;
         }
 
+        /* Refresh */
 
-        .refresh-dot {
-
-            width: 6px;
-
-            height: 6px;
-
-            border-radius: 50%;
-
-            background: #20c77a;
-        }
-
-
-        /* =====================================================
-           NOTICE
-        ===================================================== */
-
-        .notice {
-
-            background: #0b1c14;
-
-            border:
-                1px solid #193b2c;
-
-            border-radius: 15px;
-
-            padding: 35px 25px;
-
-            text-align: center;
-
-            color: #8fa99b;
-        }
-
-
-        .notice-icon {
-
-            font-size: 38px;
-
+        .refresh {
+            display: flex;
+            justify-content: space-between;
             margin-bottom: 12px;
+            padding: 10px 13px;
+            background: #0a2519;
+            border: 1px solid #153e2b;
+            border-radius: 9px;
+            color: #8fae9f;
+            font-size: 11px;
         }
 
-
-        .notice-title {
-
-            color: #e8f5ed;
-
-            font-size: 17px;
-
-            font-weight: 800;
-
-            margin-bottom: 7px;
+        #status {
+            color: #73d99d;
         }
 
+        /* Markets */
 
-        .notice-text {
+        .market {
+            margin-bottom: 14px;
+            overflow: hidden;
+            background: #0b291c;
+            border: 1px solid #174932;
+            border-radius: 12px;
+        }
 
+        .market-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 13px 15px;
+            background: #0e3323;
+            border-bottom: 1px solid #174932;
+        }
+
+        .market-name {
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .market-status {
+            color: #7fd7a8;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .market-body {
+            padding: 8px;
+        }
+
+        .odds-head,
+        .odds-row {
+            display: grid;
+            grid-template-columns: 1fr 100px 100px;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .odds-head {
+            padding: 5px 8px;
+            color: #6f9381;
+            font-size: 9px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .odds-row {
+            padding: 8px;
+            border-top: 1px solid #133b29;
+        }
+
+        .runner {
+            overflow: hidden;
+            color: #f0f7f3;
             font-size: 13px;
-
-            line-height: 1.6;
-
-            max-width: 560px;
-
-            margin: auto;
+            font-weight: bold;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
+        .runner-status {
+            display: block;
+            margin-top: 3px;
+            color: #628473;
+            font-size: 8px;
+        }
+
+        .odd {
+            min-height: 48px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 8px;
+        }
+
+        .back {
+            background: #0f4260;
+            border: 1px solid #155b7e;
+        }
+
+        .lay {
+            background: #56302f;
+            border: 1px solid #743d3b;
+        }
+
+        .price {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .size {
+            margin-top: 2px;
+            color: #a6c4b6;
+            font-size: 8px;
+        }
+
+        /* States */
+
+        .state {
+            padding: 35px 15px;
+            background: #0b291c;
+            border: 1px solid #174932;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .state strong {
+            font-size: 15px;
+        }
+
+        .state p {
+            margin: 6px 0 0;
+            color: #759888;
+            font-size: 12px;
+        }
 
         .error {
-
-            color: #ff7272;
+            margin-bottom: 12px;
+            padding: 12px;
+            background: #381c1c;
+            border: 1px solid #653030;
+            border-radius: 8px;
+            color: #f0a0a0;
+            font-size: 12px;
         }
 
-
-        /* =====================================================
-           MOBILE
-        ===================================================== */
-
-        @media (max-width: 760px) {
-
-            .topbar {
-
-                height: 62px;
-
-                padding: 0 15px;
-            }
-
-
-            .brand-name {
-
-                font-size: 18px;
-            }
-
-
+        @media (max-width: 650px) {
             .page {
-
-                width:
-                    calc(100% - 20px);
-
-                margin-top: 15px;
+                padding: 10px;
             }
 
-
-            .match-header {
-
-                padding: 20px 15px;
-
-                border-radius: 15px;
+            .title {
+                font-size: 19px;
             }
-
 
             .teams {
-
-                grid-template-columns:
-                    1fr 45px 1fr;
-
-                gap: 8px;
-            }
-
-
-            .team-name {
-
-                font-size: 16px;
-            }
-
-
-            .markets {
-
                 grid-template-columns: 1fr;
             }
 
-
-            .fancy-market {
-
-                grid-column: auto;
+            .vs {
+                display: none;
             }
 
-
-            .fancy-outcomes {
-
-                grid-template-columns: 1fr;
-            }
-
-        }
-
-
-        @media (max-width: 430px) {
-
-            .topbar {
-
-                padding: 0 10px;
-            }
-
-
-            .back-button {
-
-                padding: 8px;
-            }
-
-
-            .teams {
-
-                grid-template-columns:
-                    1fr 35px 1fr;
-            }
-
-
-            .team-name {
-
+            .team {
+                padding: 13px;
                 font-size: 14px;
             }
 
-
-            .vs {
-
-                font-size: 12px;
+            .odds-head,
+            .odds-row {
+                grid-template-columns: 1fr 75px 75px;
             }
 
-
-            .outcome {
-
-                align-items: flex-start;
+            .runner {
+                font-size: 11px;
             }
-
-
-            .outcome-prices {
-
-                gap: 4px;
-            }
-
 
             .price {
-
-                min-width: 54px;
-
-                padding: 6px 4px;
+                font-size: 14px;
             }
-
-
-            .price strong {
-
-                font-size: 13px;
-            }
-
         }
-
     </style>
-
 </head>
-
 
 <body>
 
+<div class="page">
 
-<header class="topbar">
-
-    <div class="brand">
-
-        <div class="brand-logo">
-            🏏
-        </div>
-
-        <div class="brand-name">
-
-            CRIC<span class="brand-accent">
-                BET
-            </span>
-
-        </div>
-
+    <div class="topbar">
+        <a href="/dashboard" class="brand">CrickBet</a>
+        <a href="/dashboard" class="back">← Matches</a>
     </div>
 
-
-    <a
-        href="/dashboard"
-        class="back-button"
-    >
-        ← Dashboard
-    </a>
-
-</header>
-
-
-
-<main class="page">
-
-
-{% if match %}
-
-
-    <!-- =====================================================
-         MATCH HEADER
-    ===================================================== -->
-
-    <section class="match-header">
-
-
-        <div class="match-meta">
-
-            <div class="status">
-
-                <span class="status-dot"></span>
-
-                {{ match.status }}
-
-            </div>
-
-
-            <div class="league">
-
-                {{ match.league }}
-
-            </div>
-
+    {% if error %}
+        <div class="error">
+            {{ error }}
         </div>
+    {% endif %}
 
+    {% if match %}
 
-        <div class="teams">
+        <div class="match">
 
+            <div class="match-top">
+                <div>
+                    <h1 class="title">
+                        {{ match.event_name or "Cricket Match" }}
+                    </h1>
 
-            <div class="team">
-
-                <div class="team-name">
-                    {{ match.team1 }}
+                    <div class="league">
+                        {{ match.league or "Cricket" }}
+                    </div>
                 </div>
 
+                {% if match.in_play %}
+                    <div class="badge live">LIVE</div>
+                {% else %}
+                    <div class="badge upcoming">UPCOMING</div>
+                {% endif %}
             </div>
 
-
-            <div class="vs">
-                VS
-            </div>
-
-
-            <div class="team">
-
-                <div class="team-name">
-                    {{ match.team2 }}
+            <div class="teams">
+                <div class="team">
+                    {{ match.team1 or "Team 1" }}
                 </div>
 
+                <div class="vs">VS</div>
+
+                <div class="team">
+                    {{ match.team2 or "Team 2" }}
+                </div>
             </div>
 
+            <div class="meta">
 
-        </div>
+                {% if match.team3 %}
+                    <span>{{ match.team3 }}</span>
+                {% endif %}
 
+                {% if match.event_time %}
+                    <span>{{ match.event_time }}</span>
+                {% endif %}
 
-        {% if match.start_time %}
-
-            <div class="match-time">
-
-                🕐 {{ match.start_time }}
-
-            </div>
-
-        {% endif %}
-
-
-    </section>
-
-
-
-    <!-- =====================================================
-         MARKETS
-    ===================================================== -->
-
-    <section class="odds-section">
-
-
-        <div class="section-heading">
-
-            <h2>
-                Betting Markets
-            </h2>
-
-
-            <div class="bookmaker">
-
-                <span>●</span>
-
-                ProExch
+                <span>ProExch</span>
 
             </div>
 
         </div>
 
+        <div class="refresh">
+            <span id="status">Loading odds...</span>
+            <span id="updated">--</span>
+        </div>
 
-        {% if match.markets %}
+        <div id="markets">
 
-
-            <div
-                class="markets"
-                id="marketsContainer"
-            >
-
+            {% if match.markets %}
 
                 {% for market in match.markets %}
 
+                    <div class="market">
 
-                    <article
-                        class="
-                            market
-                            {% if market.type == 'fancy' %}
-                                fancy-market
-                            {% endif %}
-                        "
-                        data-market-id="{{ market.id or '' }}"
-                        data-market-type="{{ market.type }}"
-                    >
-
-
-                        <div class="market-header">
-
-
-                            <div class="market-name">
+                        <div class="market-title">
+                            <span class="market-name">
                                 {{ market.name }}
-                            </div>
+                            </span>
 
-
-                            <div class="market-status">
-
-                                {% if market.status %}
-
-                                    {{ market.status }}
-
-                                {% else %}
-
-                                    OPEN
-
-                                {% endif %}
-
-                            </div>
-
-
+                            <span class="market-status">
+                                {{ market.status or "OPEN" }}
+                            </span>
                         </div>
 
+                        <div class="market-body">
 
-                        <div
-                            class="
-                                outcomes
-                                {% if market.type == 'fancy' %}
-                                    fancy-outcomes
-                                {% endif %}
-                            "
-                        >
+                            <div class="odds-head">
+                                <span>
+                                    {% if market.type == "fancy" %}
+                                        Session
+                                    {% else %}
+                                        Runner
+                                    {% endif %}
+                                </span>
 
+                                <span style="text-align:center;">
+                                    {% if market.type == "fancy" %}
+                                        Yes
+                                    {% else %}
+                                        Back
+                                    {% endif %}
+                                </span>
+
+                                <span style="text-align:center;">
+                                    {% if market.type == "fancy" %}
+                                        No
+                                    {% else %}
+                                        Lay
+                                    {% endif %}
+                                </span>
+                            </div>
 
                             {% for outcome in market.outcomes %}
 
-
                                 <div
-                                    class="outcome"
-                                    data-outcome-id="{{ outcome.id or '' }}"
+                                    class="odds-row"
+                                    data-selection-id="{{ outcome.id }}"
                                 >
 
-
-                                    <div class="outcome-name">
+                                    <div class="runner">
 
                                         {{ outcome.name }}
 
-
-                                        {% if outcome.id %}
-
-                                            <span class="outcome-id">
-
-                                                SID:
-                                                {{ outcome.id }}
-
+                                        {% if outcome.status %}
+                                            <span class="runner-status">
+                                                {{ outcome.status }}
                                             </span>
-
                                         {% endif %}
 
                                     </div>
 
+                                    <div
+                                        class="odd back"
+                                        data-side="back"
+                                    >
+                                        <span class="price">
+                                            {{ outcome.back if outcome.back is not none else "-" }}
+                                        </span>
 
-                                    <div class="outcome-prices">
-
-
-                                        <!-- BACK -->
-
-                                        <div class="price back-price">
-
-                                            <span>
-                                                Back
-                                            </span>
-
-
-                                            <strong class="back-value">
-
-                                                {% if outcome.back is not none %}
-
-                                                    {{ outcome.back }}
-
-                                                {% else %}
-
-                                                    -
-
-                                                {% endif %}
-
-                                            </strong>
-
-
-                                            {% if outcome.back_size is not none %}
-
-                                                <small class="price-size">
-
-                                                    {{ outcome.back_size }}
-
-                                                </small>
-
-                                            {% endif %}
-
-                                        </div>
-
-
-                                        <!-- LAY -->
-
-                                        <div class="price lay-price">
-
-                                            <span>
-                                                Lay
-                                            </span>
-
-
-                                            <strong class="lay-value">
-
-                                                {% if outcome.lay is not none %}
-
-                                                    {{ outcome.lay }}
-
-                                                {% else %}
-
-                                                    -
-
-                                                {% endif %}
-
-                                            </strong>
-
-
-                                            {% if outcome.lay_size is not none %}
-
-                                                <small class="price-size">
-
-                                                    {{ outcome.lay_size }}
-
-                                                </small>
-
-                                            {% endif %}
-
-                                        </div>
-
-
+                                        <span class="size">
+                                            {{ outcome.back_size if outcome.back_size is not none else "" }}
+                                        </span>
                                     </div>
 
+                                    <div
+                                        class="odd lay"
+                                        data-side="lay"
+                                    >
+                                        <span class="price">
+                                            {{ outcome.lay if outcome.lay is not none else "-" }}
+                                        </span>
+
+                                        <span class="size">
+                                            {{ outcome.lay_size if outcome.lay_size is not none else "" }}
+                                        </span>
+                                    </div>
 
                                 </div>
 
-
                             {% endfor %}
-
 
                         </div>
 
-
-                    </article>
-
+                    </div>
 
                 {% endfor %}
 
+            {% else %}
 
-            </div>
-
-
-            <div
-                class="refresh-info"
-                id="refreshInfo"
-            >
-
-                <span class="refresh-dot"></span>
-
-                <span id="refreshText">
-                    Live odds updating
-                </span>
-
-            </div>
-
-
-        {% else %}
-
-
-            <div class="notice">
-
-
-                <div class="notice-icon">
-                    📊
+                <div class="state">
+                    <strong>Odds currently unavailable</strong>
+                    <p>
+                        ProExch has not returned active odds for this match.
+                    </p>
                 </div>
 
-
-                <div class="notice-title">
-
-                    Odds currently unavailable
-
-                </div>
-
-
-                <div class="notice-text">
-
-                    This match is available from the cricket
-                    feed, but ProExch does not currently have
-                    active odds for this fixture.
-
-
-                    {% if odds_error %}
-
-                        <br>
-                        <br>
-
-                        <span class="error">
-                            {{ odds_error }}
-                        </span>
-
-                    {% endif %}
-
-                </div>
-
-
-            </div>
-
-
-        {% endif %}
-
-
-    </section>
-
-
-{% else %}
-
-
-    <div class="notice">
-
-
-        <div class="notice-icon">
-            ⚠️
-        </div>
-
-
-        <div class="notice-title">
-            Match not found
-        </div>
-
-
-        <div class="notice-text">
-
-            {{ error or
-               "The requested cricket match could not be found."
-            }}
+            {% endif %}
 
         </div>
 
+    {% else %}
 
-    </div>
+        <div class="state">
+            <strong>Match not found</strong>
+            <p>
+                The requested cricket match could not be loaded.
+            </p>
+        </div>
 
+    {% endif %}
 
-{% endif %}
-
-
-</main>
-
+</div>
 
 
 {% if match %}
 
 <script>
+    var gameId = "{{ game_id }}";
+    var eventId = "{{ event_id }}";
+    var marketId = "{{ market_id or '' }}";
 
-"use strict";
+    function updateMarkets(markets) {
 
+        if (!markets) {
+            return;
+        }
 
-const GAME_ID =
-    "{{ game_id }}";
+        markets.forEach(function(market) {
 
+            if (!market.runners) {
+                return;
+            }
 
-const EVENT_ID =
-    "{{ event_id }}";
+            market.runners.forEach(function(runner) {
 
-
-const MARKET_ID =
-    "{{ market_id or '' }}";
-
-
-let oddsLoading = false;
-
-
-/* =========================================================
-   NUMBER
-========================================================= */
-
-function numberValue(value) {
-
-    if (
-        value === null ||
-        value === undefined ||
-        value === ""
-    ) {
-        return null;
-    }
-
-
-    const number =
-        Number(value);
-
-
-    return Number.isFinite(number)
-        ? number
-        : null;
-}
-
-
-/* =========================================================
-   PRICE
-========================================================= */
-
-function formatPrice(value) {
-
-    const number =
-        numberValue(value);
-
-
-    if (number === null) {
-        return "-";
-    }
-
-
-    return String(number);
-}
-
-
-/* =========================================================
-   GET RUNNERS
-========================================================= */
-
-function getRunners(market) {
-
-    if (
-        market &&
-        Array.isArray(market.runners)
-    ) {
-        return market.runners;
-    }
-
-
-    if (
-        market &&
-        Array.isArray(market.oddDatas)
-    ) {
-        return market.oddDatas;
-    }
-
-
-    return [];
-}
-
-
-/* =========================================================
-   UPDATE ODDS
-========================================================= */
-
-function updateOdds(payload) {
-
-    if (
-        !payload ||
-        !Array.isArray(payload.match_odds)
-    ) {
-        return;
-    }
-
-
-    payload.match_odds.forEach(
-        function (market) {
-
-            const marketId =
-                String(
-                    market.id || ""
+                var row = document.querySelector(
+                    '[data-selection-id="' + runner.id + '"]'
                 );
 
-
-            const runners =
-                getRunners(market);
-
-
-            runners.forEach(
-                function (runner) {
-
-                    const selectionId =
-                        String(
-                            runner.id ??
-                            runner.selection_id ??
-                            runner.sid ??
-                            ""
-                        );
-
-
-                    if (!selectionId) {
-                        return;
-                    }
-
-
-                    const outcome =
-                        document.querySelector(
-                            `.outcome[data-outcome-id="${selectionId}"]`
-                        );
-
-
-                    if (!outcome) {
-                        return;
-                    }
-
-
-                    const back =
-                        runner.back ??
-                        runner.b1 ??
-                        null;
-
-
-                    const lay =
-                        runner.lay ??
-                        runner.l1 ??
-                        null;
-
-
-                    const backElement =
-                        outcome.querySelector(
-                            ".back-value"
-                        );
-
-
-                    const layElement =
-                        outcome.querySelector(
-                            ".lay-value"
-                        );
-
-
-                    if (backElement) {
-
-                        backElement.textContent =
-                            formatPrice(back);
-
-                    }
-
-
-                    if (layElement) {
-
-                        layElement.textContent =
-                            formatPrice(lay);
-
-                    }
-
-
-                    const backSize =
-                        runner.back_size ??
-                        runner.bs1 ??
-                        null;
-
-
-                    const laySize =
-                        runner.lay_size ??
-                        runner.ls1 ??
-                        null;
-
-
-                    const backSizeElement =
-                        outcome.querySelector(
-                            ".back-price .price-size"
-                        );
-
-
-                    const laySizeElement =
-                        outcome.querySelector(
-                            ".lay-price .price-size"
-                        );
-
-
-                    if (
-                        backSizeElement &&
-                        backSize !== null
-                    ) {
-
-                        backSizeElement.textContent =
-                            backSize;
-
-                    }
-
-
-                    if (
-                        laySizeElement &&
-                        laySize !== null
-                    ) {
-
-                        laySizeElement.textContent =
-                            laySize;
-
-                    }
-
+                if (!row) {
+                    return;
                 }
-            );
 
-        }
-    );
+                var backPrice = row.querySelector(
+                    '[data-side="back"] .price'
+                );
 
+                var backSize = row.querySelector(
+                    '[data-side="back"] .size'
+                );
 
-    const refreshText =
-        document.getElementById(
-            "refreshText"
-        );
+                var layPrice = row.querySelector(
+                    '[data-side="lay"] .price'
+                );
 
+                var laySize = row.querySelector(
+                    '[data-side="lay"] .size'
+                );
 
-    if (refreshText) {
-
-        refreshText.textContent =
-            "Live odds updated";
-
-    }
-
-}
-
-
-/* =========================================================
-   LOAD ODDS
-========================================================= */
-
-async function loadOdds() {
-
-    if (oddsLoading) {
-        return;
-    }
-
-
-    if (!GAME_ID || !EVENT_ID) {
-        return;
-    }
-
-
-    oddsLoading = true;
-
-
-    try {
-
-        const params =
-            new URLSearchParams();
-
-
-        params.set(
-            "gameId",
-            GAME_ID
-        );
-
-
-        params.set(
-            "eventId",
-            EVENT_ID
-        );
-
-
-        if (MARKET_ID) {
-
-            params.set(
-                "marketId",
-                MARKET_ID
-            );
-
-        }
-
-
-        const response =
-            await fetch(
-                `/api/cricket/odds?${params.toString()}`,
-                {
-                    method: "GET",
-
-                    credentials:
-                        "same-origin",
-
-                    cache:
-                        "no-store",
+                if (backPrice) {
+                    backPrice.textContent =
+                        runner.back != null ? runner.back : "-";
                 }
-            );
 
+                if (backSize) {
+                    backSize.textContent =
+                        runner.back_size != null
+                            ? runner.back_size
+                            : "";
+                }
 
-        if (!response.ok) {
+                if (layPrice) {
+                    layPrice.textContent =
+                        runner.lay != null ? runner.lay : "-";
+                }
 
-            throw new Error(
-                `HTTP ${response.status}`
-            );
-
-        }
-
-
-        const data =
-            await response.json();
-
-
-        if (
-            !data ||
-            data.success !== true
-        ) {
-
-            throw new Error(
-                data?.error ||
-                "Odds request failed"
-            );
-
-        }
-
-
-        updateOdds(data);
-
-
-    } catch (error) {
-
-        console.error(
-            "[CricBet] Odds update failed:",
-            error
-        );
-
-
-        const refreshText =
-            document.getElementById(
-                "refreshText"
-            );
-
-
-        if (refreshText) {
-
-            refreshText.textContent =
-                "Odds temporarily unavailable";
-
-        }
-
-    } finally {
-
-        oddsLoading = false;
-
+                if (laySize) {
+                    laySize.textContent =
+                        runner.lay_size != null
+                            ? runner.lay_size
+                            : "";
+                }
+            });
+        });
     }
 
-}
+    function loadOdds() {
 
+        var status = document.getElementById("status");
+        var updated = document.getElementById("updated");
 
-/* =========================================================
-   INITIAL LOAD
-========================================================= */
+        status.textContent = "Updating odds...";
 
-loadOdds();
+        var url =
+            "/api/cricket/odds" +
+            "?gameId=" + encodeURIComponent(gameId) +
+            "&eventId=" + encodeURIComponent(eventId) +
+            "&marketId=" + encodeURIComponent(marketId);
 
+        fetch(url)
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
 
-/* =========================================================
-   LIVE ODDS REFRESH
-========================================================= */
+                if (!data.success) {
+                    throw new Error("Odds unavailable");
+                }
 
-setInterval(
-    loadOdds,
-    5000
-);
+                updateMarkets(data.match_odds);
+                updateMarkets(data.bookmaker_odds);
+                updateMarkets(data.fancy_odds);
 
+                status.textContent = "Live odds connected";
+
+                updated.textContent =
+                    new Date().toLocaleTimeString();
+            })
+            .catch(function() {
+                status.textContent = "Unable to update odds";
+            });
+    }
+
+    loadOdds();
+
+    setInterval(loadOdds, 5000);
 </script>
 
 {% endif %}
 
-
 </body>
-
 </html>
-
