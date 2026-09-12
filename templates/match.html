@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -9,6 +11,7 @@
     </title>
 
     <style>
+
         * {
             box-sizing: border-box;
         }
@@ -16,7 +19,7 @@
         body {
             margin: 0;
             background: #071b12;
-            color: #fff;
+            color: #ffffff;
             font-family: Arial, Helvetica, sans-serif;
         }
 
@@ -24,17 +27,15 @@
             width: 100%;
             max-width: 1150px;
             margin: auto;
-            padding: 16px;
+            padding: 15px;
         }
-
-        /* Top bar */
 
         .topbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
             padding: 13px 16px;
+            margin-bottom: 15px;
             background: #0c2b1d;
             border: 1px solid #174732;
             border-radius: 12px;
@@ -42,24 +43,22 @@
 
         .brand {
             color: #39d98a;
-            text-decoration: none;
             font-size: 21px;
-            font-weight: 800;
+            font-weight: bold;
+            text-decoration: none;
         }
 
         .back {
             padding: 8px 12px;
-            border-radius: 8px;
             background: #123b28;
             color: #d5e8de;
+            border-radius: 8px;
             text-decoration: none;
             font-size: 13px;
         }
 
-        /* Match */
-
         .match {
-            margin-bottom: 16px;
+            margin-bottom: 15px;
             padding: 20px;
             background: #0c2b1d;
             border: 1px solid #174732;
@@ -78,7 +77,7 @@
         }
 
         .league {
-            margin-top: 6px;
+            margin-top: 5px;
             color: #8eae9d;
             font-size: 13px;
         }
@@ -103,13 +102,13 @@
         .teams {
             display: grid;
             grid-template-columns: 1fr 50px 1fr;
-            gap: 10px;
             align-items: center;
+            gap: 10px;
             margin-top: 20px;
         }
 
         .team {
-            padding: 18px 10px;
+            padding: 17px 10px;
             background: #09251a;
             border: 1px solid #174932;
             border-radius: 10px;
@@ -134,13 +133,11 @@
 
         .meta span {
             padding: 7px 10px;
-            border-radius: 7px;
             background: #102f22;
+            border-radius: 7px;
             color: #9fbeae;
             font-size: 11px;
         }
-
-        /* Refresh */
 
         .refresh {
             display: flex;
@@ -158,8 +155,6 @@
             color: #73d99d;
         }
 
-        /* Markets */
-
         .market {
             margin-bottom: 14px;
             overflow: hidden;
@@ -168,10 +163,19 @@
             border-radius: 12px;
         }
 
+        /* Fancy gets its own visual section */
+        .market.fancy-market {
+            border-color: #6a5422;
+        }
+
+        .market.fancy-market .market-title {
+            background: #342b13;
+            border-bottom-color: #6a5422;
+        }
+
         .market-title {
             display: flex;
             justify-content: space-between;
-            align-items: center;
             padding: 13px 15px;
             background: #0e3323;
             border-bottom: 1px solid #174932;
@@ -182,10 +186,18 @@
             font-weight: bold;
         }
 
+        .fancy-market .market-name {
+            color: #ffd76a;
+        }
+
         .market-status {
             color: #7fd7a8;
             font-size: 10px;
             font-weight: bold;
+        }
+
+        .fancy-market .market-status {
+            color: #e4bd54;
         }
 
         .market-body {
@@ -208,9 +220,17 @@
             text-transform: uppercase;
         }
 
+        .fancy-market .odds-head {
+            color: #bda961;
+        }
+
         .odds-row {
             padding: 8px;
             border-top: 1px solid #133b29;
+        }
+
+        .fancy-market .odds-row {
+            border-top-color: #4b3e1d;
         }
 
         .runner {
@@ -248,6 +268,18 @@
             border: 1px solid #743d3b;
         }
 
+        /* Fancy Yes */
+        .fancy-yes {
+            background: #315b35;
+            border: 1px solid #4d884f;
+        }
+
+        /* Fancy No */
+        .fancy-no {
+            background: #5b3030;
+            border: 1px solid #884b4b;
+        }
+
         .price {
             font-size: 16px;
             font-weight: bold;
@@ -259,24 +291,13 @@
             font-size: 8px;
         }
 
-        /* States */
-
         .state {
-            padding: 35px 15px;
+            padding: 30px;
             background: #0b291c;
             border: 1px solid #174932;
             border-radius: 12px;
             text-align: center;
-        }
-
-        .state strong {
-            font-size: 15px;
-        }
-
-        .state p {
-            margin: 6px 0 0;
             color: #759888;
-            font-size: 12px;
         }
 
         .error {
@@ -290,6 +311,7 @@
         }
 
         @media (max-width: 650px) {
+
             .page {
                 padding: 10px;
             }
@@ -324,30 +346,57 @@
                 font-size: 14px;
             }
         }
+
     </style>
+
 </head>
 
 <body>
 
 <div class="page">
 
+    <!-- =====================================================
+         TOP BAR
+    ====================================================== -->
+
     <div class="topbar">
-        <a href="/dashboard" class="brand">CrickBet</a>
-        <a href="/dashboard" class="back">← Matches</a>
+
+        <a href="/dashboard" class="brand">
+            CrickBet
+        </a>
+
+        <a href="/dashboard" class="back">
+            ← Matches
+        </a>
+
     </div>
 
+
+    <!-- =====================================================
+         ERROR
+    ====================================================== -->
+
     {% if error %}
+
         <div class="error">
             {{ error }}
         </div>
+
     {% endif %}
 
+
     {% if match %}
+
+        <!-- =================================================
+             MATCH HEADER
+        ================================================== -->
 
         <div class="match">
 
             <div class="match-top">
+
                 <div>
+
                     <h1 class="title">
                         {{ match.event_name or "Cricket Match" }}
                     </h1>
@@ -355,26 +404,42 @@
                     <div class="league">
                         {{ match.league or "Cricket" }}
                     </div>
+
                 </div>
 
                 {% if match.in_play %}
-                    <div class="badge live">LIVE</div>
+
+                    <div class="badge live">
+                        LIVE
+                    </div>
+
                 {% else %}
-                    <div class="badge upcoming">UPCOMING</div>
+
+                    <div class="badge upcoming">
+                        UPCOMING
+                    </div>
+
                 {% endif %}
+
             </div>
 
+
             <div class="teams">
+
                 <div class="team">
                     {{ match.team1 or "Team 1" }}
                 </div>
 
-                <div class="vs">VS</div>
+                <div class="vs">
+                    VS
+                </div>
 
                 <div class="team">
                     {{ match.team2 or "Team 2" }}
                 </div>
+
             </div>
+
 
             <div class="meta">
 
@@ -392,10 +457,27 @@
 
         </div>
 
+
+        <!-- =================================================
+             LIVE STATUS
+        ================================================== -->
+
         <div class="refresh">
-            <span id="status">Loading odds...</span>
-            <span id="updated">--</span>
+
+            <span id="status">
+                Finding market...
+            </span>
+
+            <span id="updated">
+                --
+            </span>
+
         </div>
+
+
+        <!-- =================================================
+             MARKETS
+        ================================================== -->
 
         <div id="markets">
 
@@ -403,51 +485,84 @@
 
                 {% for market in match.markets %}
 
-                    <div class="market">
+                    <div
+                        class="market {% if market.type == 'fancy' %}fancy-market{% endif %}"
+                        data-market-type="{{ market.type }}"
+                        data-market-id="{{ market.id }}"
+                    >
 
                         <div class="market-title">
+
                             <span class="market-name">
-                                {{ market.name }}
+
+                                {% if market.type == "fancy" %}
+                                    🎯 Fancy / Session
+                                {% elif market.type == "bookmaker" %}
+                                    Bookmaker
+                                {% else %}
+                                    {{ market.name }}
+                                {% endif %}
+
                             </span>
 
                             <span class="market-status">
-                                {{ market.status or "OPEN" }}
+
+                                {% if market.type == "fancy" %}
+                                    SESSION
+                                {% else %}
+                                    {{ market.status or "OPEN" }}
+                                {% endif %}
+
                             </span>
+
                         </div>
+
 
                         <div class="market-body">
 
                             <div class="odds-head">
+
                                 <span>
+
                                     {% if market.type == "fancy" %}
                                         Session
                                     {% else %}
                                         Runner
                                     {% endif %}
+
                                 </span>
 
+
                                 <span style="text-align:center;">
+
                                     {% if market.type == "fancy" %}
                                         Yes
                                     {% else %}
                                         Back
                                     {% endif %}
+
                                 </span>
 
+
                                 <span style="text-align:center;">
+
                                     {% if market.type == "fancy" %}
                                         No
                                     {% else %}
                                         Lay
                                     {% endif %}
+
                                 </span>
+
                             </div>
+
 
                             {% for outcome in market.outcomes %}
 
                                 <div
                                     class="odds-row"
                                     data-selection-id="{{ outcome.id }}"
+                                    data-market-type="{{ market.type }}"
                                 >
 
                                     <div class="runner">
@@ -455,17 +570,25 @@
                                         {{ outcome.name }}
 
                                         {% if outcome.status %}
+
                                             <span class="runner-status">
                                                 {{ outcome.status }}
                                             </span>
+
                                         {% endif %}
 
                                     </div>
 
+
+                                    <!-- =================================
+                                         YES / BACK
+                                    ================================== -->
+
                                     <div
-                                        class="odd back"
+                                        class="odd {% if market.type == 'fancy' %}fancy-yes{% else %}back{% endif %}"
                                         data-side="back"
                                     >
+
                                         <span class="price">
                                             {{ outcome.back if outcome.back is not none else "-" }}
                                         </span>
@@ -473,12 +596,19 @@
                                         <span class="size">
                                             {{ outcome.back_size if outcome.back_size is not none else "" }}
                                         </span>
+
                                     </div>
 
+
+                                    <!-- =================================
+                                         NO / LAY
+                                    ================================== -->
+
                                     <div
-                                        class="odd lay"
+                                        class="odd {% if market.type == 'fancy' %}fancy-no{% else %}lay{% endif %}"
                                         data-side="lay"
                                     >
+
                                         <span class="price">
                                             {{ outcome.lay if outcome.lay is not none else "-" }}
                                         </span>
@@ -486,6 +616,7 @@
                                         <span class="size">
                                             {{ outcome.lay_size if outcome.lay_size is not none else "" }}
                                         </span>
+
                                     </div>
 
                                 </div>
@@ -500,11 +631,8 @@
 
             {% else %}
 
-                <div class="state">
-                    <strong>Odds currently unavailable</strong>
-                    <p>
-                        ProExch has not returned active odds for this match.
-                    </p>
+                <div class="state" id="no-markets">
+                    Odds currently unavailable
                 </div>
 
             {% endif %}
@@ -514,10 +642,7 @@
     {% else %}
 
         <div class="state">
-            <strong>Match not found</strong>
-            <p>
-                The requested cricket match could not be loaded.
-            </p>
+            Match not found
         </div>
 
     {% endif %}
@@ -528,118 +653,714 @@
 {% if match %}
 
 <script>
-    var gameId = "{{ game_id }}";
-    var eventId = "{{ event_id }}";
-    var marketId = "{{ market_id or '' }}";
+
+    /*
+     * =========================================================
+     * GET GAME ID FROM URL
+     * =========================================================
+     *
+     * Example:
+     *
+     * /match/36051845
+     *
+     */
+
+    var pathParts = window.location.pathname.split("/");
+
+    var gameId = pathParts[pathParts.length - 1];
+
+    var eventId = "";
+
+    var marketId = "";
+
+
+    /*
+     * =========================================================
+     * UPDATE EXISTING MARKET ROWS
+     * =========================================================
+     */
 
     function updateMarkets(markets) {
 
-        if (!markets) {
+        if (!Array.isArray(markets)) {
             return;
         }
 
+
         markets.forEach(function(market) {
 
-            if (!market.runners) {
+            if (!market || !Array.isArray(market.runners)) {
                 return;
             }
 
+
             market.runners.forEach(function(runner) {
 
-                var row = document.querySelector(
-                    '[data-selection-id="' + runner.id + '"]'
-                );
-
-                if (!row) {
+                if (!runner) {
                     return;
                 }
 
-                var backPrice = row.querySelector(
-                    '[data-side="back"] .price'
-                );
 
-                var backSize = row.querySelector(
-                    '[data-side="back"] .size'
-                );
-
-                var layPrice = row.querySelector(
-                    '[data-side="lay"] .price'
-                );
-
-                var laySize = row.querySelector(
-                    '[data-side="lay"] .size'
-                );
-
-                if (backPrice) {
-                    backPrice.textContent =
-                        runner.back != null ? runner.back : "-";
+                if (runner.id === null || runner.id === undefined) {
+                    return;
                 }
 
-                if (backSize) {
-                    backSize.textContent =
+
+                var rows = document.querySelectorAll(
+                    '[data-selection-id="' +
+                    CSS.escape(String(runner.id)) +
+                    '"]'
+                );
+
+
+                rows.forEach(function(row) {
+
+                    var backPrice = row.querySelector(
+                        '[data-side="back"] .price'
+                    );
+
+                    var backSize = row.querySelector(
+                        '[data-side="back"] .size'
+                    );
+
+                    var layPrice = row.querySelector(
+                        '[data-side="lay"] .price'
+                    );
+
+                    var laySize = row.querySelector(
+                        '[data-side="lay"] .size'
+                    );
+
+
+                    /*
+                     * Fancy:
+                     *
+                     * ProExch:
+                     *
+                     * b1  = YES
+                     * bs1 = YES SIZE
+                     * l1  = NO
+                     * ls1 = NO SIZE
+                     *
+                     * Router converts them to:
+                     *
+                     * back / back_size
+                     * lay  / lay_size
+                     *
+                     */
+
+
+                    if (backPrice) {
+
+                        backPrice.textContent =
+                            runner.back !== null &&
+                            runner.back !== undefined
+                                ? runner.back
+                                : "-";
+
+                    }
+
+
+                    if (backSize) {
+
+                        backSize.textContent =
+                            runner.back_size !== null &&
+                            runner.back_size !== undefined
+                                ? runner.back_size
+                                : "";
+
+                    }
+
+
+                    if (layPrice) {
+
+                        layPrice.textContent =
+                            runner.lay !== null &&
+                            runner.lay !== undefined
+                                ? runner.lay
+                                : "-";
+
+                    }
+
+
+                    if (laySize) {
+
+                        laySize.textContent =
+                            runner.lay_size !== null &&
+                            runner.lay_size !== undefined
+                                ? runner.lay_size
+                                : "";
+
+                    }
+
+                });
+
+            });
+
+        });
+
+    }
+
+
+    /*
+     * =========================================================
+     * CREATE FANCY BOX IF API RETURNS A NEW FANCY MARKET
+     * =========================================================
+     */
+
+    function renderFancyMarkets(fancyMarkets) {
+
+        if (!Array.isArray(fancyMarkets)) {
+            return;
+        }
+
+
+        var container = document.getElementById("markets");
+
+        if (!container) {
+            return;
+        }
+
+
+        fancyMarkets.forEach(function(market) {
+
+            if (!market || !Array.isArray(market.runners)) {
+                return;
+            }
+
+
+            /*
+             * Check whether this Fancy market already exists.
+             */
+
+            var existingRows =
+                container.querySelectorAll(
+                    '.fancy-market'
+                );
+
+
+            /*
+             * If Fancy box already exists,
+             * updateMarkets() will handle it.
+             */
+
+            if (existingRows.length > 0) {
+                return;
+            }
+
+
+            /*
+             * Create Fancy box.
+             */
+
+            var marketBox =
+                document.createElement("div");
+
+            marketBox.className =
+                "market fancy-market";
+
+
+            var title =
+                document.createElement("div");
+
+            title.className =
+                "market-title";
+
+
+            title.innerHTML =
+                '<span class="market-name">' +
+                '🎯 Fancy / Session' +
+                '</span>' +
+                '<span class="market-status">' +
+                'SESSION' +
+                '</span>';
+
+
+            marketBox.appendChild(title);
+
+
+            var body =
+                document.createElement("div");
+
+            body.className =
+                "market-body";
+
+
+            body.innerHTML =
+                '<div class="odds-head">' +
+                    '<span>Session</span>' +
+                    '<span style="text-align:center;">Yes</span>' +
+                    '<span style="text-align:center;">No</span>' +
+                '</div>';
+
+
+            market.runners.forEach(function(runner) {
+
+                var row =
+                    document.createElement("div");
+
+                row.className =
+                    "odds-row";
+
+
+                row.setAttribute(
+                    "data-selection-id",
+                    String(runner.id)
+                );
+
+
+                row.setAttribute(
+                    "data-market-type",
+                    "fancy"
+                );
+
+
+                var runnerName =
+                    document.createElement("div");
+
+                runnerName.className =
+                    "runner";
+
+                runnerName.textContent =
+                    runner.name || "Session";
+
+
+                var yes =
+                    document.createElement("div");
+
+                yes.className =
+                    "odd fancy-yes";
+
+                yes.setAttribute(
+                    "data-side",
+                    "back"
+                );
+
+
+                yes.innerHTML =
+                    '<span class="price">' +
+                    (
+                        runner.back != null
+                            ? runner.back
+                            : "-"
+                    ) +
+                    '</span>' +
+                    '<span class="size">' +
+                    (
                         runner.back_size != null
                             ? runner.back_size
-                            : "";
-                }
+                            : ""
+                    ) +
+                    '</span>';
 
-                if (layPrice) {
-                    layPrice.textContent =
-                        runner.lay != null ? runner.lay : "-";
-                }
 
-                if (laySize) {
-                    laySize.textContent =
+                var no =
+                    document.createElement("div");
+
+                no.className =
+                    "odd fancy-no";
+
+                no.setAttribute(
+                    "data-side",
+                    "lay"
+                );
+
+
+                no.innerHTML =
+                    '<span class="price">' +
+                    (
+                        runner.lay != null
+                            ? runner.lay
+                            : "-"
+                    ) +
+                    '</span>' +
+                    '<span class="size">' +
+                    (
                         runner.lay_size != null
                             ? runner.lay_size
-                            : "";
-                }
+                            : ""
+                    ) +
+                    '</span>';
+
+
+                row.appendChild(runnerName);
+
+                row.appendChild(yes);
+
+                row.appendChild(no);
+
+                body.appendChild(row);
+
             });
+
+
+            marketBox.appendChild(body);
+
+            container.appendChild(marketBox);
+
         });
+
     }
+
+
+    /*
+     * =========================================================
+     * GET MATCH IDS
+     * =========================================================
+     */
+
+    function getMatchIds() {
+
+        var status =
+            document.getElementById("status");
+
+
+        status.textContent =
+            "Finding market...";
+
+
+        return fetch(
+            "/api/cricket/matches"
+        )
+
+        .then(function(response) {
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Unable to load matches"
+                );
+
+            }
+
+            return response.json();
+
+        })
+
+        .then(function(data) {
+
+            if (!data.success) {
+
+                throw new Error(
+                    data.error ||
+                    "Unable to load matches"
+                );
+
+            }
+
+
+            var matches =
+                data.matches || [];
+
+
+            var found = null;
+
+
+            matches.forEach(function(item) {
+
+                var id =
+                    item.game_id ||
+                    item.gameId ||
+                    "";
+
+
+                if (
+                    String(id) ===
+                    String(gameId)
+                ) {
+
+                    found = item;
+
+                }
+
+            });
+
+
+            if (!found) {
+
+                throw new Error(
+                    "Match not found in ProExch"
+                );
+
+            }
+
+
+            eventId =
+                found.event_id ||
+                found.eventId ||
+                "";
+
+
+            marketId =
+                found.market_id ||
+                found.marketId ||
+                "";
+
+
+            if (!eventId) {
+
+                throw new Error(
+                    "event_id is missing from ProExch match"
+                );
+
+            }
+
+
+            status.textContent =
+                "Market found";
+
+
+            return loadOdds();
+
+        })
+
+        .catch(function(error) {
+
+            console.log(
+                "Match ID error:",
+                error
+            );
+
+
+            status.textContent =
+                error.message ||
+                "Unable to find market";
+
+        });
+
+    }
+
+
+    /*
+     * =========================================================
+     * LOAD ODDS
+     * =========================================================
+     */
 
     function loadOdds() {
 
-        var status = document.getElementById("status");
-        var updated = document.getElementById("updated");
+        var status =
+            document.getElementById("status");
 
-        status.textContent = "Updating odds...";
+
+        var updated =
+            document.getElementById("updated");
+
+
+        if (!gameId) {
+
+            status.textContent =
+                "Game ID is missing";
+
+            return Promise.reject(
+                new Error(
+                    "Game ID is missing"
+                )
+            );
+
+        }
+
+
+        if (!eventId) {
+
+            status.textContent =
+                "Event ID is missing";
+
+            return Promise.reject(
+                new Error(
+                    "Event ID is missing"
+                )
+            );
+
+        }
+
 
         var url =
             "/api/cricket/odds" +
-            "?gameId=" + encodeURIComponent(gameId) +
-            "&eventId=" + encodeURIComponent(eventId) +
-            "&marketId=" + encodeURIComponent(marketId);
+            "?gameId=" +
+            encodeURIComponent(gameId) +
+            "&eventId=" +
+            encodeURIComponent(eventId) +
+            "&marketId=" +
+            encodeURIComponent(marketId);
 
-        fetch(url)
-            .then(function(response) {
-                return response.json();
-            })
-            .then(function(data) {
 
-                if (!data.success) {
-                    throw new Error("Odds unavailable");
-                }
+        console.log(
+            "Loading ProExch odds:",
+            url
+        );
 
-                updateMarkets(data.match_odds);
-                updateMarkets(data.bookmaker_odds);
-                updateMarkets(data.fancy_odds);
 
-                status.textContent = "Live odds connected";
+        return fetch(url)
 
-                updated.textContent =
-                    new Date().toLocaleTimeString();
-            })
-            .catch(function() {
-                status.textContent = "Unable to update odds";
-            });
+        .then(function(response) {
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Odds request failed: " +
+                    response.status
+                );
+
+            }
+
+            return response.json();
+
+        })
+
+        .then(function(data) {
+
+            if (!data.success) {
+
+                throw new Error(
+                    data.error ||
+                    "Odds unavailable"
+                );
+
+            }
+
+
+            console.log(
+                "ProExch odds:",
+                data
+            );
+
+
+            /*
+             * =============================================
+             * NORMAL MATCH ODDS
+             * =============================================
+             */
+
+            updateMarkets(
+                data.match_odds || []
+            );
+
+
+            /*
+             * =============================================
+             * BOOKMAKER
+             * =============================================
+             */
+
+            updateMarkets(
+                data.bookmaker_odds || []
+            );
+
+
+            /*
+             * =============================================
+             * FANCY / SESSION
+             * =============================================
+             */
+
+            var fancy =
+                data.fancy_odds || [];
+
+
+            if (fancy.length > 0) {
+
+                /*
+                 * Make sure Fancy box exists.
+                 */
+
+                renderFancyMarkets(
+                    fancy
+                );
+
+
+                /*
+                 * Update Yes / No prices.
+                 */
+
+                updateMarkets(
+                    fancy
+                );
+
+            }
+
+
+            /*
+             * =============================================
+             * STATUS
+             * =============================================
+             */
+
+            if (fancy.length > 0) {
+
+                status.textContent =
+                    "Live odds + Fancy connected";
+
+            } else {
+
+                status.textContent =
+                    "Live odds connected";
+
+            }
+
+
+            updated.textContent =
+                new Date().toLocaleTimeString();
+
+        })
+
+        .catch(function(error) {
+
+            console.log(
+                "Odds error:",
+                error
+            );
+
+
+            status.textContent =
+                error.message ||
+                "Unable to update odds";
+
+        });
+
     }
 
-    loadOdds();
 
-    setInterval(loadOdds, 5000);
+    /*
+     * =========================================================
+     * INITIAL LOAD
+     * =========================================================
+     */
+
+    getMatchIds();
+
+
+    /*
+     * =========================================================
+     * LIVE REFRESH
+     * =========================================================
+     *
+     * Refresh every 5 seconds.
+     *
+     * We do NOT call /matches again.
+     *
+     * We already have:
+     *
+     * gameId
+     * eventId
+     * marketId
+     *
+     */
+
+    setInterval(function() {
+
+        if (eventId) {
+
+            loadOdds();
+
+        }
+
+    }, 5000);
+
 </script>
 
 {% endif %}
 
 </body>
+
 </html>
