@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -28,6 +29,7 @@
             max-width: 1150px;
             margin: auto;
             padding: 15px;
+            padding-bottom: 100px;
         }
 
         .topbar {
@@ -163,7 +165,6 @@
             border-radius: 12px;
         }
 
-        /* Fancy gets its own visual section */
         .market.fancy-market {
             border-color: #6a5422;
         }
@@ -256,6 +257,17 @@
             justify-content: center;
             align-items: center;
             border-radius: 8px;
+            cursor: pointer;
+            user-select: none;
+            transition: transform .08s, opacity .15s;
+        }
+
+        .odd:hover {
+            transform: translateY(-1px);
+        }
+
+        .odd:active {
+            transform: scale(.97);
         }
 
         .back {
@@ -268,16 +280,25 @@
             border: 1px solid #743d3b;
         }
 
-        /* Fancy Yes */
         .fancy-yes {
             background: #315b35;
             border: 1px solid #4d884f;
         }
 
-        /* Fancy No */
         .fancy-no {
             background: #5b3030;
             border: 1px solid #884b4b;
+        }
+
+        .odd.disabled {
+            opacity: .35;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .odd.selected {
+            outline: 2px solid #ffffff;
+            outline-offset: 1px;
         }
 
         .price {
@@ -310,10 +331,155 @@
             font-size: 12px;
         }
 
+        /* =====================================================
+           BET SLIP
+        ===================================================== */
+
+        .betslip {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            width: 350px;
+            max-width: calc(100vw - 30px);
+            background: #0c2b1d;
+            border: 1px solid #2b684b;
+            border-radius: 14px;
+            box-shadow: 0 15px 45px rgba(0,0,0,.45);
+            z-index: 9999;
+            display: none;
+            overflow: hidden;
+        }
+
+        .betslip.show {
+            display: block;
+        }
+
+        .betslip-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 13px 15px;
+            background: #123b28;
+            border-bottom: 1px solid #24563d;
+        }
+
+        .betslip-title {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .betslip-close {
+            border: 0;
+            background: transparent;
+            color: #ffffff;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .betslip-body {
+            padding: 14px;
+        }
+
+        .bet-type {
+            display: inline-block;
+            padding: 4px 7px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            background: #164a32;
+            color: #8fe0b6;
+            font-size: 9px;
+            font-weight: bold;
+        }
+
+        .bet-name {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .bet-market {
+            color: #8eae9d;
+            font-size: 10px;
+            margin-bottom: 12px;
+        }
+
+        .bet-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .bet-info-box {
+            padding: 9px;
+            background: #09251a;
+            border-radius: 7px;
+        }
+
+        .bet-info-label {
+            display: block;
+            color: #6f9381;
+            font-size: 8px;
+            margin-bottom: 3px;
+        }
+
+        .bet-info-value {
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .stake-label {
+            display: block;
+            margin-top: 13px;
+            margin-bottom: 5px;
+            color: #8eae9d;
+            font-size: 10px;
+        }
+
+        .stake-input {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #24563d;
+            border-radius: 8px;
+            outline: none;
+            background: #071b12;
+            color: white;
+            font-size: 14px;
+        }
+
+        .stake-input:focus {
+            border-color: #39d98a;
+        }
+
+        .place-bet {
+            width: 100%;
+            margin-top: 12px;
+            padding: 12px;
+            border: 0;
+            border-radius: 8px;
+            background: #39d98a;
+            color: #062014;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .place-bet:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
+        .betslip-message {
+            margin-top: 9px;
+            color: #e4bd54;
+            font-size: 10px;
+            line-height: 1.4;
+        }
+
         @media (max-width: 650px) {
 
             .page {
                 padding: 10px;
+                padding-bottom: 100px;
             }
 
             .title {
@@ -345,19 +511,22 @@
             .price {
                 font-size: 14px;
             }
+
+            .betslip {
+                right: 10px;
+                bottom: 10px;
+                width: calc(100vw - 20px);
+            }
         }
 
     </style>
 
 </head>
 
+
 <body>
 
 <div class="page">
-
-    <!-- =====================================================
-         TOP BAR
-    ====================================================== -->
 
     <div class="topbar">
 
@@ -372,10 +541,6 @@
     </div>
 
 
-    <!-- =====================================================
-         ERROR
-    ====================================================== -->
-
     {% if error %}
 
         <div class="error">
@@ -386,10 +551,6 @@
 
 
     {% if match %}
-
-        <!-- =================================================
-             MATCH HEADER
-        ================================================== -->
 
         <div class="match">
 
@@ -458,14 +619,10 @@
         </div>
 
 
-        <!-- =================================================
-             LIVE STATUS
-        ================================================== -->
-
         <div class="refresh">
 
             <span id="status">
-                Finding market...
+                Connecting to live odds...
             </span>
 
             <span id="updated">
@@ -475,167 +632,11 @@
         </div>
 
 
-        <!-- =================================================
-             MARKETS
-        ================================================== -->
-
         <div id="markets">
 
-            {% if match.markets %}
-
-                {% for market in match.markets %}
-
-                    <div
-                        class="market {% if market.type == 'fancy' %}fancy-market{% endif %}"
-                        data-market-type="{{ market.type }}"
-                        data-market-id="{{ market.id }}"
-                    >
-
-                        <div class="market-title">
-
-                            <span class="market-name">
-
-                                {% if market.type == "fancy" %}
-                                    🎯 Fancy / Session
-                                {% elif market.type == "bookmaker" %}
-                                    Bookmaker
-                                {% else %}
-                                    {{ market.name }}
-                                {% endif %}
-
-                            </span>
-
-                            <span class="market-status">
-
-                                {% if market.type == "fancy" %}
-                                    SESSION
-                                {% else %}
-                                    {{ market.status or "OPEN" }}
-                                {% endif %}
-
-                            </span>
-
-                        </div>
-
-
-                        <div class="market-body">
-
-                            <div class="odds-head">
-
-                                <span>
-
-                                    {% if market.type == "fancy" %}
-                                        Session
-                                    {% else %}
-                                        Runner
-                                    {% endif %}
-
-                                </span>
-
-
-                                <span style="text-align:center;">
-
-                                    {% if market.type == "fancy" %}
-                                        Yes
-                                    {% else %}
-                                        Back
-                                    {% endif %}
-
-                                </span>
-
-
-                                <span style="text-align:center;">
-
-                                    {% if market.type == "fancy" %}
-                                        No
-                                    {% else %}
-                                        Lay
-                                    {% endif %}
-
-                                </span>
-
-                            </div>
-
-
-                            {% for outcome in market.outcomes %}
-
-                                <div
-                                    class="odds-row"
-                                    data-selection-id="{{ outcome.id }}"
-                                    data-market-type="{{ market.type }}"
-                                >
-
-                                    <div class="runner">
-
-                                        {{ outcome.name }}
-
-                                        {% if outcome.status %}
-
-                                            <span class="runner-status">
-                                                {{ outcome.status }}
-                                            </span>
-
-                                        {% endif %}
-
-                                    </div>
-
-
-                                    <!-- =================================
-                                         YES / BACK
-                                    ================================== -->
-
-                                    <div
-                                        class="odd {% if market.type == 'fancy' %}fancy-yes{% else %}back{% endif %}"
-                                        data-side="back"
-                                    >
-
-                                        <span class="price">
-                                            {{ outcome.back if outcome.back is not none else "-" }}
-                                        </span>
-
-                                        <span class="size">
-                                            {{ outcome.back_size if outcome.back_size is not none else "" }}
-                                        </span>
-
-                                    </div>
-
-
-                                    <!-- =================================
-                                         NO / LAY
-                                    ================================== -->
-
-                                    <div
-                                        class="odd {% if market.type == 'fancy' %}fancy-no{% else %}lay{% endif %}"
-                                        data-side="lay"
-                                    >
-
-                                        <span class="price">
-                                            {{ outcome.lay if outcome.lay is not none else "-" }}
-                                        </span>
-
-                                        <span class="size">
-                                            {{ outcome.lay_size if outcome.lay_size is not none else "" }}
-                                        </span>
-
-                                    </div>
-
-                                </div>
-
-                            {% endfor %}
-
-                        </div>
-
-                    </div>
-
-                {% endfor %}
-
-            {% else %}
-
-                <div class="state" id="no-markets">
-                    Odds currently unavailable
-                </div>
-
-            {% endif %}
+            <div class="state">
+                Loading markets...
+            </div>
 
         </div>
 
@@ -650,368 +651,724 @@
 </div>
 
 
+<!-- =========================================================
+     BET SLIP
+========================================================== -->
+
+<div id="betslip" class="betslip">
+
+    <div class="betslip-header">
+
+        <span class="betslip-title">
+            Bet Slip
+        </span>
+
+        <button
+            type="button"
+            class="betslip-close"
+            onclick="closeBetSlip()"
+        >
+            ×
+        </button>
+
+    </div>
+
+
+    <div class="betslip-body">
+
+        <div id="betType" class="bet-type">
+            BACK
+        </div>
+
+        <div id="betName" class="bet-name">
+            --
+        </div>
+
+        <div id="betMarket" class="bet-market">
+            --
+        </div>
+
+
+        <div class="bet-info">
+
+            <div class="bet-info-box">
+
+                <span class="bet-info-label">
+                    ODDS
+                </span>
+
+                <span
+                    id="betOdds"
+                    class="bet-info-value"
+                >
+                    --
+                </span>
+
+            </div>
+
+
+            <div class="bet-info-box">
+
+                <span class="bet-info-label">
+                    AVAILABLE
+                </span>
+
+                <span
+                    id="betAvailable"
+                    class="bet-info-value"
+                >
+                    --
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <label
+            class="stake-label"
+            for="stake"
+        >
+            STAKE
+        </label>
+
+        <input
+            id="stake"
+            class="stake-input"
+            type="number"
+            min="1"
+            step="1"
+            placeholder="Enter stake"
+        >
+
+
+        <button
+            id="placeBetButton"
+            class="place-bet"
+            type="button"
+        >
+            Place Bet
+        </button>
+
+
+        <div id="betslipMessage" class="betslip-message">
+            Select a price to add it to your bet slip.
+        </div>
+
+    </div>
+
+</div>
+
+
 {% if match %}
 
 <script>
 
     /*
      * =========================================================
-     * GET GAME ID FROM URL
+     * PROEXCH MATCH IDS
      * =========================================================
-     *
-     * Example:
-     *
-     * /match/36051845
-     *
      */
 
-    var pathParts = window.location.pathname.split("/");
+    const pathParts =
+        window.location.pathname
+            .split("/")
+            .filter(Boolean);
 
-    var gameId = pathParts[pathParts.length - 1];
+    const gameId =
+        pathParts[pathParts.length - 1];
 
-    var eventId = "";
+    let eventId = "";
+    let marketId = "";
 
-    var marketId = "";
+    let selectedBet = null;
+
+    let oddsLoading = false;
 
 
     /*
      * =========================================================
-     * UPDATE EXISTING MARKET ROWS
+     * HELPERS
      * =========================================================
      */
 
-    function updateMarkets(markets) {
+    function safeNumber(value) {
 
-        if (!Array.isArray(markets)) {
-            return;
+        if (
+            value === null ||
+            value === undefined ||
+            value === ""
+        ) {
+            return null;
         }
 
+        const n = Number(value);
 
-        markets.forEach(function(market) {
+        if (!Number.isFinite(n)) {
+            return null;
+        }
 
-            if (!market || !Array.isArray(market.runners)) {
-                return;
-            }
-
-
-            market.runners.forEach(function(runner) {
-
-                if (!runner) {
-                    return;
-                }
+        return n;
+    }
 
 
-                if (runner.id === null || runner.id === undefined) {
-                    return;
-                }
+    function validPrice(value) {
+
+        const n = safeNumber(value);
+
+        return n !== null && n > 0;
+
+    }
 
 
-                var rows = document.querySelectorAll(
-                    '[data-selection-id="' +
-                    CSS.escape(String(runner.id)) +
-                    '"]'
-                );
+    function displayPrice(value) {
+
+        if (!validPrice(value)) {
+            return "-";
+        }
+
+        return String(value);
+
+    }
 
 
-                rows.forEach(function(row) {
+    function displaySize(value) {
 
-                    var backPrice = row.querySelector(
-                        '[data-side="back"] .price'
-                    );
+        if (
+            value === null ||
+            value === undefined ||
+            value === "" ||
+            Number(value) <= 0
+        ) {
+            return "";
+        }
 
-                    var backSize = row.querySelector(
-                        '[data-side="back"] .size'
-                    );
+        return String(value);
 
-                    var layPrice = row.querySelector(
-                        '[data-side="lay"] .price'
-                    );
-
-                    var laySize = row.querySelector(
-                        '[data-side="lay"] .size'
-                    );
+    }
 
 
-                    /*
-                     * Fancy:
-                     *
-                     * ProExch:
-                     *
-                     * b1  = YES
-                     * bs1 = YES SIZE
-                     * l1  = NO
-                     * ls1 = NO SIZE
-                     *
-                     * Router converts them to:
-                     *
-                     * back / back_size
-                     * lay  / lay_size
-                     *
-                     */
+    function escapeHtml(value) {
 
-
-                    if (backPrice) {
-
-                        backPrice.textContent =
-                            runner.back !== null &&
-                            runner.back !== undefined
-                                ? runner.back
-                                : "-";
-
-                    }
-
-
-                    if (backSize) {
-
-                        backSize.textContent =
-                            runner.back_size !== null &&
-                            runner.back_size !== undefined
-                                ? runner.back_size
-                                : "";
-
-                    }
-
-
-                    if (layPrice) {
-
-                        layPrice.textContent =
-                            runner.lay !== null &&
-                            runner.lay !== undefined
-                                ? runner.lay
-                                : "-";
-
-                    }
-
-
-                    if (laySize) {
-
-                        laySize.textContent =
-                            runner.lay_size !== null &&
-                            runner.lay_size !== undefined
-                                ? runner.lay_size
-                                : "";
-
-                    }
-
-                });
-
-            });
-
-        });
+        return String(value ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
 
     }
 
 
     /*
      * =========================================================
-     * CREATE FANCY BOX IF API RETURNS A NEW FANCY MARKET
+     * CREATE PRICE BOX
      * =========================================================
      */
 
-    function renderFancyMarkets(fancyMarkets) {
+    function createOddBox(
+        runner,
+        market,
+        side,
+        price,
+        size
+    ) {
 
-        if (!Array.isArray(fancyMarkets)) {
-            return;
+        const isBack =
+            side === "back";
+
+        const isValid =
+            validPrice(price);
+
+        const box =
+            document.createElement("div");
+
+        box.className =
+            "odd " +
+            (
+                market.type === "fancy"
+                    ? (
+                        isBack
+                            ? "fancy-yes"
+                            : "fancy-no"
+                    )
+                    : (
+                        isBack
+                            ? "back"
+                            : "lay"
+                    )
+            );
+
+
+        if (!isValid) {
+
+            box.classList.add("disabled");
+
         }
 
 
-        var container = document.getElementById("markets");
+        box.dataset.side =
+            side;
+
+        box.dataset.price =
+            isValid ? String(price) : "";
+
+        box.dataset.size =
+            size != null ? String(size) : "";
+
+
+        const priceElement =
+            document.createElement("span");
+
+        priceElement.className =
+            "price";
+
+        priceElement.textContent =
+            displayPrice(price);
+
+
+        const sizeElement =
+            document.createElement("span");
+
+        sizeElement.className =
+            "size";
+
+        sizeElement.textContent =
+            displaySize(size);
+
+
+        box.appendChild(priceElement);
+        box.appendChild(sizeElement);
+
+
+        if (isValid) {
+
+            box.addEventListener(
+                "click",
+                function() {
+
+                    selectBet(
+                        runner,
+                        market,
+                        side,
+                        price,
+                        size,
+                        box
+                    );
+
+                }
+            );
+
+        }
+
+
+        return box;
+
+    }
+
+
+    /*
+     * =========================================================
+     * BUILD MARKET
+     * =========================================================
+     */
+
+    function buildMarket(market) {
+
+        const box =
+            document.createElement("div");
+
+        box.className =
+            "market " +
+            (
+                market.type === "fancy"
+                    ? "fancy-market"
+                    : ""
+            );
+
+
+        box.dataset.marketType =
+            market.type || "match";
+
+
+        box.dataset.marketId =
+            market.id || "";
+
+
+        /*
+         * HEADER
+         */
+
+        const header =
+            document.createElement("div");
+
+        header.className =
+            "market-title";
+
+
+        const name =
+            document.createElement("span");
+
+        name.className =
+            "market-name";
+
+
+        if (market.type === "fancy") {
+
+            name.textContent =
+                "🎯 Fancy / Session";
+
+        } else if (market.type === "bookmaker") {
+
+            name.textContent =
+                "Bookmaker";
+
+        } else {
+
+            name.textContent =
+                market.name ||
+                "Match Odds";
+
+        }
+
+
+        const status =
+            document.createElement("span");
+
+        status.className =
+            "market-status";
+
+
+        if (market.type === "fancy") {
+
+            status.textContent =
+                "SESSION";
+
+        } else {
+
+            status.textContent =
+                market.status ||
+                "OPEN";
+
+        }
+
+
+        header.appendChild(name);
+        header.appendChild(status);
+
+
+        /*
+         * BODY
+         */
+
+        const body =
+            document.createElement("div");
+
+        body.className =
+            "market-body";
+
+
+        /*
+         * COLUMN HEADER
+         */
+
+        const head =
+            document.createElement("div");
+
+        head.className =
+            "odds-head";
+
+
+        const runnerHead =
+            document.createElement("span");
+
+        runnerHead.textContent =
+            market.type === "fancy"
+                ? "Session"
+                : "Runner";
+
+
+        const backHead =
+            document.createElement("span");
+
+        backHead.style.textAlign =
+            "center";
+
+        backHead.textContent =
+            market.type === "fancy"
+                ? "Yes"
+                : "Back";
+
+
+        const layHead =
+            document.createElement("span");
+
+        layHead.style.textAlign =
+            "center";
+
+        layHead.textContent =
+            market.type === "fancy"
+                ? "No"
+                : "Lay";
+
+
+        head.appendChild(runnerHead);
+        head.appendChild(backHead);
+        head.appendChild(layHead);
+
+        body.appendChild(head);
+
+
+        /*
+         * RUNNERS
+         */
+
+        const runners =
+            Array.isArray(market.runners)
+                ? market.runners
+                : [];
+
+
+        runners.forEach(function(runner) {
+
+            const row =
+                document.createElement("div");
+
+            row.className =
+                "odds-row";
+
+
+            row.dataset.selectionId =
+                String(
+                    runner.id ??
+                    runner.sid ??
+                    ""
+                );
+
+
+            const runnerElement =
+                document.createElement("div");
+
+            runnerElement.className =
+                "runner";
+
+
+            runnerElement.textContent =
+                runner.name ||
+                "Unknown";
+
+
+            if (runner.status) {
+
+                const runnerStatus =
+                    document.createElement("span");
+
+                runnerStatus.className =
+                    "runner-status";
+
+                runnerStatus.textContent =
+                    runner.status;
+
+                runnerElement.appendChild(
+                    runnerStatus
+                );
+
+            }
+
+
+            const back =
+                createOddBox(
+                    runner,
+                    market,
+                    "back",
+                    runner.back,
+                    runner.back_size
+                );
+
+
+            const lay =
+                createOddBox(
+                    runner,
+                    market,
+                    "lay",
+                    runner.lay,
+                    runner.lay_size
+                );
+
+
+            row.appendChild(
+                runnerElement
+            );
+
+            row.appendChild(back);
+            row.appendChild(lay);
+
+            body.appendChild(row);
+
+        });
+
+
+        box.appendChild(header);
+        box.appendChild(body);
+
+        return box;
+
+    }
+
+
+    /*
+     * =========================================================
+     * RENDER ALL MARKETS
+     * =========================================================
+     */
+
+    function renderMarkets(data) {
+
+        const container =
+            document.getElementById("markets");
 
         if (!container) {
             return;
         }
 
 
-        fancyMarkets.forEach(function(market) {
-
-            if (!market || !Array.isArray(market.runners)) {
-                return;
-            }
+        const allMarkets = [];
 
 
-            /*
-             * Check whether this Fancy market already exists.
-             */
+        /*
+         * MATCH ODDS
+         */
 
-            var existingRows =
-                container.querySelectorAll(
-                    '.fancy-market'
-                );
+        if (
+            Array.isArray(data.match_odds)
+        ) {
 
+            data.match_odds.forEach(
+                function(market) {
 
-            /*
-             * If Fancy box already exists,
-             * updateMarkets() will handle it.
-             */
+                    allMarkets.push(
+                        Object.assign(
+                            {},
+                            market,
+                            {
+                                type: "match"
+                            }
+                        )
+                    );
 
-            if (existingRows.length > 0) {
-                return;
-            }
+                }
+            );
 
-
-            /*
-             * Create Fancy box.
-             */
-
-            var marketBox =
-                document.createElement("div");
-
-            marketBox.className =
-                "market fancy-market";
+        }
 
 
-            var title =
-                document.createElement("div");
+        /*
+         * BOOKMAKER
+         */
 
-            title.className =
-                "market-title";
+        if (
+            Array.isArray(data.bookmaker_odds)
+        ) {
+
+            data.bookmaker_odds.forEach(
+                function(market) {
+
+                    allMarkets.push(
+                        Object.assign(
+                            {},
+                            market,
+                            {
+                                type: "bookmaker"
+                            }
+                        )
+                    );
+
+                }
+            );
+
+        }
 
 
-            title.innerHTML =
-                '<span class="market-name">' +
-                '🎯 Fancy / Session' +
-                '</span>' +
-                '<span class="market-status">' +
-                'SESSION' +
-                '</span>';
+        /*
+         * FANCY
+         */
+
+        if (
+            Array.isArray(data.fancy_odds)
+        ) {
+
+            data.fancy_odds.forEach(
+                function(market) {
+
+                    allMarkets.push(
+                        Object.assign(
+                            {},
+                            market,
+                            {
+                                type: "fancy"
+                            }
+                        )
+                    );
+
+                }
+            );
+
+        }
 
 
-            marketBox.appendChild(title);
+        /*
+         * NO MARKETS
+         */
 
+        if (allMarkets.length === 0) {
 
-            var body =
-                document.createElement("div");
-
-            body.className =
-                "market-body";
-
-
-            body.innerHTML =
-                '<div class="odds-head">' +
-                    '<span>Session</span>' +
-                    '<span style="text-align:center;">Yes</span>' +
-                    '<span style="text-align:center;">No</span>' +
+            container.innerHTML =
+                '<div class="state">' +
+                'Odds currently unavailable' +
                 '</div>';
 
+            return;
 
-            market.runners.forEach(function(runner) {
-
-                var row =
-                    document.createElement("div");
-
-                row.className =
-                    "odds-row";
+        }
 
 
-                row.setAttribute(
-                    "data-selection-id",
-                    String(runner.id)
+        /*
+         * BUILD DOM
+         */
+
+        const fragment =
+            document.createDocumentFragment();
+
+
+        allMarkets.forEach(
+            function(market) {
+
+                fragment.appendChild(
+                    buildMarket(market)
                 );
 
-
-                row.setAttribute(
-                    "data-market-type",
-                    "fancy"
-                );
+            }
+        );
 
 
-                var runnerName =
-                    document.createElement("div");
+        container.innerHTML = "";
 
-                runnerName.className =
-                    "runner";
-
-                runnerName.textContent =
-                    runner.name || "Session";
-
-
-                var yes =
-                    document.createElement("div");
-
-                yes.className =
-                    "odd fancy-yes";
-
-                yes.setAttribute(
-                    "data-side",
-                    "back"
-                );
-
-
-                yes.innerHTML =
-                    '<span class="price">' +
-                    (
-                        runner.back != null
-                            ? runner.back
-                            : "-"
-                    ) +
-                    '</span>' +
-                    '<span class="size">' +
-                    (
-                        runner.back_size != null
-                            ? runner.back_size
-                            : ""
-                    ) +
-                    '</span>';
-
-
-                var no =
-                    document.createElement("div");
-
-                no.className =
-                    "odd fancy-no";
-
-                no.setAttribute(
-                    "data-side",
-                    "lay"
-                );
-
-
-                no.innerHTML =
-                    '<span class="price">' +
-                    (
-                        runner.lay != null
-                            ? runner.lay
-                            : "-"
-                    ) +
-                    '</span>' +
-                    '<span class="size">' +
-                    (
-                        runner.lay_size != null
-                            ? runner.lay_size
-                            : ""
-                    ) +
-                    '</span>';
-
-
-                row.appendChild(runnerName);
-
-                row.appendChild(yes);
-
-                row.appendChild(no);
-
-                body.appendChild(row);
-
-            });
-
-
-            marketBox.appendChild(body);
-
-            container.appendChild(marketBox);
-
-        });
+        container.appendChild(
+            fragment
+        );
 
     }
 
 
     /*
      * =========================================================
-     * GET MATCH IDS
+     * GET IDS FROM MATCHES
      * =========================================================
      */
 
-    function getMatchIds() {
+    async function getMatchIds() {
 
-        var status =
+        const status =
             document.getElementById("status");
 
 
@@ -1019,11 +1376,16 @@
             "Finding market...";
 
 
-        return fetch(
-            "/api/cricket/matches"
-        )
+        try {
 
-        .then(function(response) {
+            const response =
+                await fetch(
+                    "/api/cricket/matches",
+                    {
+                        credentials: "same-origin"
+                    }
+                );
+
 
             if (!response.ok) {
 
@@ -1033,11 +1395,10 @@
 
             }
 
-            return response.json();
 
-        })
+            const data =
+                await response.json();
 
-        .then(function(data) {
 
             if (!data.success) {
 
@@ -1049,31 +1410,26 @@
             }
 
 
-            var matches =
-                data.matches || [];
+            const matches =
+                Array.isArray(data.matches)
+                    ? data.matches
+                    : [];
 
 
-            var found = null;
+            const found =
+                matches.find(
+                    function(item) {
 
+                        const id =
+                            item.game_id ??
+                            item.gameId ??
+                            "";
 
-            matches.forEach(function(item) {
+                        return String(id) ===
+                            String(gameId);
 
-                var id =
-                    item.game_id ||
-                    item.gameId ||
-                    "";
-
-
-                if (
-                    String(id) ===
-                    String(gameId)
-                ) {
-
-                    found = item;
-
-                }
-
-            });
+                    }
+                );
 
 
             if (!found) {
@@ -1086,37 +1442,26 @@
 
 
             eventId =
-                found.event_id ||
-                found.eventId ||
-                "";
+                found.event_id ??
+                found.eventId ??
+                gameId;
 
 
             marketId =
-                found.market_id ||
-                found.marketId ||
+                found.market_id ??
+                found.marketId ??
                 "";
-
-
-            if (!eventId) {
-
-                throw new Error(
-                    "event_id is missing from ProExch match"
-                );
-
-            }
 
 
             status.textContent =
                 "Market found";
 
 
-            return loadOdds();
+            await loadOdds();
 
-        })
+        } catch (error) {
 
-        .catch(function(error) {
-
-            console.log(
+            console.error(
                 "Match ID error:",
                 error
             );
@@ -1126,7 +1471,7 @@
                 error.message ||
                 "Unable to find market";
 
-        });
+        }
 
     }
 
@@ -1137,63 +1482,86 @@
      * =========================================================
      */
 
-    function loadOdds() {
+    async function loadOdds() {
 
-        var status =
-            document.getElementById("status");
-
-
-        var updated =
-            document.getElementById("updated");
+        if (oddsLoading) {
+            return;
+        }
 
 
         if (!gameId) {
 
-            status.textContent =
-                "Game ID is missing";
-
-            return Promise.reject(
-                new Error(
-                    "Game ID is missing"
-                )
-            );
+            return;
 
         }
 
 
         if (!eventId) {
 
-            status.textContent =
-                "Event ID is missing";
-
-            return Promise.reject(
-                new Error(
-                    "Event ID is missing"
-                )
-            );
+            return;
 
         }
 
 
-        var url =
-            "/api/cricket/odds" +
-            "?gameId=" +
-            encodeURIComponent(gameId) +
-            "&eventId=" +
-            encodeURIComponent(eventId) +
-            "&marketId=" +
-            encodeURIComponent(marketId);
+        oddsLoading = true;
 
 
-        console.log(
-            "Loading ProExch odds:",
-            url
-        );
+        const status =
+            document.getElementById("status");
+
+        const updated =
+            document.getElementById("updated");
 
 
-        return fetch(url)
+        try {
 
-        .then(function(response) {
+            const params =
+                new URLSearchParams();
+
+
+            params.set(
+                "gameId",
+                gameId
+            );
+
+
+            params.set(
+                "eventId",
+                eventId
+            );
+
+
+            if (marketId) {
+
+                params.set(
+                    "marketId",
+                    marketId
+                );
+
+            }
+
+
+            const url =
+                "/api/cricket/odds?" +
+                params.toString();
+
+
+            console.log(
+                "[MATCH] Loading odds:",
+                url
+            );
+
+
+            const response =
+                await fetch(
+                    url,
+                    {
+                        credentials:
+                            "same-origin",
+                        cache: "no-store"
+                    }
+                );
+
 
             if (!response.ok) {
 
@@ -1204,11 +1572,16 @@
 
             }
 
-            return response.json();
 
-        })
+            const data =
+                await response.json();
 
-        .then(function(data) {
+
+            console.log(
+                "[MATCH] Odds received:",
+                data
+            );
+
 
             if (!data.success) {
 
@@ -1220,73 +1593,41 @@
             }
 
 
-            console.log(
-                "ProExch odds:",
-                data
-            );
-
-
             /*
-             * =============================================
-             * NORMAL MATCH ODDS
-             * =============================================
+             * THIS IS THE IMPORTANT CHANGE.
+             *
+             * We completely rebuild the market area
+             * from the API response.
+             *
+             * We no longer depend on:
+             *
+             * match.markets
+             *
+             * being correctly rendered by Jinja.
              */
 
-            updateMarkets(
-                data.match_odds || []
-            );
+            renderMarkets(data);
 
 
-            /*
-             * =============================================
-             * BOOKMAKER
-             * =============================================
-             */
-
-            updateMarkets(
-                data.bookmaker_odds || []
-            );
+            const matchCount =
+                Array.isArray(data.match_odds)
+                    ? data.match_odds.length
+                    : 0;
 
 
-            /*
-             * =============================================
-             * FANCY / SESSION
-             * =============================================
-             */
-
-            var fancy =
-                data.fancy_odds || [];
+            const bookmakerCount =
+                Array.isArray(data.bookmaker_odds)
+                    ? data.bookmaker_odds.length
+                    : 0;
 
 
-            if (fancy.length > 0) {
-
-                /*
-                 * Make sure Fancy box exists.
-                 */
-
-                renderFancyMarkets(
-                    fancy
-                );
+            const fancyCount =
+                Array.isArray(data.fancy_odds)
+                    ? data.fancy_odds.length
+                    : 0;
 
 
-                /*
-                 * Update Yes / No prices.
-                 */
-
-                updateMarkets(
-                    fancy
-                );
-
-            }
-
-
-            /*
-             * =============================================
-             * STATUS
-             * =============================================
-             */
-
-            if (fancy.length > 0) {
+            if (fancyCount > 0) {
 
                 status.textContent =
                     "Live odds + Fancy connected";
@@ -1300,14 +1641,24 @@
 
 
             updated.textContent =
-                new Date().toLocaleTimeString();
+                new Date()
+                    .toLocaleTimeString();
 
-        })
-
-        .catch(function(error) {
 
             console.log(
-                "Odds error:",
+                "[MATCH] Markets:",
+                {
+                    match: matchCount,
+                    bookmaker: bookmakerCount,
+                    fancy: fancyCount
+                }
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "[MATCH] Odds error:",
                 error
             );
 
@@ -1316,9 +1667,338 @@
                 error.message ||
                 "Unable to update odds";
 
-        });
+        } finally {
+
+            oddsLoading = false;
+
+        }
 
     }
+
+
+    /*
+     * =========================================================
+     * SELECT BET
+     * =========================================================
+     */
+
+    function selectBet(
+        runner,
+        market,
+        side,
+        price,
+        size,
+        element
+    ) {
+
+        if (!validPrice(price)) {
+            return;
+        }
+
+
+        /*
+         * Remove old selection highlight.
+         */
+
+        document
+            .querySelectorAll(".odd.selected")
+            .forEach(
+                function(item) {
+
+                    item.classList.remove(
+                        "selected"
+                    );
+
+                }
+            );
+
+
+        element.classList.add(
+            "selected"
+        );
+
+
+        selectedBet = {
+
+            game_id:
+                String(gameId),
+
+            event_id:
+                String(eventId),
+
+            market_id:
+                String(
+                    market.id ||
+                    market.market_id ||
+                    marketId ||
+                    ""
+                ),
+
+            market_type:
+                market.type ||
+                "match",
+
+            market_name:
+                market.name ||
+                (
+                    market.type === "fancy"
+                        ? "Fancy / Session"
+                        : "Match Odds"
+                ),
+
+            selection_id:
+                String(
+                    runner.id ??
+                    runner.sid ??
+                    ""
+                ),
+
+            selection_name:
+                runner.name ||
+                "",
+
+            side:
+                side,
+
+            odds:
+                Number(price),
+
+            available_size:
+                size != null
+                    ? Number(size)
+                    : null
+
+        };
+
+
+        openBetSlip();
+
+    }
+
+
+    /*
+     * =========================================================
+     * OPEN BET SLIP
+     * =========================================================
+     */
+
+    function openBetSlip() {
+
+        if (!selectedBet) {
+            return;
+        }
+
+
+        const slip =
+            document.getElementById(
+                "betslip"
+            );
+
+
+        const type =
+            document.getElementById(
+                "betType"
+            );
+
+
+        const name =
+            document.getElementById(
+                "betName"
+            );
+
+
+        const market =
+            document.getElementById(
+                "betMarket"
+            );
+
+
+        const odds =
+            document.getElementById(
+                "betOdds"
+            );
+
+
+        const available =
+            document.getElementById(
+                "betAvailable"
+            );
+
+
+        const message =
+            document.getElementById(
+                "betslipMessage"
+            );
+
+
+        type.textContent =
+            selectedBet.side === "back"
+                ? (
+                    selectedBet.market_type === "fancy"
+                        ? "YES"
+                        : "BACK"
+                )
+                : (
+                    selectedBet.market_type === "fancy"
+                        ? "NO"
+                        : "LAY"
+                );
+
+
+        name.textContent =
+            selectedBet.selection_name;
+
+
+        market.textContent =
+            selectedBet.market_name;
+
+
+        odds.textContent =
+            selectedBet.odds;
+
+
+        available.textContent =
+            selectedBet.available_size != null
+                ? selectedBet.available_size
+                : "--";
+
+
+        message.textContent =
+            "Selection ready. Enter your stake.";
+
+
+        slip.classList.add(
+            "show"
+        );
+
+    }
+
+
+    /*
+     * =========================================================
+     * CLOSE BET SLIP
+     * =========================================================
+     */
+
+    function closeBetSlip() {
+
+        const slip =
+            document.getElementById(
+                "betslip"
+            );
+
+
+        slip.classList.remove(
+            "show"
+        );
+
+
+        document
+            .querySelectorAll(".odd.selected")
+            .forEach(
+                function(item) {
+
+                    item.classList.remove(
+                        "selected"
+                    );
+
+                }
+            );
+
+
+        selectedBet = null;
+
+    }
+
+
+    /*
+     * =========================================================
+     * PLACE BET BUTTON
+     * =========================================================
+     *
+     * We deliberately don't invent the backend payload here.
+     *
+     * Your existing /bets/place route needs to be connected
+     * using its actual schema.
+     *
+     */
+
+    document
+        .getElementById("placeBetButton")
+        .addEventListener(
+            "click",
+            function() {
+
+                if (!selectedBet) {
+
+                    return;
+
+                }
+
+
+                const stake =
+                    Number(
+                        document
+                            .getElementById(
+                                "stake"
+                            )
+                            .value
+                    );
+
+
+                const message =
+                    document.getElementById(
+                        "betslipMessage"
+                    );
+
+
+                if (
+                    !Number.isFinite(stake) ||
+                    stake <= 0
+                ) {
+
+                    message.textContent =
+                        "Enter a valid stake.";
+
+                    return;
+
+                }
+
+
+                /*
+                 * IMPORTANT:
+                 *
+                 * At this point we have all information
+                 * required for the frontend selection:
+                 *
+                 * game_id
+                 * event_id
+                 * market_id
+                 * market_type
+                 * selection_id
+                 * selection_name
+                 * side
+                 * odds
+                 * stake
+                 *
+                 * Your existing /bets/place endpoint should
+                 * receive these values.
+                 */
+
+                console.log(
+                    "[BET] Selected bet:",
+                    {
+                        ...selectedBet,
+                        stake: stake
+                    }
+                );
+
+
+                message.textContent =
+                    "Bet selection is ready. Connect this button to your existing /bets/place endpoint.";
+
+            }
+        );
 
 
     /*
@@ -1332,30 +2012,22 @@
 
     /*
      * =========================================================
-     * LIVE REFRESH
+     * REFRESH EVERY 5 SECONDS
      * =========================================================
-     *
-     * Refresh every 5 seconds.
-     *
-     * We do NOT call /matches again.
-     *
-     * We already have:
-     *
-     * gameId
-     * eventId
-     * marketId
-     *
      */
 
-    setInterval(function() {
+    setInterval(
+        function() {
 
-        if (eventId) {
+            if (eventId) {
 
-            loadOdds();
+                loadOdds();
 
-        }
+            }
 
-    }, 5000);
+        },
+        5000
+    );
 
 </script>
 
@@ -1364,3 +2036,4 @@
 </body>
 
 </html>
+
