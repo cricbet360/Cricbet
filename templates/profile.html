@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -144,12 +143,10 @@
         }
 
         .deposit-button {
-
             background: #159a60;
         }
 
         .withdraw-button {
-
             background: #bd7b18;
         }
 
@@ -171,7 +168,6 @@
         ===================================================== */
 
         .page-header {
-
             margin-bottom: 18px;
         }
 
@@ -368,6 +364,146 @@
         }
 
         /* =====================================================
+           REFERRAL PROGRAM
+        ===================================================== */
+
+        .referral-card {
+
+            margin-top: 20px;
+
+            padding: 20px;
+
+            border-radius: 12px;
+
+            background: #0b2117;
+
+            border: 1px solid #214a37;
+        }
+
+        .referral-title {
+
+            margin: 0;
+
+            color: #ffffff;
+
+            font-size: 18px;
+
+            font-weight: 900;
+        }
+
+        .referral-description {
+
+            margin: 7px 0 16px;
+
+            color: #8fa99b;
+
+            font-size: 13px;
+
+            line-height: 1.5;
+        }
+
+        .referral-code-box {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            padding: 6px;
+
+            background: #07120d;
+
+            border: 1px solid #214a37;
+
+            border-radius: 10px;
+        }
+
+        .referral-code {
+
+            flex: 1;
+
+            min-width: 0;
+
+            padding: 10px 12px;
+
+            color: #38d98a;
+
+            font-size: 18px;
+
+            font-weight: 900;
+
+            letter-spacing: 1.5px;
+
+            word-break: break-all;
+        }
+
+        .copy-button {
+
+            flex-shrink: 0;
+
+            border: none;
+
+            border-radius: 8px;
+
+            padding: 10px 15px;
+
+            background: #20c77a;
+
+            color: #06150d;
+
+            font-size: 13px;
+
+            font-weight: 900;
+
+            cursor: pointer;
+
+            transition: .2s ease;
+        }
+
+        .copy-button:hover {
+
+            filter: brightness(1.08);
+
+            transform: translateY(-1px);
+        }
+
+        .copy-button:active {
+
+            transform: translateY(0);
+        }
+
+        .copy-message {
+
+            min-height: 18px;
+
+            margin-top: 8px;
+
+            color: #38d98a;
+
+            font-size: 12px;
+
+            font-weight: 700;
+        }
+
+        .referral-note {
+
+            margin-top: 12px;
+
+            padding: 10px 12px;
+
+            border-radius: 8px;
+
+            background: #10291e;
+
+            color: #a8c5b5;
+
+            font-size: 12px;
+
+            line-height: 1.5;
+        }
+
+        /* =====================================================
            SECTION TITLE
         ===================================================== */
 
@@ -531,7 +667,6 @@
         }
 
         .status {
-
             color: #38d98a;
         }
 
@@ -645,6 +780,28 @@
                 grid-template-columns: 1fr;
             }
 
+            .referral-code-box {
+
+                align-items: stretch;
+
+            }
+
+            .referral-code {
+
+                padding: 11px 10px;
+
+                font-size: 16px;
+
+                display: flex;
+
+                align-items: center;
+            }
+
+            .copy-button {
+
+                padding: 10px 13px;
+            }
+
         }
 
         @media (max-width: 430px) {
@@ -685,6 +842,23 @@
             .info-value {
 
                 text-align: left;
+            }
+
+            .referral-code-box {
+
+                flex-direction: column;
+            }
+
+            .referral-code {
+
+                justify-content: center;
+
+                text-align: center;
+            }
+
+            .copy-button {
+
+                width: 100%;
             }
 
         }
@@ -830,6 +1004,70 @@
             >
                 💸 Withdraw
             </button>
+
+        </div>
+
+
+        <!-- =================================================
+             REFERRAL PROGRAM
+        ================================================== -->
+
+        <div class="referral-card">
+
+            <h3 class="referral-title">
+                🎁 Referral Program
+            </h3>
+
+            <p class="referral-description">
+                Share your referral code with friends and earn a
+                one-time referral bonus when a referred user makes
+                their first approved deposit.
+            </p>
+
+
+            {% if user.referral_code %}
+
+            <div class="referral-code-box">
+
+                <div
+                    class="referral-code"
+                    id="referralCode"
+                >
+                    {{ user.referral_code }}
+                </div>
+
+                <button
+                    type="button"
+                    class="copy-button"
+                    id="copyReferralButton"
+                    onclick="copyReferralCode()"
+                >
+                    📋 Copy Code
+                </button>
+
+            </div>
+
+            <div
+                class="copy-message"
+                id="copyMessage"
+                aria-live="polite"
+            ></div>
+
+
+            <div class="referral-note">
+                Give this code to your friend during registration.
+                Their first approved deposit can trigger the
+                one-time referral bonus.
+            </div>
+
+            {% else %}
+
+            <div class="referral-note">
+                Your referral code is not available yet.
+                Please contact support.
+            </div>
+
+            {% endif %}
 
         </div>
 
@@ -1041,12 +1279,113 @@
             encodeURIComponent(message);
 
 
-        /*
-           Using location.href instead of window.open()
-           makes the redirect more reliable on mobile browsers.
-        */
-
         window.location.href = url;
+
+    }
+
+
+    /* =========================================================
+       COPY REFERRAL CODE
+    ========================================================= */
+
+    async function copyReferralCode() {
+
+        const codeElement =
+            document.getElementById("referralCode");
+
+        const button =
+            document.getElementById("copyReferralButton");
+
+        const message =
+            document.getElementById("copyMessage");
+
+
+        if (!codeElement) {
+            return;
+        }
+
+
+        const code =
+            codeElement.textContent.trim();
+
+
+        if (!code) {
+            return;
+        }
+
+
+        try {
+
+            await navigator.clipboard.writeText(code);
+
+            button.textContent = "✓ Copied";
+
+            message.textContent =
+                "Referral code copied successfully.";
+
+            setTimeout(() => {
+
+                button.textContent = "📋 Copy Code";
+
+                message.textContent = "";
+
+            }, 2000);
+
+        }
+
+        catch (error) {
+
+            /*
+             * Fallback for browsers where
+             * navigator.clipboard is unavailable.
+             */
+
+            const textArea =
+                document.createElement("textarea");
+
+            textArea.value = code;
+
+            textArea.style.position = "fixed";
+            textArea.style.left = "-9999px";
+
+            document.body.appendChild(textArea);
+
+            textArea.focus();
+            textArea.select();
+
+            try {
+
+                document.execCommand("copy");
+
+                button.textContent = "✓ Copied";
+
+                message.textContent =
+                    "Referral code copied successfully.";
+
+                setTimeout(() => {
+
+                    button.textContent = "📋 Copy Code";
+
+                    message.textContent = "";
+
+                }, 2000);
+
+            }
+
+            catch (fallbackError) {
+
+                message.textContent =
+                    "Unable to copy automatically. Please copy the code manually.";
+
+            }
+
+            finally {
+
+                document.body.removeChild(textArea);
+
+            }
+
+        }
 
     }
 

@@ -4,12 +4,12 @@
 
 <head>
 
-```
 <meta charset="UTF-8">
 
 <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
+name="viewport"
+content="width=device-width, initial-scale=1.0"
+
 >
 
 <title>Pending Deposits - CrickBet Employee</title>
@@ -18,7 +18,6 @@
     rel="stylesheet"
     href="/static/css/employee.css"
 >
-```
 
 </head>
 
@@ -26,318 +25,337 @@
 
 <div class="employee-dashboard-page">
 
-```
 <main class="employee-dashboard-container">
 
-    <!-- HEADER -->
+<header class="employee-dashboard-header">
 
-    <header class="employee-dashboard-header">
+<div class="employee-dashboard-title">
 
-        <div class="employee-dashboard-title">
+<div class="employee-dashboard-brand">
 
-            <div class="employee-dashboard-brand">
-                <span class="employee-dashboard-brand-icon">
-                    🏏
-                </span>
+<span class="employee-dashboard-brand-icon">
+🏏
+</span>
 
-                CrickBet Employee Portal
-            </div>
+CrickBet Employee Portal
 
-            <h1>
-                Pending Deposits
-            </h1>
+</div>
 
-            <p>
-                Review and verify customer deposit requests.
-            </p>
+<h1>
+Pending Deposits
+</h1>
 
-        </div>
+<p>
+Review and verify customer deposit requests.
+</p>
 
-        <div class="employee-profile">
+</div>
 
-            <div class="employee-profile-icon">
-                👤
-            </div>
+<div class="employee-profile">
 
-            <div class="employee-profile-info">
+<div class="employee-profile-icon">
+👤
+</div>
 
-                <span>
-                    EMPLOYEE ID
-                </span>
+<div class="employee-profile-info">
 
-                <strong>
-                    {{ employee.employee_id }}
-                </strong>
+<span>
+EMPLOYEE ID
+</span>
 
-            </div>
+<strong>
+{{ employee.employee_id }}
+</strong>
 
-            <a
-                href="/employee/dashboard"
-                class="employee-dashboard-logout"
-            >
-                Dashboard
-            </a>
+</div>
 
-            <a
-                href="/employee/logout"
-                class="employee-dashboard-logout"
-            >
-                Logout
-            </a>
+<a
+href="/employee/dashboard"
+class="employee-dashboard-logout"
 
-        </div>
+>
 
-    </header>
+Dashboard </a>
 
+<a
+href="/employee/logout"
+class="employee-dashboard-logout"
 
-    <!-- PAGE CARD -->
+>
 
-    <section class="employee-dashboard-section">
+Logout </a>
 
-        <div class="employee-section-title">
+</div>
 
-            <div>
-                <h2>
-                    💰 Deposit Requests
-                </h2>
+</header>
 
-                <p>
-                    These deposits are waiting for payment verification.
-                </p>
-            </div>
+<section class="employee-dashboard-section">
 
-            <div class="employee-count-badge">
-                {{ deposits|length }} Pending
-            </div>
+<div class="employee-section-title">
 
-        </div>
+<div>
 
+<h2>
+💰 Deposit Requests
+</h2>
 
-        {% if deposits %}
+<p>
+These deposits are waiting for payment verification.
+</p>
 
-        <div class="employee-table-wrapper">
+</div>
 
-            <table class="employee-table">
+<div class="employee-count-badge">
+{{ deposits|length }} Pending
+</div>
 
-                <thead>
+</div>
 
-                    <tr>
+{% if deposits %}
 
-                        <th>
-                            User
-                        </th>
+<div class="employee-table-wrapper">
 
-                        <th>
-                            Amount
-                        </th>
+<table class="employee-table">
 
-                        <th>
-                            UTR
-                        </th>
+<thead>
 
-                        <th>
-                            Payment Screenshot
-                        </th>
+<tr>
 
-                        <th>
-                            Date / Time
-                        </th>
+<th>User</th>
 
-                        <th>
-                            Status
-                        </th>
+<th>Amount</th>
 
-                        <th>
-                            Action
-                        </th>
+<th>10% Bonus</th>
 
-                    </tr>
+<th>Referral</th>
 
-                </thead>
+<th>UTR</th>
 
+<th>Payment Screenshot</th>
 
-                <tbody>
+<th>Date / Time</th>
 
-                {% for deposit in deposits %}
+<th>Status</th>
 
-                    <tr>
+<th>Action</th>
 
-                        <!-- USER -->
+</tr>
 
-                        <td>
+</thead>
 
-                            <div class="employee-user-cell">
+<tbody>
 
-                                <strong>
-                                    {{ deposit.user.username }}
-                                </strong>
+{% for deposit in deposits %}
 
-                                <small>
-                                    {{ deposit.user.email }}
-                                </small>
+<tr>
 
-                            </div>
+<td>
 
-                        </td>
+<div class="employee-user-cell">
 
+<strong>
+{{ deposit.user.username }}
+</strong>
 
-                        <!-- AMOUNT -->
+<small>
+{{ deposit.user.email }}
+</small>
 
-                        <td>
+</div>
 
-                            <strong class="employee-amount">
-                                ₹{{ "%.2f"|format(deposit.amount) }}
-                            </strong>
+</td>
 
-                        </td>
+<td>
 
+<strong class="employee-amount">
 
-                        <!-- UTR -->
+₹{{ "%.2f"|format(deposit.amount) }}
 
-                        <td>
+</strong>
 
-                            <span class="employee-utr">
-                                {{ deposit.utr_number }}
-                            </span>
+</td>
 
-                        </td>
+<td>
 
+<strong class="employee-amount">
 
-                        <!-- SCREENSHOT -->
+₹{{ "%.2f"|format(deposit.amount * 0.10) }}
 
-                        <td>
+</strong>
 
-                            <a
-                                href="/{{ deposit.payment_screenshot }}"
-                                target="_blank"
-                                class="employee-screenshot-button"
-                            >
-                                🖼 View Screenshot
-                            </a>
+</td>
 
-                        </td>
+<td>
 
+{% if deposit.user.referrer %}
 
-                        <!-- DATE -->
+<div class="employee-user-cell">
 
-                        <td>
+<strong>
+{{ deposit.user.referrer.username }}
+</strong>
 
-                            <span class="employee-date">
+<small>
+{{ deposit.user.referrer.referral_code }}
+</small>
 
-                                {{ deposit.created_at.strftime("%d %b %Y") }}
+{% if not deposit.user.first_deposit_completed %}
 
-                                <br>
+<small style="color: green;">
+First deposit: referrer bonus applies
+</small>
 
-                                <small>
-                                    {{ deposit.created_at.strftime("%I:%M %p") }}
-                                </small>
+{% else %}
 
-                            </span>
+<small>
+No referral bonus
+</small>
 
-                        </td>
+{% endif %}
 
+</div>
 
-                        <!-- STATUS -->
+{% else %}
 
-                        <td>
+<span>
+No Referrer
+</span>
 
-                            <span class="employee-status pending">
-                                {{ deposit.status }}
-                            </span>
+{% endif %}
 
-                        </td>
+</td>
 
+<td>
 
-                        <!-- ACTION -->
+<span class="employee-utr">
+{{ deposit.utr_number }}
+</span>
 
-                        <td>
+</td>
 
-                            <form
-                                method="POST"
-                                action="/employee/deposits/{{ deposit.id }}/done"
-                                onsubmit="return confirm('Are you sure you want to approve this deposit? The amount will be added to the user balance.');"
-                            >
+<td>
 
-                                <button
-                                    type="submit"
-                                    class="employee-done-button"
-                                >
-                                    ✓ DONE
-                                </button>
+<a
+href="/{{ deposit.payment_screenshot }}"
+target="_blank"
+class="employee-screenshot-button"
 
-                            </form>
+>
 
-                        </td>
+🖼 View Screenshot </a>
 
-                    </tr>
+</td>
 
-                {% endfor %}
+<td>
 
-                </tbody>
+<span class="employee-date">
 
-            </table>
+{% if deposit.created_at %}
 
-        </div>
+{{ deposit.created_at.strftime("%d %b %Y") }}
 
-        {% else %}
+<br>
 
-        <!-- EMPTY STATE -->
+<small>
+{{ deposit.created_at.strftime("%I:%M %p") }}
+</small>
 
-        <div class="employee-empty-state">
+{% else %}
 
-            <div class="employee-empty-icon">
-                ✓
-            </div>
+—
 
-            <h3>
-                No Pending Deposits
-            </h3>
+{% endif %}
 
-            <p>
-                There are currently no deposit requests waiting
-                for verification.
-            </p>
+</span>
 
-            <a
-                href="/employee/dashboard"
-                class="employee-dashboard-logout"
-            >
-                Back to Dashboard
-            </a>
+</td>
 
-        </div>
+<td>
 
-        {% endif %}
+<span class="employee-status pending">
+{{ deposit.status }}
+</span>
 
-    </section>
+</td>
 
+<td>
+    <form
+        method="POST"
+        action="/employee/deposits/{{ deposit.id }}/done"
+        onsubmit="return confirm(`Approve this deposit? The user will receive the deposit plus a 10% deposit bonus. If this is the user's first deposit and they have a referrer, the referrer will also receive a 10% one-time referral bonus.`);"
+    >
+        <button type="submit" class="done-btn">
+            DONE
+        </button>
+    </form>
+</td>
 
-    <!-- SECURITY NOTICE -->
+</tr>
 
-    <div class="employee-security">
+{% endfor %}
 
-        <div class="employee-security-icon">
-            🔐
-        </div>
+</tbody>
 
-        <div>
+</table>
 
-            <h3>
-                Payment Verification
-            </h3>
+</div>
 
-            <p>
-                Verify the payment screenshot and UTR number before
-                approving a deposit. Once approved, the deposit amount
-                will be credited to the customer's balance.
-            </p>
+{% else %}
 
-        </div>
+<div class="employee-empty-state">
 
-    </div>
+<div class="employee-empty-icon">
+✓
+</div>
+
+<h3>
+No Pending Deposits
+</h3>
+
+<p>
+There are currently no deposit requests waiting
+for verification.
+</p>
+
+<a
+href="/employee/dashboard"
+class="employee-dashboard-logout"
+
+>
+
+Back to Dashboard </a>
+
+</div>
+
+{% endif %}
+
+</section>
+
+<div class="employee-security">
+
+<div class="employee-security-icon">
+🔐
+</div>
+
+<div>
+
+<h3>
+Payment Verification & Referral Bonuses
+</h3>
+
+<p>
+Verify the payment screenshot and UTR number before
+approving a deposit. Every approved deposit gives the
+customer a 10% deposit bonus. If it is the customer's
+first approved deposit and the customer has a referrer,
+the referrer receives a one-time 10% referral bonus.
+</p>
+
+</div>
+
+</div>
 
 </main>
-```
 
 </div>
 

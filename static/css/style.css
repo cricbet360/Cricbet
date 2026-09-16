@@ -31,32 +31,22 @@
     box-sizing: border-box;
 }
 
-
 html {
     scroll-behavior: smooth;
 }
 
-
 body {
     min-height: 100vh;
-
     background: var(--bg-main);
     color: var(--text-main);
-
-    font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
-
+    font-family: Arial, Helvetica, sans-serif;
     padding-top: 70px;
 }
-
 
 a {
     text-decoration: none;
     color: inherit;
 }
-
 
 button,
 input {
@@ -82,10 +72,8 @@ input {
 
 .topbar {
     position: fixed;
-
     top: 0;
     left: 0;
-
     width: 100%;
     min-height: 70px;
 
@@ -102,34 +90,26 @@ input {
     z-index: 999;
 }
 
-
 .logo {
     font-size: 28px;
     font-weight: bold;
-
     color: var(--primary);
 }
-
 
 .topbar nav {
     display: flex;
     gap: 35px;
 }
 
-
 .topbar nav a {
     color: var(--text-main);
-
     font-weight: 600;
-
     transition: color 0.3s ease;
 }
-
 
 .topbar nav a:hover {
     color: var(--primary);
 }
-
 
 .user-menu {
     display: flex;
@@ -137,12 +117,10 @@ input {
     gap: 18px;
 }
 
-
 .wallet {
     color: var(--primary);
     font-weight: bold;
 }
-
 
 .logout {
     color: var(--danger);
@@ -155,30 +133,23 @@ input {
 
 .hero {
     text-align: center;
-
     padding: 140px 20px 120px;
 }
 
-
 .hero h1 {
     font-size: clamp(40px, 7vw, 64px);
-
     margin-bottom: 20px;
 }
 
-
 .hero p {
     max-width: 750px;
-
     margin: auto;
 
     color: #b6b6b6;
 
     font-size: clamp(17px, 3vw, 24px);
-
     line-height: 1.6;
 }
-
 
 .hero-buttons {
     margin-top: 45px;
@@ -211,19 +182,15 @@ input {
         transform 0.3s ease;
 }
 
-
 .btn:hover {
     background: var(--primary-hover);
-
     transform: translateY(-3px);
 }
-
 
 .btn-danger {
     background: var(--danger);
     color: white;
 }
-
 
 .btn-danger:hover {
     background: var(--danger-hover);
@@ -237,7 +204,6 @@ input {
 .section {
     padding: 70px 20px;
 }
-
 
 .section h2 {
     font-size: 34px;
@@ -261,7 +227,6 @@ input {
     gap: 25px;
 }
 
-
 .match-card {
     background: var(--bg-card);
 
@@ -276,13 +241,10 @@ input {
         border-color 0.3s ease;
 }
 
-
 .match-card:hover {
     transform: translateY(-4px);
-
     border-color: #334155;
 }
-
 
 .match-card small {
     color: var(--text-muted);
@@ -292,10 +254,8 @@ input {
     margin-bottom: 10px;
 }
 
-
 .match-card h3 {
     margin-bottom: 20px;
-
     line-height: 1.5;
 }
 
@@ -308,7 +268,6 @@ input {
     display: flex;
     gap: 12px;
 }
-
 
 .back,
 .lay {
@@ -332,27 +291,22 @@ input {
         opacity 0.2s ease;
 }
 
-
 .back:hover,
 .lay:hover {
     transform: translateY(-2px);
 }
 
-
 .back {
     background: var(--primary);
 }
-
 
 .back:hover {
     background: var(--primary-hover);
 }
 
-
 .lay {
     background: var(--danger);
 }
-
 
 .lay:hover {
     background: var(--danger-hover);
@@ -375,7 +329,6 @@ input {
     gap: 25px;
 }
 
-
 .feature-card {
     background: var(--bg-card);
 
@@ -388,22 +341,17 @@ input {
     transition: transform 0.3s ease;
 }
 
-
 .feature-card:hover {
     transform: translateY(-4px);
 }
 
-
 .feature-card h3 {
     margin-bottom: 15px;
-
     color: var(--primary);
 }
 
-
 .feature-card p {
     color: #bdbdbd;
-
     line-height: 1.6;
 }
 
@@ -424,7 +372,6 @@ input {
     gap: 20px;
 }
 
-
 .sport-card {
     background: var(--bg-card);
 
@@ -441,17 +388,15 @@ input {
         transform 0.3s ease;
 }
 
-
 .sport-card:hover {
     background: var(--bg-card-light);
-
     transform: translateY(-3px);
 }
 
 
 /* =====================================
    AUTHENTICATION CARDS
-   Login / Register / OTP / Reset Password
+   Login / Register / OTP / Reset
 ===================================== */
 
 .card {
@@ -472,7 +417,6 @@ input {
     border: 1px solid #263244;
 }
 
-
 .card h2 {
     text-align: center;
 
@@ -480,7 +424,6 @@ input {
 
     color: var(--text-main);
 }
-
 
 .card-subtitle {
     text-align: center;
@@ -524,12 +467,10 @@ input {
         box-shadow 0.2s ease;
 }
 
-
 .card input::placeholder,
 .form-input::placeholder {
     color: #6b7280;
 }
-
 
 .card input:focus,
 .form-input:focus {
@@ -541,32 +482,39 @@ input {
 }
 
 
-
 /* =====================================
-   PASSWORD REQUIREMENTS 
+   PASSWORD REQUIREMENTS
 ===================================== */
 
 .card .password-requirements {
     width: 100%;
+
     margin: 0 0 20px 0;
+
     padding: 15px;
 
     background: #111827 !important;
+
     color: #ffffff !important;
 
     border: 1px solid #263448;
+
     border-left: 3px solid #00d26a;
+
     border-radius: 8px;
 }
 
 .card .password-requirements strong {
     display: block;
+
     color: #ffffff !important;
+
     margin-bottom: 10px;
 }
 
 .card .password-requirements ul {
     margin: 0;
+
     padding-left: 20px;
 
     color: #cbd5e1 !important;
@@ -574,12 +522,13 @@ input {
 
 .card .password-requirements li {
     color: #cbd5e1 !important;
+
     margin-bottom: 5px;
 }
 
+
 /* =====================================
    CHECKBOX
-   Terms and Disclaimer
 ===================================== */
 
 .checkbox-group {
@@ -598,7 +547,6 @@ input {
     line-height: 1.5;
 }
 
-
 .checkbox-group input[type="checkbox"] {
     width: auto;
 
@@ -606,7 +554,6 @@ input {
 
     accent-color: var(--primary);
 }
-
 
 .checkbox-group label {
     cursor: pointer;
@@ -632,6 +579,7 @@ input {
     border-radius: 10px;
 
     font-size: 16px;
+
     font-weight: bold;
 
     cursor: pointer;
@@ -641,14 +589,12 @@ input {
         transform 0.2s ease;
 }
 
-
 .card button[type="submit"]:hover,
 .card .submit-btn:hover {
     background: var(--primary-hover);
 
     transform: translateY(-2px);
 }
-
 
 .card button[type="submit"]:disabled,
 .card .submit-btn:disabled {
@@ -679,14 +625,12 @@ input {
     line-height: 1.6;
 }
 
-
 .form-footer a,
 .login-footer a {
     color: var(--primary);
 
     font-weight: bold;
 }
-
 
 .form-footer a:hover,
 .login-footer a:hover {
@@ -699,15 +643,12 @@ input {
 ===================================== */
 
 .forgot-password {
-    margin-top: -5px;
+    display: block;
 
-    margin-bottom: 20px;
+    width: fit-content;
 
-    text-align: right;
-}
+    margin: 0 0 20px auto;
 
-
-.forgot-password a {
     color: var(--primary);
 
     font-size: 14px;
@@ -715,8 +656,7 @@ input {
     font-weight: 600;
 }
 
-
-.forgot-password a:hover {
+.forgot-password:hover {
     text-decoration: underline;
 }
 
@@ -745,7 +685,6 @@ input {
 
     font-size: 14px;
 }
-
 
 .alert-success {
     padding: 12px;
@@ -802,11 +741,9 @@ input {
     border: 1px solid #334155;
 }
 
-
 .profile-card h1 {
     margin-bottom: 10px;
 }
-
 
 .profile-info {
     color: var(--text-muted);
@@ -832,13 +769,11 @@ input {
     padding: 10px;
 }
 
-
 table {
     width: 100%;
 
     border-collapse: collapse;
 }
-
 
 th,
 td {
@@ -849,13 +784,11 @@ td {
     border-bottom: 1px solid #334155;
 }
 
-
 th {
     color: var(--primary);
 
     font-size: 14px;
 }
-
 
 td {
     color: #d1d5db;
@@ -869,19 +802,20 @@ td {
 .status-won,
 .profit {
     color: var(--primary);
+
     font-weight: bold;
 }
-
 
 .status-lost,
 .loss {
     color: var(--danger);
+
     font-weight: bold;
 }
 
-
 .status-pending {
     color: #facc15;
+
     font-weight: bold;
 }
 
@@ -902,7 +836,6 @@ td {
     border-radius: 12px;
 }
 
-
 .empty-state h3 {
     color: white;
 
@@ -921,16 +854,1091 @@ footer {
 
     text-align: center;
 
-    border-top:
-        1px solid var(--border);
+    border-top: 1px solid var(--border);
 
     color: #999;
 }
 
 
+/* =========================================================
+   CRICKBET DASHBOARD
+========================================================= */
+
+
 /* =====================================
-   RESPONSIVE
+   DASHBOARD TOPBAR
 ===================================== */
+
+.topbar-left {
+    display: flex;
+    align-items: center;
+}
+
+.brand-logo {
+    font-size: 27px;
+
+    font-weight: 800;
+
+    letter-spacing: 1px;
+
+    color: var(--primary);
+}
+
+.topbar-right {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+}
+
+.wallet-box {
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    padding: 9px 14px;
+
+    background: rgba(0, 210, 106, 0.08);
+
+    border: 1px solid rgba(0, 210, 106, 0.18);
+
+    border-radius: 8px;
+}
+
+.wallet-label {
+    color: var(--text-muted);
+
+    font-size: 13px;
+}
+
+.wallet-balance {
+    color: var(--primary);
+
+    font-weight: 700;
+}
+
+.topbar-btn {
+    padding: 9px 13px;
+
+    border-radius: 7px;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    border: 1px solid transparent;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.topbar-btn:hover {
+    transform: translateY(-1px);
+}
+
+.deposit-btn {
+    background: var(--primary);
+
+    color: #06150d;
+}
+
+.deposit-btn:hover {
+    background: var(--primary-hover);
+}
+
+.withdraw-btn {
+    background: #263448;
+
+    border-color: #334155;
+}
+
+.withdraw-btn:hover {
+    background: #334155;
+}
+
+.profile-btn {
+    background: #1e293b;
+
+    border-color: #334155;
+}
+
+.profile-btn:hover {
+    background: #334155;
+}
+
+.logout-btn {
+    color: #ff7777;
+
+    background: rgba(255, 91, 91, 0.08);
+
+    border-color: rgba(255, 91, 91, 0.2);
+}
+
+.logout-btn:hover {
+    background: rgba(255, 91, 91, 0.16);
+}
+
+
+/* =====================================
+   MAIN NAV
+===================================== */
+
+.main-nav {
+    background: #0b1524;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.main-nav-inner {
+    width: 100%;
+
+    padding: 0 35px;
+
+    display: flex;
+
+    align-items: center;
+}
+
+.nav-link {
+    display: block;
+
+    padding: 14px 20px;
+
+    color: #aeb8c6;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    border-bottom: 2px solid transparent;
+}
+
+.nav-link:hover {
+    color: white;
+}
+
+.nav-link.active {
+    color: var(--primary);
+
+    border-bottom-color: var(--primary);
+}
+
+
+/* =====================================
+   PAGE LAYOUT
+===================================== */
+
+.page-layout {
+    display: flex;
+
+    width: 100%;
+
+    min-height: calc(100vh - 115px);
+}
+
+
+/* =====================================
+   SIDEBAR
+===================================== */
+
+.sidebar {
+    width: 230px;
+
+    flex: 0 0 230px;
+
+    background: #0c1725;
+
+    border-right: 1px solid var(--border);
+
+    padding: 24px 12px;
+}
+
+.sidebar-title {
+    color: #dbe4ed;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.8px;
+
+    padding: 0 12px 14px;
+}
+
+.sidebar-item {
+    width: 100%;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 12px;
+
+    margin-bottom: 5px;
+
+    background: transparent;
+
+    border: none;
+
+    border-radius: 7px;
+
+    color: #aeb8c6;
+
+    text-align: left;
+
+    font-size: 14px;
+
+    cursor: pointer;
+}
+
+.sidebar-item:hover {
+    background: #162335;
+
+    color: white;
+}
+
+.sidebar-item.active {
+    background: rgba(0, 210, 106, 0.12);
+
+    color: var(--primary);
+}
+
+.sidebar-icon {
+    width: 20px;
+
+    text-align: center;
+}
+
+
+/* =====================================
+   MAIN CONTENT
+===================================== */
+
+.main-content {
+    flex: 1;
+
+    min-width: 0;
+
+    padding: 25px;
+
+    overflow-x: hidden;
+}
+
+
+/* =====================================
+   PAGE HEADING
+===================================== */
+
+.page-heading {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 20px;
+
+    margin-bottom: 20px;
+}
+
+.page-heading h1 {
+    font-size: 26px;
+
+    margin-bottom: 5px;
+}
+
+.heading-subtitle {
+    color: var(--text-muted);
+
+    font-size: 13px;
+}
+
+
+/* =====================================
+   REFRESH BUTTON
+===================================== */
+
+.refresh-btn {
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    padding: 9px 14px;
+
+    background: #1e293b;
+
+    color: #e5e7eb;
+
+    border: 1px solid #334155;
+
+    border-radius: 7px;
+
+    cursor: pointer;
+
+    font-size: 13px;
+
+    font-weight: 600;
+}
+
+.refresh-btn:hover {
+    background: #263448;
+}
+
+.refresh-icon {
+    font-size: 17px;
+}
+
+.refresh-btn.refreshing .refresh-icon {
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* =====================================
+   FILTER BAR
+===================================== */
+
+.filter-bar {
+    display: flex;
+
+    gap: 7px;
+
+    margin-bottom: 15px;
+}
+
+.filter-btn {
+    padding: 8px 15px;
+
+    border-radius: 6px;
+
+    border: 1px solid #334155;
+
+    background: #172234;
+
+    color: #aeb8c6;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.filter-btn:hover {
+    color: white;
+
+    background: #263448;
+}
+
+.filter-btn.active {
+    background: var(--primary);
+
+    color: #06150d;
+
+    border-color: var(--primary);
+}
+
+
+/* =====================================
+   MARKET CARD
+===================================== */
+
+.market-card {
+    width: 100%;
+
+    background: var(--bg-card);
+
+    border: 1px solid #263448;
+
+    border-radius: 10px;
+
+    overflow: hidden;
+}
+
+
+/* =====================================
+   MARKET HEADER
+===================================== */
+
+.market-header {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 2.5fr)
+        0.8fr
+        0.8fr
+        0.8fr
+        0.95fr;
+
+    align-items: center;
+
+    min-height: 44px;
+
+    background: #172234;
+
+    border-bottom: 1px solid #334155;
+}
+
+.market-header > div {
+    padding: 12px 10px;
+
+    color: #9ca3af;
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    text-align: center;
+
+    letter-spacing: 0.5px;
+}
+
+.market-header-match {
+    text-align: left !important;
+}
+
+
+/* =====================================
+   MATCH ROW
+===================================== */
+
+.match-row {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 2.5fr)
+        0.8fr
+        0.8fr
+        0.8fr
+        0.95fr;
+
+    align-items: stretch;
+
+    min-height: 82px;
+
+    border-bottom: 1px solid #263448;
+
+    transition: background 0.2s ease;
+}
+
+.match-row:last-child {
+    border-bottom: none;
+}
+
+.match-row:hover {
+    background: rgba(255, 255, 255, 0.025);
+}
+
+
+/* =====================================
+   MATCH INFORMATION
+===================================== */
+
+.match-info {
+    min-width: 0;
+
+    padding: 12px 14px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    overflow: hidden;
+}
+
+.match-top-line {
+    margin-bottom: 5px;
+}
+
+.live-badge,
+.upcoming-badge {
+    display: inline-block;
+
+    padding: 3px 6px;
+
+    border-radius: 4px;
+
+    font-size: 9px;
+
+    font-weight: 800;
+
+    letter-spacing: 0.4px;
+}
+
+.live-badge {
+    background: rgba(255, 91, 91, 0.15);
+
+    color: #ff7272;
+}
+
+.upcoming-badge {
+    background: rgba(148, 163, 184, 0.12);
+
+    color: #aeb8c6;
+}
+
+.match-name {
+    color: white;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    margin-bottom: 4px;
+}
+
+.match-teams {
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    color: #d0d7df;
+
+    font-size: 12px;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+}
+
+.match-teams > span {
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+.match-teams .vs {
+    color: #64748b;
+
+    flex: 0 0 auto;
+}
+
+.match-meta {
+    color: #778395;
+
+    font-size: 10px;
+
+    margin-top: 4px;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+
+/* =====================================
+   ODDS CELLS
+===================================== */
+
+.odds-cell {
+    min-width: 0;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 8px 5px;
+
+    cursor: pointer;
+
+    border-left: 1px solid #263448;
+
+    transition:
+        filter 0.2s ease,
+        transform 0.15s ease;
+}
+
+.odds-cell:hover {
+    filter: brightness(1.12);
+}
+
+.odds-cell:active {
+    transform: scale(0.98);
+}
+
+.back-cell {
+    background: rgba(0, 210, 106, 0.10);
+}
+
+.lay-cell {
+    background: rgba(255, 91, 91, 0.10);
+}
+
+.draw-cell {
+    background: rgba(148, 163, 184, 0.08);
+}
+
+.market-cell {
+    background: rgba(0, 210, 106, 0.06);
+}
+
+.odds-pair {
+    width: 100%;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 2px;
+
+    overflow: hidden;
+}
+
+.odds-value {
+    color: white;
+
+    font-size: 13px;
+
+    font-weight: 800;
+
+    line-height: 1.2;
+}
+
+.back-cell .odds-value {
+    color: #39e58c;
+}
+
+.lay-cell .odds-value {
+    color: #ff7777;
+}
+
+.draw-cell .odds-value {
+    color: #cbd5e1;
+}
+
+.market-cell .odds-value {
+    color: var(--primary);
+}
+
+.odds-volume {
+    color: #7f8b9c;
+
+    font-size: 9px;
+
+    line-height: 1.1;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    max-width: 100%;
+}
+
+
+/* =====================================
+   LOADING STATE
+===================================== */
+
+.loading-state {
+    min-height: 160px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 12px;
+
+    color: var(--text-muted);
+
+    font-size: 13px;
+}
+
+.loading-spinner {
+    width: 28px;
+
+    height: 28px;
+
+    border: 3px solid #334155;
+
+    border-top-color: var(--primary);
+
+    border-radius: 50%;
+
+    animation: spin 0.8s linear infinite;
+}
+
+
+/* =====================================
+   ERROR STATE
+===================================== */
+
+.error-state {
+    min-height: 200px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 30px;
+
+    text-align: center;
+}
+
+.error-icon {
+    font-size: 30px;
+
+    margin-bottom: 10px;
+}
+
+.error-title {
+    color: white;
+
+    font-size: 16px;
+
+    font-weight: 700;
+
+    margin-bottom: 6px;
+}
+
+.error-message {
+    color: var(--text-muted);
+
+    font-size: 13px;
+
+    margin-bottom: 15px;
+}
+
+.retry-btn {
+    padding: 9px 15px;
+
+    border: 1px solid var(--primary);
+
+    background: rgba(0, 210, 106, 0.1);
+
+    color: var(--primary);
+
+    border-radius: 6px;
+
+    cursor: pointer;
+
+    font-size: 13px;
+
+    font-weight: 700;
+}
+
+.retry-btn:hover {
+    background: rgba(0, 210, 106, 0.18);
+}
+
+
+/* =====================================
+   DASHBOARD EMPTY STATE
+===================================== */
+
+.matches-container > .empty-state {
+    border-radius: 0;
+
+    background: transparent;
+
+    min-height: 180px;
+}
+
+.empty-icon {
+    font-size: 30px;
+
+    margin-bottom: 8px;
+}
+
+.empty-title {
+    color: white;
+
+    font-size: 16px;
+
+    font-weight: 700;
+
+    margin-bottom: 5px;
+}
+
+.empty-message {
+    color: var(--text-muted);
+
+    font-size: 13px;
+}
+
+
+/* =====================================
+   BET SLIP
+===================================== */
+
+.betslip {
+    display: none;
+
+    width: 100%;
+
+    margin-top: 20px;
+
+    background: #172234;
+
+    border: 1px solid #334155;
+
+    border-radius: 10px;
+
+    overflow: hidden;
+}
+
+.betslip.betslip-visible {
+    display: block;
+}
+
+.betslip-header {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding: 12px 15px;
+
+    border-bottom: 1px solid #334155;
+}
+
+.betslip-title {
+    color: white;
+
+    font-size: 15px;
+
+    font-weight: 700;
+}
+
+.betslip-clear {
+    border: none;
+
+    background: transparent;
+
+    color: #ff7777;
+
+    cursor: pointer;
+
+    font-size: 12px;
+
+    font-weight: 700;
+}
+
+.betslip-clear:hover {
+    color: #ff9999;
+}
+
+.betslip-body {
+    padding: 15px;
+}
+
+.betslip-empty {
+    padding: 25px 15px;
+
+    text-align: center;
+
+    color: var(--text-muted);
+}
+
+.betslip-empty-icon {
+    font-size: 28px;
+
+    margin-bottom: 8px;
+}
+
+.betslip-empty-title {
+    color: white;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    margin-bottom: 4px;
+}
+
+.betslip-empty-text {
+    color: var(--text-muted);
+
+    font-size: 12px;
+}
+
+.betslip-selection-header {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    margin-bottom: 10px;
+}
+
+.bet-back,
+.bet-lay,
+.bet-draw {
+    display: inline-block;
+
+    padding: 4px 7px;
+
+    border-radius: 4px;
+
+    font-size: 10px;
+
+    font-weight: 800;
+}
+
+.bet-back {
+    background: rgba(0, 210, 106, 0.15);
+
+    color: #39e58c;
+}
+
+.bet-lay {
+    background: rgba(255, 91, 91, 0.15);
+
+    color: #ff7777;
+}
+
+.bet-draw {
+    background: rgba(148, 163, 184, 0.15);
+
+    color: #cbd5e1;
+}
+
+.betslip-remove {
+    width: 26px;
+
+    height: 26px;
+
+    border: none;
+
+    border-radius: 50%;
+
+    background: rgba(255, 91, 91, 0.1);
+
+    color: #ff7777;
+
+    cursor: pointer;
+
+    font-size: 18px;
+
+    line-height: 1;
+}
+
+.betslip-match {
+    color: white;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    margin-bottom: 15px;
+}
+
+.betslip-details {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 12px;
+}
+
+.betslip-field label {
+    display: block;
+
+    color: var(--text-muted);
+
+    font-size: 11px;
+
+    margin-bottom: 5px;
+}
+
+.betslip-field input {
+    width: 100%;
+
+    padding: 10px;
+
+    border: 1px solid #334155;
+
+    border-radius: 6px;
+
+    background: #0f172a;
+
+    color: white;
+
+    outline: none;
+}
+
+.betslip-field input:focus {
+    border-color: var(--primary);
+}
+
+.betslip-actions {
+    margin-top: 15px;
+}
+
+.place-bet-btn {
+    width: 100%;
+
+    padding: 11px;
+
+    border: none;
+
+    border-radius: 7px;
+
+    background: var(--primary);
+
+    color: #06150d;
+
+    font-weight: 800;
+
+    cursor: pointer;
+}
+
+.place-bet-btn:hover {
+    background: var(--primary-hover);
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
 
 @media (max-width: 768px) {
 
@@ -938,47 +1946,381 @@ footer {
         padding-top: 130px;
     }
 
+    /* ---------------------------------
+       TOPBAR
+    --------------------------------- */
 
     .topbar {
         flex-direction: column;
 
-        height: auto;
+        min-height: auto;
 
-        padding: 15px;
+        padding: 12px 10px;
 
-        gap: 12px;
+        gap: 10px;
+    }
+
+    .brand-logo {
+        font-size: 23px;
+    }
+
+    .topbar-right {
+        width: 100%;
+
+        display: grid;
+
+        grid-template-columns: 1fr 1fr;
+
+        gap: 6px;
+    }
+
+    .wallet-box {
+        grid-column: 1 / -1;
+
+        justify-content: center;
+
+        padding: 8px;
+    }
+
+    .topbar-btn {
+        text-align: center;
+
+        padding: 8px 5px;
+
+        font-size: 11px;
     }
 
 
-    .topbar nav {
+    /* ---------------------------------
+       NAV
+    --------------------------------- */
+
+    .main-nav-inner {
+        padding: 0 10px;
+
+        justify-content: center;
+    }
+
+    .nav-link {
+        padding: 12px 18px;
+
+        font-size: 13px;
+    }
+
+
+    /* ---------------------------------
+       PAGE LAYOUT
+    --------------------------------- */
+
+    .page-layout {
+        display: block;
+
+        min-height: auto;
+    }
+
+
+    /* ---------------------------------
+       SIDEBAR
+    --------------------------------- */
+
+    .sidebar {
+        width: 100%;
+
+        border-right: none;
+
+        border-bottom: 1px solid var(--border);
+
+        padding: 8px;
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 5px;
+
+        overflow-x: auto;
+    }
+
+    .sidebar-title {
+        display: none;
+    }
+
+    .sidebar-item {
+        width: auto;
+
+        flex: 1 0 auto;
+
+        justify-content: center;
+
         margin: 0;
 
-        gap: 18px;
+        padding: 9px 12px;
 
-        flex-wrap: wrap;
+        font-size: 11px;
+    }
 
-        justify-content: center;
+    .sidebar-icon {
+        display: none;
     }
 
 
-    .user-menu {
-        gap: 12px;
+    /* ---------------------------------
+       MAIN CONTENT
+    --------------------------------- */
 
-        flex-wrap: wrap;
-
-        justify-content: center;
+    .main-content {
+        padding: 15px 8px;
     }
 
+
+    /* ---------------------------------
+       PAGE HEADING
+    --------------------------------- */
+
+    .page-heading {
+        margin-bottom: 12px;
+
+        gap: 8px;
+    }
+
+    .page-heading h1 {
+        font-size: 22px;
+    }
+
+    .heading-subtitle {
+        font-size: 11px;
+    }
+
+    .refresh-btn {
+        padding: 8px 10px;
+
+        font-size: 11px;
+    }
+
+
+    /* ---------------------------------
+       FILTERS
+    --------------------------------- */
+
+    .filter-bar {
+        margin-bottom: 10px;
+
+        gap: 5px;
+    }
+
+    .filter-btn {
+        flex: 1;
+
+        padding: 8px 5px;
+
+        font-size: 11px;
+    }
+
+
+    /* =================================================
+       IMPORTANT:
+       MOBILE CRICKET TABLE STAYS AS TABLE
+
+       MATCH | BACK | LAY | DRAW | MARKET
+    ================================================= */
+
+    .market-card {
+        width: 100%;
+
+        border-radius: 7px;
+
+        overflow: hidden;
+    }
+
+    .market-header {
+        display: grid;
+
+        grid-template-columns:
+            minmax(0, 2.5fr)
+            0.8fr
+            0.8fr
+            0.8fr
+            0.95fr;
+
+        width: 100%;
+
+        min-width: 0;
+
+        overflow: hidden;
+    }
+
+    .market-header > div {
+        padding: 9px 3px;
+
+        font-size: 9px;
+
+        white-space: nowrap;
+
+        overflow: hidden;
+    }
+
+    .match-row {
+        display: grid;
+
+        grid-template-columns:
+            minmax(0, 2.5fr)
+            0.8fr
+            0.8fr
+            0.8fr
+            0.95fr;
+
+        width: 100%;
+
+        min-width: 0;
+
+        min-height: 68px;
+
+        overflow: hidden;
+    }
+
+    .match-info {
+        min-width: 0;
+
+        padding: 8px 7px;
+
+        overflow: hidden;
+    }
+
+    .match-top-line {
+        margin-bottom: 3px;
+    }
+
+    .live-badge,
+    .upcoming-badge {
+        padding: 2px 4px;
+
+        font-size: 7px;
+    }
+
+    .match-name {
+        font-size: 10px;
+
+        margin-bottom: 3px;
+    }
+
+    .match-teams {
+        font-size: 9px;
+
+        gap: 3px;
+    }
+
+    .match-meta {
+        font-size: 7px;
+
+        margin-top: 3px;
+    }
+
+
+    /* ---------------------------------
+       MOBILE ODDS CELLS
+    --------------------------------- */
+
+    .odds-cell {
+        min-width: 0;
+
+        width: 100%;
+
+        padding: 5px 2px;
+
+        border-left: 1px solid #263448;
+
+        overflow: hidden;
+    }
+
+    .odds-pair {
+        min-width: 0;
+
+        width: 100%;
+
+        gap: 1px;
+    }
+
+    .odds-value {
+        font-size: 10px;
+
+        white-space: nowrap;
+
+        overflow: hidden;
+
+        text-overflow: ellipsis;
+
+        max-width: 100%;
+    }
+
+    .odds-volume {
+        font-size: 7px;
+
+        max-width: 100%;
+
+        white-space: nowrap;
+
+        overflow: hidden;
+
+        text-overflow: ellipsis;
+    }
+
+
+    /* ---------------------------------
+       DO NOT SHOW MOBILE PSEUDO LABELS
+       The header remains visible.
+    --------------------------------- */
+
+    .odds-cell::before {
+        display: none !important;
+
+        content: none !important;
+    }
+
+
+    /* ---------------------------------
+       BETSLIP
+    --------------------------------- */
+
+    .betslip {
+        margin-top: 12px;
+
+        border-radius: 7px;
+    }
+
+    .betslip-header {
+        padding: 10px;
+    }
+
+    .betslip-title {
+        font-size: 13px;
+    }
+
+    .betslip-body {
+        padding: 10px;
+    }
+
+    .betslip-details {
+        gap: 7px;
+    }
+
+    .place-bet-btn {
+        padding: 10px;
+
+        font-size: 12px;
+    }
+
+
+    /* ---------------------------------
+       GENERAL
+    --------------------------------- */
 
     .hero {
         padding: 70px 20px 60px;
     }
 
-
     .section {
         padding: 50px 15px;
     }
-
 
     .card {
         margin: 30px auto;
@@ -986,18 +2328,19 @@ footer {
         padding: 25px 20px;
     }
 
-
     .profile-card {
         padding: 20px;
     }
 
-
     .odds {
         flex-direction: column;
     }
-
 }
 
+
+/* =========================================================
+   VERY SMALL MOBILE
+========================================================= */
 
 @media (max-width: 480px) {
 
@@ -1005,18 +2348,15 @@ footer {
         font-size: 24px;
     }
 
-
     .topbar nav {
         gap: 12px;
 
         font-size: 14px;
     }
 
-
     .card h2 {
         font-size: 24px;
     }
-
 
     .hero-buttons .btn {
         width: 100%;
@@ -1024,6 +2364,56 @@ footer {
         margin: 8px 0;
     }
 
+
+    /* ---------------------------------
+       KEEP TABLE STRUCTURE
+    --------------------------------- */
+
+    .main-content {
+        padding-left: 5px;
+
+        padding-right: 5px;
+    }
+
+    .market-header > div {
+        padding-left: 2px;
+
+        padding-right: 2px;
+
+        font-size: 8px;
+    }
+
+    .match-info {
+        padding-left: 5px;
+
+        padding-right: 5px;
+    }
+
+    .match-name {
+        font-size: 9px;
+    }
+
+    .match-teams {
+        font-size: 8px;
+    }
+
+    .match-meta {
+        font-size: 6px;
+    }
+
+    .odds-cell {
+        padding-left: 1px;
+
+        padding-right: 1px;
+    }
+
+    .odds-value {
+        font-size: 9px;
+    }
+
+    .odds-volume {
+        font-size: 6px;
+    }
 }
 
 
@@ -1033,9 +2423,11 @@ footer {
 
 .card .submit-button {
     width: 100%;
+
     margin-top: 8px;
 
     background: #00d26a;
+
     color: #111827;
 
     border: none;
@@ -1045,6 +2437,7 @@ footer {
     border-radius: 10px;
 
     font-size: 16px;
+
     font-weight: bold;
 
     cursor: pointer;
@@ -1056,65 +2449,59 @@ footer {
 
 
 /* =====================================
-   FORGOT PASSWORD LINK
-===================================== */
-
-.forgot-password {
-    display: block;
-
-    width: fit-content;
-
-    margin: 0 0 20px auto;
-
-    color: #00d26a;
-
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.forgot-password:hover {
-    text-decoration: underline;
-}
-
-/* =====================================
    PASSWORD INPUT WITH EYE ICON
 ===================================== */
 
 .password-wrapper {
     position: relative !important;
+
     width: 100% !important;
+
     display: block !important;
+
     margin-bottom: 18px !important;
 }
 
 .password-wrapper input {
     width: 100% !important;
+
     height: 50px !important;
+
     margin: 0 !important;
+
     padding: 15px 55px 15px 15px !important;
+
     display: block !important;
 }
 
-/* Eye button inside the password field */
+
+/* =====================================
+   PASSWORD EYE BUTTON
+===================================== */
 
 .password-wrapper .password-toggle {
     position: absolute !important;
 
     top: 50% !important;
+
     right: 8px !important;
 
     transform: translateY(-50%) !important;
 
     width: 38px !important;
+
     height: 38px !important;
 
     min-width: 38px !important;
+
     min-height: 38px !important;
 
     padding: 0 !important;
+
     margin: 0 !important;
 
     border: none !important;
+
     border-radius: 50% !important;
 
     background: transparent !important;
@@ -1122,7 +2509,9 @@ footer {
     color: #9ca3af !important;
 
     display: flex !important;
+
     align-items: center !important;
+
     justify-content: center !important;
 
     cursor: pointer !important;
@@ -1132,23 +2521,30 @@ footer {
     box-shadow: none !important;
 }
 
-/* Prevent normal button hover styles */
+
+/* =====================================
+   PASSWORD EYE HOVER
+===================================== */
 
 .password-wrapper .password-toggle:hover {
     background: rgba(255, 255, 255, 0.08) !important;
+
     color: #ffffff !important;
 
     transform: translateY(-50%) !important;
 }
 
-/* SVG eye size */
+
+/* =====================================
+   PASSWORD EYE SVG
+===================================== */
 
 .password-wrapper .password-toggle svg {
     width: 20px !important;
+
     height: 20px !important;
 
     display: block !important;
 
     pointer-events: none !important;
 }
-

@@ -26,18 +26,22 @@
     <main class="employee-dashboard-container">
 
 
-        <!-- HEADER -->
+        <!-- =====================================================
+             HEADER
+        ====================================================== -->
 
         <header class="employee-dashboard-header">
 
             <div class="employee-dashboard-title">
 
                 <div class="employee-dashboard-brand">
+
                     <span class="employee-dashboard-brand-icon">
                         🏏
                     </span>
 
                     CrickBet Employee Portal
+
                 </div>
 
                 <h1>
@@ -83,9 +87,14 @@
         </header>
 
 
-        <!-- STAT CARDS -->
+        <!-- =====================================================
+             QUICK STATS
+        ====================================================== -->
 
         <div class="employee-stats">
+
+
+            <!-- PENDING DEPOSITS -->
 
             <div class="employee-stat">
 
@@ -96,15 +105,15 @@
                 <div class="employee-stat-text">
 
                     <span>
-                        Deposits
+                        Pending Deposits
                     </span>
 
                     <strong>
-                        Manage Deposits
+                        {{ pending_deposits }}
                     </strong>
 
                     <small>
-                        Verify customer payments
+                        Waiting for verification
                     </small>
 
                 </div>
@@ -112,82 +121,118 @@
             </div>
 
 
+            <!-- COMPLETED DEPOSITS -->
+
             <div class="employee-stat">
 
-                <!-- DEPOSITS -->
-
-                <div class="employee-stat">
-
-                    <div class="employee-stat-icon deposit">
-                        +
-                    </div>
-
-                    <div class="employee-stat-text">
-
-                        <span>
-                            Pending Deposits
-                        </span>
-
-                        <strong>
-                            {{ pending_deposits }}
-                        </strong>
-
-                        <small>
-                            Waiting for verification
-                        </small>
-
-                    </div>
-
+                <div class="employee-stat-icon deposit">
+                    ✓
                 </div>
 
-                <!-- WITHDRAWALS -->
+                <div class="employee-stat-text">
 
-                <div class="employee-stat">
+                    <span>
+                        Completed Deposits
+                    </span>
 
-                    <div class="employee-stat-icon withdrawal">
-                        -
-                    </div>
-                     
-                    <div class="employee-stat-text">
+                    <strong>
+                        {{ completed_deposits }}
+                    </strong>
 
-                        <span>
-                            Pending Withdrawals
-                        </span>
-
-                        <strong>
-                            {{ pending_withdrawals }}
-                        </strong>
-
-                        <small>
-                            Waiting to be processed
-                        </small>
-
-                    </div>
+                    <small>
+                        Successfully processed
+                    </small>
 
                 </div>
 
             </div>
 
-   
 
-        <!-- DEPOSITS -->
+            <!-- PENDING WITHDRAWALS -->
+
+            <div class="employee-stat">
+
+                <div class="employee-stat-icon withdrawal">
+                    -
+                </div>
+
+                <div class="employee-stat-text">
+
+                    <span>
+                        Pending Withdrawals
+                    </span>
+
+                    <strong>
+                        {{ pending_withdrawals }}
+                    </strong>
+
+                    <small>
+                        Waiting to be processed
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <!-- COMPLETED WITHDRAWALS -->
+
+            <div class="employee-stat">
+
+                <div class="employee-stat-icon withdrawal">
+                    ✓
+                </div>
+
+                <div class="employee-stat-text">
+
+                    <span>
+                        Completed Withdrawals
+                    </span>
+
+                    <strong>
+                        {{ completed_withdrawals }}
+                    </strong>
+
+                    <small>
+                        Successfully processed
+                    </small>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- =====================================================
+             DEPOSITS
+        ====================================================== -->
 
         <section class="employee-dashboard-section">
 
             <div class="employee-section-title">
 
-                <h2>
-                    💰 Deposits
-                </h2>
+                <div>
 
-                <p>
-                    Review customer deposit requests and verify payments.
-                </p>
+                    <h2>
+                        💰 Deposits
+                    </h2>
+
+                    <p>
+                        Review customer deposit requests and
+                        verify payments.
+                    </p>
+
+                </div>
 
             </div>
 
 
             <div class="employee-action-grid">
+
+
+                <!-- PENDING DEPOSITS -->
 
                 <a
                     href="/employee/deposits"
@@ -201,15 +246,18 @@
                     <div class="employee-action-content">
 
                         <h3>
+
                             Pending Deposits
+
                             <span class="employee-count-badge">
                                 {{ pending_deposits }}
                             </span>
+
                         </h3>
 
                         <p>
                             View and process deposits waiting
-                            for verification.
+                            for payment verification.
                         </p>
 
                     </div>
@@ -220,6 +268,8 @@
 
                 </a>
 
+
+                <!-- COMPLETED DEPOSITS -->
 
                 <a
                     href="/employee/deposits/done"
@@ -233,15 +283,18 @@
                     <div class="employee-action-content">
 
                         <h3>
+
                             Completed Deposits
+
                             <span class="employee-count-badge completed">
                                 {{ completed_deposits }}
                             </span>
+
                         </h3>
 
                         <p>
-                            View all successfully completed
-                            deposit requests.
+                            View successfully completed
+                            customer deposits.
                         </p>
 
                     </div>
@@ -252,29 +305,40 @@
 
                 </a>
 
+
             </div>
 
         </section>
 
 
-        <!-- WITHDRAWALS -->
+        <!-- =====================================================
+             WITHDRAWALS
+        ====================================================== -->
 
         <section class="employee-dashboard-section">
 
             <div class="employee-section-title">
 
-                <h2>
-                    🏦 Withdrawals
-                </h2>
+                <div>
 
-                <p>
-                    Review customer bank details and process withdrawals.
-                </p>
+                    <h2>
+                        🏦 Withdrawals
+                    </h2>
+
+                    <p>
+                        Review customer bank details and
+                        process withdrawal requests.
+                    </p>
+
+                </div>
 
             </div>
 
 
             <div class="employee-action-grid">
+
+
+                <!-- PENDING WITHDRAWALS -->
 
                 <a
                     href="/employee/withdrawals"
@@ -288,10 +352,13 @@
                     <div class="employee-action-content">
 
                         <h3>
+
                             Pending Withdrawals
+
                             <span class="employee-count-badge withdrawal">
                                 {{ pending_withdrawals }}
                             </span>
+
                         </h3>
 
                         <p>
@@ -308,6 +375,8 @@
                 </a>
 
 
+                <!-- COMPLETED WITHDRAWALS -->
+
                 <a
                     href="/employee/withdrawals/done"
                     class="employee-action completed"
@@ -320,14 +389,17 @@
                     <div class="employee-action-content">
 
                         <h3>
+
                             Completed Withdrawals
+
                             <span class="employee-count-badge completed">
                                 {{ completed_withdrawals }}
                             </span>
+
                         </h3>
 
                         <p>
-                            View all successfully completed
+                            View successfully completed
                             withdrawals.
                         </p>
 
@@ -339,12 +411,97 @@
 
                 </a>
 
+
             </div>
 
         </section>
 
 
-        <!-- SECURITY -->
+        <!-- =====================================================
+             REFERRAL / BONUS INFORMATION
+        ====================================================== -->
+
+        <section class="employee-dashboard-section">
+
+            <div class="employee-section-title">
+
+                <div>
+
+                    <h2>
+                        🎁 Deposit & Referral Bonuses
+                    </h2>
+
+                    <p>
+                        Bonuses are automatically calculated when
+                        an employee approves a deposit.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="employee-action-grid">
+
+
+                <!-- DEPOSIT BONUS -->
+
+                <div class="employee-action deposit">
+
+                    <div class="employee-action-icon">
+                        💰
+                    </div>
+
+                    <div class="employee-action-content">
+
+                        <h3>
+                            10% Deposit Bonus
+                        </h3>
+
+                        <p>
+                            Every approved customer deposit
+                            automatically receives a 10% deposit
+                            bonus.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- REFERRAL BONUS -->
+
+                <div class="employee-action completed">
+
+                    <div class="employee-action-icon">
+                        🎁
+                    </div>
+
+                    <div class="employee-action-content">
+
+                        <h3>
+                            10% Referral Bonus
+                        </h3>
+
+                        <p>
+                            On a customer's first approved deposit,
+                            their referrer receives a one-time
+                            10% referral bonus.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             SECURITY
+        ====================================================== -->
 
         <div class="employee-security">
 
@@ -359,14 +516,17 @@
                 </h3>
 
                 <p>
-                    This portal is restricted to authorized CrickBet
-                    employees. Employee accounts can only process
-                    customer deposit and withdrawal requests.
+                    This portal is restricted to authorized
+                    CrickBet employees. Employee accounts can
+                    process customer deposit and withdrawal
+                    requests. Deposit bonuses and referral bonuses
+                    are calculated automatically by the system.
                 </p>
 
             </div>
 
         </div>
+
 
     </main>
 

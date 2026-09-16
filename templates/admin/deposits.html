@@ -1,102 +1,132 @@
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
 
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0"
 
-    <title>Admin - Deposits</title>
+>
 
-    <style>
+<title>Admin - Deposits</title>
 
-        * {
-            box-sizing: border-box;
-        }
+<style>
 
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f4f6f9;
-            color: #1f2937;
-        }
+* {
+    box-sizing: border-box;
+}
 
-        .header {
-            background: #111827;
-            color: white;
-            padding: 20px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f6f9;
+    color: #1f2937;
+}
 
-        .header h2 {
-            margin: 0;
-        }
+.header {
+    background: #111827;
+    color: white;
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
-        .container {
-            padding: 30px;
-        }
+.header h2 {
+    margin: 0;
+}
 
-        .back {
-            display: inline-block;
-            margin-bottom: 20px;
-            text-decoration: none;
-            color: #2563eb;
-        }
+.container {
+    padding: 30px;
+}
 
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
-            overflow-x: auto;
-        }
+.back {
+    display: inline-block;
+    margin-bottom: 20px;
+    text-decoration: none;
+    color: #2563eb;
+}
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 900px;
-        }
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+    overflow-x: auto;
+}
 
-        th,
-        td {
-            padding: 14px;
-            border-bottom: 1px solid #e5e7eb;
-            text-align: left;
-        }
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1300px;
+}
 
-        th {
-            background: #f9fafb;
-            font-size: 13px;
-        }
+th,
+td {
+    padding: 14px;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+    vertical-align: top;
+}
 
-        .pending {
-            color: #d97706;
-            font-weight: bold;
-        }
+th {
+    background: #f9fafb;
+    font-size: 13px;
+}
 
-        .completed {
-            color: #16a34a;
-            font-weight: bold;
-        }
+.pending {
+    color: #d97706;
+    font-weight: bold;
+}
 
-        .screenshot {
-            color: #2563eb;
-            text-decoration: none;
-        }
+.completed {
+    color: #16a34a;
+    font-weight: bold;
+}
 
-        .empty {
-            text-align: center;
-            padding: 40px;
-            color: #6b7280;
-        }
+.screenshot {
+    color: #2563eb;
+    text-decoration: none;
+}
 
-    </style>
+.empty {
+    text-align: center;
+    padding: 40px;
+    color: #6b7280;
+}
+
+.bonus {
+    color: #16a34a;
+    font-weight: bold;
+}
+
+.referral {
+    font-size: 13px;
+}
+
+.referral-name {
+    font-weight: bold;
+}
+
+.muted {
+    color: #6b7280;
+}
+
+.first-deposit {
+    color: #16a34a;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.no-referral {
+    color: #6b7280;
+}
+
+</style>
 
 </head>
 
@@ -104,155 +134,241 @@
 
 <div class="header">
 
-    <h2>CrickBet Admin — Deposits</h2>
+<h2>
+CrickBet Admin — Deposits
+</h2>
 
-    <span>
-        Admin Panel
-    </span>
+<span>
+Admin Panel
+</span>
 
 </div>
 
-
 <div class="container">
 
-    <a
-        href="/admin/dashboard"
-        class="back"
-    >
-        ← Back to Dashboard
-    </a>
+<a
+href="/admin/dashboard"
+class="back"
 
+>
 
-    <div class="card">
+← Back to Dashboard </a>
 
-        {% if deposits %}
+<div class="card">
 
-        <table>
+{% if deposits %}
 
-            <thead>
+<table>
 
-                <tr>
+<thead>
 
-                    <th>User</th>
+<tr>
 
-                    <th>Email</th>
+<th>User</th>
 
-                    <th>Amount</th>
+<th>Email</th>
 
-                    <th>UTR</th>
+<th>Deposit</th>
 
-                    <th>Screenshot</th>
+<th>10% User Bonus</th>
 
-                    <th>Date</th>
+<th>Referral</th>
 
-                    <th>Status</th>
+<th>UTR</th>
 
-                    <th>Processed By</th>
+<th>Screenshot</th>
 
-                </tr>
+<th>Date</th>
 
-            </thead>
+<th>Status</th>
 
+<th>Processed By</th>
 
-            <tbody>
+</tr>
 
-                {% for deposit in deposits %}
+</thead>
 
-                <tr>
+<tbody>
 
-                    <td>
-                        {{ deposit.user.username }}
-                    </td>
+{% for deposit in deposits %}
 
-                    <td>
-                        {{ deposit.user.email }}
-                    </td>
+<tr>
 
-                    <td>
-                        ₹{{ "%.2f"|format(deposit.amount) }}
-                    </td>
+<td>
 
-                    <td>
-                        {{ deposit.utr_number }}
-                    </td>
+<strong>
+{{ deposit.user.username }}
+</strong>
 
-                    <td>
+<br>
 
-                        <a
-                            href="/{{ deposit.payment_screenshot }}"
-                            target="_blank"
-                            class="screenshot"
-                        >
-                            View Screenshot
-                        </a>
+<small>
+ID: {{ deposit.user.id }}
+</small>
 
-                    </td>
+<br>
 
-                    <td>
+<small>
+Code: {{ deposit.user.referral_code or "—" }}
+</small>
 
-                        {% if deposit.created_at %}
+</td>
 
-                            {{ deposit.created_at.strftime("%d %b %Y, %I:%M %p") }}
+<td>
+{{ deposit.user.email }}
+</td>
 
-                        {% else %}
+<td>
 
-                            —
+<strong>
+₹{{ "%.2f"|format(deposit.amount) }}
+</strong>
 
-                        {% endif %}
+</td>
 
-                    </td>
+<td>
 
-                    <td>
+<span class="bonus">
 
-                        {% if deposit.status == "Pending" %}
+₹{{ "%.2f"|format(deposit.amount * 0.10) }}
 
-                            <span class="pending">
-                                Pending
-                            </span>
+</span>
 
-                        {% else %}
+</td>
 
-                            <span class="completed">
-                                Completed
-                            </span>
+<td>
 
-                        {% endif %}
+{% if deposit.user.referrer %}
 
-                    </td>
+<div class="referral">
 
-                    <td>
+<div class="referral-name">
 
-                        {% if deposit.employee %}
+{{ deposit.user.referrer.username }}
 
-                            {{ deposit.employee.employee_id }}
+</div>
 
-                        {% else %}
+<div class="muted">
 
-                            —
+Code:
+{{ deposit.user.referrer.referral_code }}
 
-                        {% endif %}
+</div>
 
-                    </td>
+{% if deposit.status == "Pending" and not deposit.user.first_deposit_completed %}
 
-                </tr>
+<div class="first-deposit">
+First deposit — referral bonus eligible
+</div>
 
-                {% endfor %}
+{% elif deposit.user.referral_bonus_paid %}
 
-            </tbody>
+<div class="first-deposit">
+Referral bonus already paid
+</div>
 
-        </table>
+{% else %}
 
-        {% else %}
+<div class="muted">
+No referral bonus
+</div>
 
-        <div class="empty">
+{% endif %}
 
-            No deposit requests found.
+</div>
 
-        </div>
+{% else %}
 
-        {% endif %}
+<span class="no-referral">
+No referrer
+</span>
 
-    </div>
+{% endif %}
+
+</td>
+
+<td>
+{{ deposit.utr_number }}
+</td>
+
+<td>
+
+<a
+href="/{{ deposit.payment_screenshot }}"
+target="_blank"
+class="screenshot"
+
+>
+
+View Screenshot </a>
+
+</td>
+
+<td>
+
+{% if deposit.created_at %}
+
+{{ deposit.created_at.strftime("%d %b %Y, %I:%M %p") }}
+
+{% else %}
+
+—
+
+{% endif %}
+
+</td>
+
+<td>
+
+{% if deposit.status == "Pending" %}
+
+<span class="pending">
+Pending
+</span>
+
+{% else %}
+
+<span class="completed">
+Completed
+</span>
+
+{% endif %}
+
+</td>
+
+<td>
+
+{% if deposit.employee %}
+
+{{ deposit.employee.employee_id }}
+
+{% else %}
+
+—
+
+{% endif %}
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+{% else %}
+
+<div class="empty">
+
+No deposit requests found.
+
+</div>
+
+{% endif %}
+
+</div>
 
 </div>
 

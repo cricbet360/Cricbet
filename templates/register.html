@@ -2,13 +2,11 @@
 
 {% block content %}
 
-<div class="card register-card">
+<div class="card">
 
-    <h2>Create Your Account</h2>
-
-    <p class="card-subtitle">
-        Join CrickBet by verifying your email and mobile number.
-    </p>
+    <h2>
+        🔐 Reset Password
+    </h2>
 
 
     {% if message %}
@@ -20,54 +18,177 @@
     {% endif %}
 
 
+    {% if not invalid_token %}
+
+    <p class="card-subtitle">
+        Enter your User ID and registered phone number
+        to verify your account.
+    </p>
+
+
     <form
         method="POST"
-        action="/register/send-otp"
+        action="/reset-password/admin/{{ token }}"
     >
 
-        <label>
-            Username
+
+        <!-- =================================================
+             USER ID
+        ================================================== -->
+
+        <label for="user_id">
+            User ID
         </label>
 
         <input
-            type="text"
-            name="username"
-            placeholder="Choose a username"
-            minlength="3"
+            type="number"
+            id="user_id"
+            name="user_id"
+            placeholder="Enter your User ID"
+            min="1"
             required
+            autocomplete="off"
         >
 
 
-        <label>
-            Email Address
-        </label>
+        <!-- =================================================
+             PHONE
+        ================================================== -->
 
-        <input
-            type="email"
-            name="email"
-            placeholder="you@example.com"
-            required
-        >
-
-
-        <label>
-            Mobile Number
+        <label for="phone">
+            Registered Phone Number
         </label>
 
         <input
             type="tel"
+            id="phone"
             name="phone"
-            placeholder="10-digit mobile number"
-            pattern="[6-9][0-9]{9}"
+            placeholder="Enter your registered phone number"
             maxlength="10"
+            inputmode="numeric"
             required
+            autocomplete="tel"
         >
 
 
-        <button type="submit">
+        <!-- =================================================
+             NEW PASSWORD
+        ================================================== -->
 
-            Send Verification OTP
+        <label for="new-password">
+            New Password
+        </label>
 
+        <div class="password-wrapper">
+
+            <input
+                type="password"
+                id="new-password"
+                name="password"
+                placeholder="Enter new password"
+                minlength="8"
+                required
+                autocomplete="new-password"
+            >
+
+            <button
+                type="button"
+                class="password-toggle"
+                onclick="togglePassword('new-password', this)"
+                aria-label="Show password"
+            >
+                👁
+            </button>
+
+        </div>
+
+
+        <!-- =================================================
+             CONFIRM PASSWORD
+        ================================================== -->
+
+        <label for="confirm-password">
+            Confirm New Password
+        </label>
+
+        <div class="password-wrapper">
+
+            <input
+                type="password"
+                id="confirm-password"
+                name="confirm_password"
+                placeholder="Confirm new password"
+                minlength="8"
+                required
+                autocomplete="new-password"
+            >
+
+            <button
+                type="button"
+                class="password-toggle"
+                onclick="togglePassword('confirm-password', this)"
+                aria-label="Show password"
+            >
+                👁
+            </button>
+
+        </div>
+
+
+        <!-- =================================================
+             PASSWORD REQUIREMENTS
+        ================================================== -->
+
+        <div style="
+            margin-top: 15px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            opacity: 0.75;
+        ">
+
+            <strong>
+                Password must contain:
+            </strong>
+
+            <ul style="
+                padding-left: 20px;
+                line-height: 1.6;
+            ">
+
+                <li>
+                    At least 8 characters
+                </li>
+
+                <li>
+                    At least one uppercase letter
+                </li>
+
+                <li>
+                    At least one lowercase letter
+                </li>
+
+                <li>
+                    At least one number
+                </li>
+
+                <li>
+                    At least one special character
+                </li>
+
+            </ul>
+
+        </div>
+
+
+        <!-- =================================================
+             SUBMIT
+        ================================================== -->
+
+        <button
+            type="submit"
+            class="submit-button"
+        >
+            Reset Password
         </button>
 
     </form>
@@ -75,7 +196,7 @@
 
     <div class="form-footer">
 
-        Already have an account?
+        Remember your password?
 
         <a href="/login">
             Login
@@ -83,6 +204,68 @@
 
     </div>
 
+
+    {% else %}
+
+    <!-- =================================================
+         INVALID LINK
+    ================================================== -->
+
+    <div style="
+        margin-top: 20px;
+        text-align: center;
+    ">
+
+        <p>
+            This reset link cannot be used.
+        </p>
+
+        <p>
+            Please contact the admin/support team and
+            request a new password reset link.
+        </p>
+
+        <a href="/login">
+            Back to Login
+        </a>
+
+    </div>
+
+    {% endif %}
+
 </div>
+
+
+<script>
+
+function togglePassword(
+    inputId,
+    button
+) {
+
+    const input =
+        document.getElementById(
+            inputId
+        );
+
+    if (
+        input.type === "password"
+    ) {
+
+        input.type = "text";
+
+        button.textContent = "🙈";
+
+    } else {
+
+        input.type = "password";
+
+        button.textContent = "👁";
+
+    }
+
+}
+
+</script>
 
 {% endblock %}

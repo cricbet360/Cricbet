@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        CrickBet Admin - Users
+    </title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #071b12;
+            color: #ffffff;
+        }
+
+        .header {
+            padding: 20px 30px;
+            background: #0b2418;
+            border-bottom: 1px solid #173b29;
+        }
+
+        .header h1 {
+            margin: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: auto;
+            padding: 25px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #8cffb0;
+            text-decoration: none;
+        }
+
+        .card {
+            background: #0d281b;
+            border: 1px solid #173b29;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .card h2 {
+            margin-top: 0;
+        }
+
+        .success-box {
+            background: #123d24;
+            border: 1px solid #2e9b57;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .success-box h3 {
+            margin-top: 0;
+        }
+
+        .reset-link-box {
+            width: 100%;
+            padding: 12px;
+            border-radius: 7px;
+            border: 1px solid #315d45;
+            background: #071b12;
+            color: white;
+            margin: 10px 0;
+        }
+
+        .copy-button {
+            border: none;
+            padding: 10px 16px;
+            border-radius: 7px;
+            cursor: pointer;
+            background: #8cffb0;
+            color: #071b12;
+            font-weight: bold;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 950px;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #173b29;
+            text-align: left;
+        }
+
+        th {
+            background: #123321;
+        }
+
+        .status {
+            font-weight: bold;
+        }
+
+        .active {
+            color: #8cffb0;
+        }
+
+        .inactive {
+            color: #ff9090;
+        }
+
+        .generate-button {
+            border: none;
+            padding: 9px 13px;
+            border-radius: 7px;
+            cursor: pointer;
+            background: #8cffb0;
+            color: #071b12;
+            font-weight: bold;
+        }
+
+        .expiry {
+            display: block;
+            margin-top: 6px;
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .referral {
+            font-family: monospace;
+            background: #071b12;
+            padding: 5px 8px;
+            border-radius: 5px;
+        }
+
+        .warning {
+            color: #ffd27d;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="header">
+
+    <h1>
+        🏏 CrickBet Admin Panel
+    </h1>
+
+</div>
+
+
+<div class="container">
+
+
+    <a
+        href="/admin/dashboard"
+        class="back-link"
+    >
+        ← Back to Dashboard
+    </a>
+
+
+    {% if reset_link %}
+
+        <div class="success-box">
+
+            <h3>
+                Password Reset Link Generated
+            </h3>
+
+            <p>
+                Reset link for:
+                <strong>
+                    {{ generated_user.username }}
+                </strong>
+                (User ID {{ generated_user.id }})
+            </p>
+
+            <input
+                id="resetLink"
+                class="reset-link-box"
+                type="text"
+                value="{{ reset_link }}"
+                readonly
+            >
+
+            <button
+                type="button"
+                class="copy-button"
+                onclick="copyResetLink()"
+            >
+                Copy Reset Link
+            </button>
+
+            <span class="expiry">
+
+                Expires:
+                {{ reset_expiry }}
+
+            </span>
+
+            <p class="warning">
+
+                Do not share this link publicly.
+                It allows password reset when combined
+                with the user's User ID and registered
+                phone number.
+
+            </p>
+
+        </div>
+
+    {% endif %}
+
+
+    {% if request.query_params.get("error") == "user_not_found" %}
+
+        <div class="success-box">
+
+            User not found.
+
+        </div>
+
+    {% endif %}
+
+
+    <div class="card">
+
+        <h2>
+            User Management
+        </h2>
+
+        <p>
+            Generate temporary password reset links
+            for registered users.
+        </p>
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            ID
+                        </th>
+
+                        <th>
+                            Username
+                        </th>
+
+                        <th>
+                            Phone
+                        </th>
+
+                        <th>
+                            Email
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                        <th>
+                            Referral Code
+                        </th>
+
+                        <th>
+                            Reset Link
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                {% for user in users %}
+
+                    <tr>
+
+                        <td>
+                            {{ user.id }}
+                        </td>
+
+                        <td>
+                            {{ user.username }}
+                        </td>
+
+                        <td>
+                            {{ user.phone }}
+                        </td>
+
+                        <td>
+                            {{ user.email }}
+                        </td>
+
+                        <td>
+
+                            {% if user.status == "Active" %}
+
+                                <span class="status active">
+                                    Active
+                                </span>
+
+                            {% else %}
+
+                                <span class="status inactive">
+                                    {{ user.status }}
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            {% if user.referral_code %}
+
+                                <span class="referral">
+                                    {{ user.referral_code }}
+                                </span>
+
+                            {% else %}
+
+                                -
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            {% if reset_tokens.get(user.id) %}
+
+                                <span class="status active">
+                                    Active
+                                </span>
+
+                                <span class="expiry">
+
+                                    Expires:
+                                    {{ reset_tokens.get(user.id).expires_at }}
+
+                                </span>
+
+                            {% else %}
+
+                                <form
+                                    method="POST"
+                                    action="/admin/users/{{ user.id }}/generate-reset-link"
+                                >
+
+                                    <button
+                                        type="submit"
+                                        class="generate-button"
+                                    >
+                                        Generate Reset Link
+                                    </button>
+
+                                </form>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                {% else %}
+
+                    <tr>
+
+                        <td
+                            colspan="7"
+                            style="text-align:center;"
+                        >
+                            No users found.
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+function copyResetLink() {
+
+    const input =
+        document.getElementById(
+            "resetLink"
+        );
+
+    if (!input) {
+        return;
+    }
+
+    input.select();
+
+    input.setSelectionRange(
+        0,
+        99999
+    );
+
+    navigator.clipboard.writeText(
+        input.value
+    ).then(
+        function () {
+
+            alert(
+                "Reset link copied."
+            );
+
+        }
+    ).catch(
+        function () {
+
+            document.execCommand(
+                "copy"
+            );
+
+            alert(
+                "Reset link copied."
+            );
+
+        }
+    );
+}
+
+</script>
+
+
+</body>
+
+</html>

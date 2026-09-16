@@ -26,6 +26,9 @@ from models.admin import Admin
 from models.deposit_request import DepositRequest
 from models.withdrawal_request import WithdrawalRequest
 
+# Password reset token model
+from models.password_reset_token import PasswordResetToken
+
 
 # ============================================================
 # AUTH ROUTERS
@@ -44,6 +47,7 @@ from routers.wallet import router as wallet_router
 from routers.profile import router as profile_router
 from routers.account import router as account_router
 from routers.staff_balance import router as staff_balance_router
+
 from routers.wallet_transactions import (
     router as wallet_transactions_router
 )
@@ -62,7 +66,10 @@ from routers.cricket_api import router as cricket_api_router
 # ============================================================
 
 from admin.auth import router as admin_auth_router
-from admin.routes import router as admin_router
+from admin.routes import router as admin_routes_router
+
+# Existing routers/admin.py
+from routers.admin import router as routers_admin_router
 
 
 # ============================================================
@@ -150,7 +157,7 @@ Base.metadata.create_all(
 
 
 # ============================================================
-# AUTH ROUTERS
+# AUTH
 # ============================================================
 
 app.include_router(
@@ -200,7 +207,11 @@ app.include_router(
 )
 
 app.include_router(
-    admin_router
+    routers_admin_router
+)
+
+app.include_router(
+    admin_routes_router
 )
 
 
@@ -218,7 +229,7 @@ app.include_router(
 
 
 # ============================================================
-# OLD / EXISTING PROEXCH ROUTER
+# PROEXCH
 # ============================================================
 
 app.include_router(
@@ -227,12 +238,7 @@ app.include_router(
 
 
 # ============================================================
-# NEW CRICKET API ROUTER
-#
-# Provides:
-#
-# GET /api/cricket/matches
-#
+# CRICKET API
 # ============================================================
 
 app.include_router(
