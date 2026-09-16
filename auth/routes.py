@@ -45,15 +45,6 @@ templates = Jinja2Templates(
 # =========================================================
 # 2FA CONFIGURATION
 # =========================================================
-#
-# Used ONLY for registration phone verification.
-#
-# Set this in your environment:
-#
-# TWO_FACTOR_API_KEY=your_key
-#
-# Do NOT hard-code the API key here.
-# =========================================================
 
 TWO_FACTOR_API_KEY = os.getenv(
     "TWO_FACTOR_API_KEY",
@@ -233,7 +224,6 @@ def send_phone_otp_api(
 ):
 
     if not TWO_FACTOR_API_KEY:
-
         return {
             "Status": "Error",
             "Details": (
@@ -244,7 +234,6 @@ def send_phone_otp_api(
     phone = normalize_phone(phone)
 
     if len(phone) != 10:
-
         return {
             "Status": "Error",
             "Details": "Invalid phone number.",
@@ -299,7 +288,6 @@ def verify_phone_otp_api(
 ):
 
     if not TWO_FACTOR_API_KEY:
-
         return {
             "Status": "Error",
             "Details": (
@@ -374,10 +362,15 @@ def register_page(
 @router.post("/register/send-otp")
 def register_send_otp(
     request: Request,
+
     username: str = Form(...),
+
     email: str = Form(...),
+
     phone: str = Form(...),
+
     referral_code: str = Form(""),
+
     db: Session = Depends(get_db),
 ):
 
@@ -390,6 +383,7 @@ def register_send_otp(
     referral_code = normalize_referral_code(
         referral_code
     )
+
 
     # -----------------------------------------------------
     # VALIDATION
@@ -413,6 +407,7 @@ def register_send_otp(
             },
         )
 
+
     if not is_valid_email(email):
 
         return templates.TemplateResponse(
@@ -431,6 +426,7 @@ def register_send_otp(
             },
         )
 
+
     if len(phone) != 10:
 
         return templates.TemplateResponse(
@@ -448,6 +444,7 @@ def register_send_otp(
                 ),
             },
         )
+
 
     # -----------------------------------------------------
     # DUPLICATE USERNAME
@@ -479,6 +476,7 @@ def register_send_otp(
             },
         )
 
+
     # -----------------------------------------------------
     # DUPLICATE EMAIL
     # -----------------------------------------------------
@@ -508,6 +506,7 @@ def register_send_otp(
                 ),
             },
         )
+
 
     # -----------------------------------------------------
     # DUPLICATE PHONE
@@ -539,6 +538,7 @@ def register_send_otp(
             },
         )
 
+
     # -----------------------------------------------------
     # REFERRAL VALIDATION
     # -----------------------------------------------------
@@ -548,10 +548,8 @@ def register_send_otp(
         referrer = (
             db.query(User)
             .filter(
-                User.referral_code
-                == referral_code,
-                User.status
-                == "Active",
+                User.referral_code == referral_code,
+                User.status == "Active",
             )
             .first()
         )
@@ -571,6 +569,33 @@ def register_send_otp(
                     "referral_code": referral_code,
                 },
             )
+
+
+        # Prevent using own details for referral.
+
+        if (
+            referrer.username.lower()
+            == username.lower()
+            or referrer.email.lower()
+            == email.lower()
+            or normalize_phone(referrer.phone)
+            == phone
+        ):
+
+            return templates.TemplateResponse(
+                "register.html",
+                {
+                    "request": request,
+                    "message": (
+                        "You cannot use your own referral code."
+                    ),
+                    "username": username,
+                    "email": email,
+                    "phone": phone,
+                    "referral_code": referral_code,
+                },
+            )
+
 
     # -----------------------------------------------------
     # SEND OTP
@@ -599,6 +624,7 @@ def register_send_otp(
             },
         )
 
+
     session_id = result.get(
         "Details"
     )
@@ -620,6 +646,7 @@ def register_send_otp(
                 ),
             },
         )
+
 
     # -----------------------------------------------------
     # SAVE REGISTRATION SESSION
@@ -651,6 +678,7 @@ def register_send_otp(
         datetime.utcnow()
         + timedelta(minutes=10)
     ).isoformat()
+
 
     return RedirectResponse(
         "/register/verify-otp",
@@ -685,6 +713,7 @@ def register_verify_otp_page(
 @router.post("/register/verify-otp")
 def register_verify_otp(
     request: Request,
+
     otp: str = Form(...),
 ):
 
@@ -700,6 +729,7 @@ def register_verify_otp(
         "registration_phone"
     )
 
+
     if not session_id or not expiry:
 
         return templates.TemplateResponse(
@@ -713,13 +743,17 @@ def register_verify_otp(
             },
         )
 
+
     try:
 
         expiry_dt = datetime.fromisoformat(
             expiry
         )
 
-    except (ValueError, TypeError):
+    except (
+        ValueError,
+        TypeError,
+    ):
 
         return templates.TemplateResponse(
             "verify-otp.html",
@@ -731,6 +765,7 @@ def register_verify_otp(
                 ),
             },
         )
+
 
     if datetime.utcnow() > expiry_dt:
 
@@ -755,10 +790,12 @@ def register_verify_otp(
             },
         )
 
+
     result = verify_phone_otp_api(
         session_id,
         otp.strip(),
     )
+
 
     if result.get("Status") != "Success":
 
@@ -773,6 +810,7 @@ def register_verify_otp(
                 ),
             },
         )
+
 
     # -----------------------------------------------------
     # OTP VERIFIED
@@ -791,6 +829,7 @@ def register_verify_otp(
         "registration_otp_expiry",
         None,
     )
+
 
     return RedirectResponse(
         "/register/disclaimer",
@@ -815,6 +854,7 @@ def register_disclaimer_page(
             "/register",
             status_code=303,
         )
+
 
     return templates.TemplateResponse(
         "disclaimer.html",
@@ -842,9 +882,11 @@ def register_disclaimer(
             status_code=303,
         )
 
+
     request.session[
         "registration_disclaimer_accepted"
     ] = True
+
 
     return RedirectResponse(
         "/register/create-password",
@@ -870,6 +912,7 @@ def create_password_page(
             status_code=303,
         )
 
+
     if not request.session.get(
         "registration_disclaimer_accepted"
     ):
@@ -878,6 +921,7 @@ def create_password_page(
             "/register/disclaimer",
             status_code=303,
         )
+
 
     return templates.TemplateResponse(
         "create-password.html",
@@ -894,8 +938,11 @@ def create_password_page(
 @router.post("/register/create-password")
 def create_password(
     request: Request,
+
     password: str = Form(...),
+
     confirm_password: str = Form(...),
+
     db: Session = Depends(get_db),
 ):
 
@@ -908,6 +955,7 @@ def create_password(
             status_code=303,
         )
 
+
     if not request.session.get(
         "registration_disclaimer_accepted"
     ):
@@ -916,6 +964,7 @@ def create_password(
             "/register/disclaimer",
             status_code=303,
         )
+
 
     username = request.session.get(
         "registration_username"
@@ -937,12 +986,14 @@ def create_password(
         )
     )
 
+
     if not username or not email or not phone:
 
         return RedirectResponse(
             "/register",
             status_code=303,
         )
+
 
     # -----------------------------------------------------
     # PASSWORD VALIDATION
@@ -960,6 +1011,7 @@ def create_password(
             },
         )
 
+
     valid, message = validate_password(
         password
     )
@@ -974,6 +1026,7 @@ def create_password(
             },
         )
 
+
     # -----------------------------------------------------
     # REFERRER REVALIDATION
     # -----------------------------------------------------
@@ -985,13 +1038,12 @@ def create_password(
         referrer = (
             db.query(User)
             .filter(
-                User.referral_code
-                == referral_code,
-                User.status
-                == "Active",
+                User.referral_code == referral_code,
+                User.status == "Active",
             )
             .first()
         )
+
 
         if not referrer:
 
@@ -1005,11 +1057,11 @@ def create_password(
                 },
             )
 
-        # Prevent self-referral.
+
         if (
             referrer.phone == phone
-            or referrer.email == email
-            or referrer.username == username
+            or referrer.email.lower() == email.lower()
+            or referrer.username.lower() == username.lower()
         ):
 
             return templates.TemplateResponse(
@@ -1022,9 +1074,9 @@ def create_password(
                 },
             )
 
-        referred_by_user_id = (
-            referrer.id
-        )
+
+        referred_by_user_id = referrer.id
+
 
     # -----------------------------------------------------
     # FINAL DUPLICATE CHECK
@@ -1034,22 +1086,20 @@ def create_password(
         db.query(User)
         .filter(
             (
-                User.username
-                == username
+                User.username == username
             )
             |
             (
-                User.email
-                == email
+                User.email == email
             )
             |
             (
-                User.phone
-                == phone
+                User.phone == phone
             )
         )
         .first()
     )
+
 
     if existing:
 
@@ -1063,6 +1113,7 @@ def create_password(
             },
         )
 
+
     # -----------------------------------------------------
     # GENERATE REFERRAL CODE
     # -----------------------------------------------------
@@ -1070,6 +1121,7 @@ def create_password(
     referral_generated_code = (
         generate_referral_code(db)
     )
+
 
     # -----------------------------------------------------
     # CREATE USER
@@ -1093,11 +1145,14 @@ def create_password(
         referral_bonus_paid=False,
     )
 
+
     db.add(user)
+
 
     try:
 
         db.flush()
+
 
         # -------------------------------------------------
         # CREATE WALLET
@@ -1113,6 +1168,7 @@ def create_password(
 
         db.commit()
 
+
     except Exception:
 
         db.rollback()
@@ -1127,6 +1183,7 @@ def create_password(
             },
         )
 
+
     # -----------------------------------------------------
     # CLEAR REGISTRATION SESSION
     # -----------------------------------------------------
@@ -1134,12 +1191,19 @@ def create_password(
     for key in [
 
         "registration_username",
+
         "registration_email",
+
         "registration_phone",
+
         "registration_referral_code",
+
         "registration_otp_session_id",
+
         "registration_otp_expiry",
+
         "registration_phone_verified",
+
         "registration_disclaimer_accepted",
 
     ]:
@@ -1148,6 +1212,7 @@ def create_password(
             key,
             None,
         )
+
 
     return RedirectResponse(
         "/login?registered=1",
@@ -1164,10 +1229,26 @@ def login_page(
     request: Request,
 ):
 
+    registered = (
+        request.query_params.get(
+            "registered"
+        )
+    )
+
+    message = None
+
+    if registered == "1":
+        message = (
+            "Account created successfully. "
+            "Please login."
+        )
+
+
     return templates.TemplateResponse(
         "login.html",
         {
             "request": request,
+            "message": message,
         },
     )
 
@@ -1175,26 +1256,49 @@ def login_page(
 # =========================================================
 # LOGIN
 # =========================================================
+#
+# IMPORTANT:
+#
+# login.html sends:
+#
+#     username
+#     password
+#
+# Therefore this endpoint MUST receive "username",
+# not "phone".
+#
+# =========================================================
 
 @router.post("/login")
 def login(
     request: Request,
-    phone: str = Form(...),
+
+    username: str = Form(...),
+
     password: str = Form(...),
+
     db: Session = Depends(get_db),
 ):
 
-    phone = normalize_phone(
-        phone
-    )
+    username = username.strip()
+
+
+    # -----------------------------------------------------
+    # FIND USER BY USERNAME
+    # -----------------------------------------------------
 
     user = (
         db.query(User)
         .filter(
-            User.phone == phone
+            User.username == username
         )
         .first()
     )
+
+
+    # -----------------------------------------------------
+    # INVALID USER
+    # -----------------------------------------------------
 
     if not user:
 
@@ -1203,10 +1307,15 @@ def login(
             {
                 "request": request,
                 "message": (
-                    "Invalid phone number or password."
+                    "Invalid username or password."
                 ),
             },
         )
+
+
+    # -----------------------------------------------------
+    # ACCOUNT STATUS
+    # -----------------------------------------------------
 
     if user.status != "Active":
 
@@ -1220,6 +1329,11 @@ def login(
             },
         )
 
+
+    # -----------------------------------------------------
+    # VERIFY PASSWORD
+    # -----------------------------------------------------
+
     if not verify_password(
         password,
         user.password,
@@ -1230,10 +1344,11 @@ def login(
             {
                 "request": request,
                 "message": (
-                    "Invalid phone number or password."
+                    "Invalid username or password."
                 ),
             },
         )
+
 
     # -----------------------------------------------------
     # LOGIN SESSION
@@ -1245,6 +1360,7 @@ def login(
         "user_id"
     ] = user.id
 
+
     return RedirectResponse(
         "/dashboard",
         status_code=303,
@@ -1253,13 +1369,6 @@ def login(
 
 # =========================================================
 # FORGOT PASSWORD PAGE
-# =========================================================
-#
-# IMPORTANT:
-#
-# There is NO OTP here.
-#
-# The admin generates a secure reset link.
 # =========================================================
 
 @router.get("/forgot-password")
@@ -1305,11 +1414,14 @@ def forgot_password(
 )
 def admin_reset_password_page(
     request: Request,
+
     token: str,
+
     db: Session = Depends(get_db),
 ):
 
     token = token.strip()
+
 
     reset_token = (
         db.query(PasswordResetToken)
@@ -1319,6 +1431,7 @@ def admin_reset_password_page(
         )
         .first()
     )
+
 
     # -----------------------------------------------------
     # TOKEN NOT FOUND
@@ -1337,6 +1450,7 @@ def admin_reset_password_page(
                 ),
             },
         )
+
 
     # -----------------------------------------------------
     # TOKEN USED
@@ -1357,6 +1471,7 @@ def admin_reset_password_page(
             },
         )
 
+
     # -----------------------------------------------------
     # TOKEN EXPIRED
     # -----------------------------------------------------
@@ -1375,6 +1490,7 @@ def admin_reset_password_page(
                 ),
             },
         )
+
 
     # -----------------------------------------------------
     # VALID TOKEN
@@ -1401,11 +1517,17 @@ def admin_reset_password_page(
 )
 def admin_reset_password(
     request: Request,
+
     token: str,
+
     user_id: str = Form(...),
+
     phone: str = Form(...),
+
     password: str = Form(...),
+
     confirm_password: str = Form(...),
+
     db: Session = Depends(get_db),
 ):
 
@@ -1414,6 +1536,7 @@ def admin_reset_password(
     user_id = user_id.strip()
 
     phone = phone.strip()
+
 
     # -----------------------------------------------------
     # FIND TOKEN
@@ -1428,6 +1551,7 @@ def admin_reset_password(
         .first()
     )
 
+
     if not reset_token:
 
         return templates.TemplateResponse(
@@ -1441,6 +1565,7 @@ def admin_reset_password(
                 ),
             },
         )
+
 
     # -----------------------------------------------------
     # USED CHECK
@@ -1460,6 +1585,7 @@ def admin_reset_password(
             },
         )
 
+
     # -----------------------------------------------------
     # EXPIRY CHECK
     # -----------------------------------------------------
@@ -1478,6 +1604,7 @@ def admin_reset_password(
                 ),
             },
         )
+
 
     # -----------------------------------------------------
     # VALIDATE USER ID
@@ -1509,6 +1636,7 @@ def admin_reset_password(
             },
         )
 
+
     # -----------------------------------------------------
     # TOKEN MUST BELONG TO THIS USER
     # -----------------------------------------------------
@@ -1533,6 +1661,7 @@ def admin_reset_password(
             },
         )
 
+
     # -----------------------------------------------------
     # GET USER
     # -----------------------------------------------------
@@ -1545,6 +1674,7 @@ def admin_reset_password(
         )
         .first()
     )
+
 
     if not user:
 
@@ -1560,6 +1690,7 @@ def admin_reset_password(
             },
         )
 
+
     # -----------------------------------------------------
     # VERIFY PHONE
     # -----------------------------------------------------
@@ -1571,6 +1702,7 @@ def admin_reset_password(
     registered_phone = normalize_phone(
         user.phone
     )
+
 
     if (
         entered_phone
@@ -1591,6 +1723,7 @@ def admin_reset_password(
                 "phone": phone,
             },
         )
+
 
     # -----------------------------------------------------
     # PASSWORD MATCH
@@ -1613,6 +1746,7 @@ def admin_reset_password(
             },
         )
 
+
     # -----------------------------------------------------
     # PASSWORD VALIDATION
     # -----------------------------------------------------
@@ -1620,6 +1754,7 @@ def admin_reset_password(
     valid, message = validate_password(
         password
     )
+
 
     if not valid:
 
@@ -1636,6 +1771,7 @@ def admin_reset_password(
             },
         )
 
+
     # -----------------------------------------------------
     # UPDATE PASSWORD + MARK TOKEN USED
     # -----------------------------------------------------
@@ -1647,6 +1783,7 @@ def admin_reset_password(
     reset_token.used_at = (
         datetime.utcnow()
     )
+
 
     try:
 
@@ -1671,6 +1808,7 @@ def admin_reset_password(
                 "phone": phone,
             },
         )
+
 
     # -----------------------------------------------------
     # SUCCESS
